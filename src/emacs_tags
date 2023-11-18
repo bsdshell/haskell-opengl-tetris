@@ -1,5 +1,5 @@
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/AronModule.hs,29295
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronModule.hs,29348
 module AronModule AronModule12,13
 print_ascii_f:print_ascii_f185,186
 instance Num Num a => Num [a]195,196
@@ -369,504 +369,505 @@ quickSort1:quickSort13124,3125
 quickSortAny:quickSortAny3131,3132
 mergeSortedList:mergeSortedList3138,3139
 rotateRight:rotateRight3150,3151
-rotateLeft:rotateLeft3160,3161
-mergeSortC:mergeSortC3170,3171
-mergeSort:mergeSort3191,3192
-mergeSortM:mergeSortM3220,3221
-groupCount:groupCount3255,3256
-vimLink:vimLink3270,3271
-watchDir:watchDir3299,3300
-fileModTime:fileModTime3313,3314
-fileModTimeInt:fileModTimeInt3327,3328
-fileModTimeInteger:fileModTimeInteger3336,3337
-intToCTime:intToCTime3347,3348
-dirModified:dirModified3356,3357
-fileSizeA:fileSizeA3366,3367
-readSnippet:readSnippet3401,3402
-readSnippetStr:readSnippetStr3428,3429
-readSnippetToDatabase:readSnippetToDatabase3452,3453
-queryDatabaseToFile:queryDatabaseToFile3495,3496
-mysqlQuery:mysqlQuery3540,3541
-createConfigMap:createConfigMap3568,3569
-readFileRemote:readFileRemote3586,3587
-readFileRemoteToList:readFileRemoteToList3595,3596
-readFileLatin1:readFileLatin13600,3601
-readFile2d:readFile2d3635,3636
-readFileToInteger2d:readFileToInteger2d3651,3652
-orgList:orgList3676,3677
-orgTable:orgTable3685,3686
-writeToFile:writeToFile3699,3700
-writeFileBS:writeFileBS3711,3712
-writeFileListBS:writeFileListBS3722,3723
-writeToFileAppend:writeToFileAppend3743,3744
-writeFileListAppend:writeFileListAppend3753,3754
-nToFractMat:nToFractMat3766,3767
-toNum:toNum3772,3773
-nToNumMat nToNumMat3780,3781
-rToRatMat:rToRatMat3789,3790
-writeToFile2dMat:writeToFile2dMat3812,3813
-writeToFileMat:writeToFileMat3820,3821
-filtermap filtermap3835,3836
-putStrLnBS:putStrLnBS3843,3844
-putStrBS:putStrBS3846,3847
-bs:bs3875,3876
-fs:fs3915,3916
-listDot:listDot3932,3933
-listDots:listDots3937,3938
-scaleList:scaleList3941,3942
-listScale:listScale3945,3946
-listAdd:listAdd3950,3951
-listSub:listSub3955,3956
-listMul:listMul3960,3961
-listNeg:listNeg3970,3971
-dim:dim3979,3980
-zipWithArr:zipWithArr3990,3991
-zipWithArrToList:zipWithArrToList4010,4011
-det:det4022,4023
-multiMatInt:multiMatInt4035,4036
-multiVec multiVec4040,4041
-multiMatStr:multiMatStr4075,4076
-cart:cart4080,4081
-multiMatDouble:multiMatDouble4088,4089
-multiMatR:multiMatR4112,4113
-multiMatNum:multiMatNum4115,4116
-multiMat:multiMat4140,4141
-matDiv:matDiv4151,4152
-multiRatMat:multiRatMat4155,4156
-sumRatList:sumRatList4158,4159
-addR:addR4163,4164
-ratToInt:ratToInt4179,4180
-normalR:normalR4188,4189
-reduceForm:reduceForm4200,4201
-reduce:reduce4208,4209
-stringToFloat:stringToFloat4234,4235
-strToF strToF4237,4238
-stringToListInt:stringToListInt4251,4252
-word:word4263,4264
-sentence:sentence4277,4278
-isWord:isWord4295,4296
-isInWord isInWord4303,4304
-hasWordChar hasWordChar4322,4323
-isZeroPos:isZeroPos4333,4334
-perm:perm4350,4351
-perm2:perm24415,4416
-rangeNum:rangeNum4428,4429
-perm3 perm34460,4461
-splitR:splitR4472,4473
-multR:multR4483,4484
-multRL:multRL4493,4494
-normR:normR4496,4497
-getVec:getVec4501,4502
-normList:normList4517,4518
-proj:proj4523,4524
-projn:projn4540,4541
-rMatrixUpperTri rMatrixUpperTri4566,4567
-rejection:rejection4588,4589
-qrDecompose':qrDecompose'4604,4605
-addRL:addRL4626,4627
-divR:divR4637,4638
-divR':divR'4643,4644
-invR:invR4649,4650
-subR:subR4660,4661
-negR:negR4663,4664
-negList:negList4666,4667
-subRL:subRL4669,4670
-eightQueen:eightQueen4691,4692
-sumLeft:sumLeft4723,4724
-sumRight:sumRight4735,4736
-rep2d rep2d4748,4749
-replace1d:replace1d4759,4760
-replace2d:replace2d4772,4773
-diag1:diag14778,4779
-uptri:uptri4783,4784
-leftDiagonal:leftDiagonal4801,4802
-rightDiagonal:rightDiagonal4826,4827
-reverseWord:reverseWord4837,4838
-rw rw4840,4841
-tran:tran4869,4870
-sortRow:sortRow4893,4894
-upperTri:upperTri4925,4926
-upperTri':upperTri'4975,4976
-divI:divI5048,5049
-inverse:inverse5069,5070
-odds:odds5149,5150
-evens:evens5153,5154
-isInver:isInver5164,5165
-isInvertible:isInvertible5197,5198
-ident:ident5205,5206
-ident':ident'5212,5213
-identS:identS5217,5218
-mlist:mlist5229,5230
-randomTemp:randomTemp5245,5246
-drawInteger:drawInteger5257,5258
-randomInteger:randomInteger5265,5266
-randomDouble:randomDouble5277,5278
-randomFloat:randomFloat5289,5290
-randomFrac:randomFrac5307,5308
-randomList:randomList5313,5314
-randIntList:randIntList5334,5335
-randomIntList:randomIntList5347,5348
-randomIntegerList:randomIntegerList5354,5355
-randomMatrix:randomMatrix5364,5365
-geneRandMat:geneRandMat5376,5377
-data Mat Mat5380,5381
-data Mat = Zero Zero5380,5381
-data Mat = Zero | IdId5380,5381
-geneMat1ToN:geneMat1ToN5389,5390
-geneMatMN:geneMatMN5399,5400
-geneMat:geneMat5404,5405
-help:help5410,5411
-cmd:cmd5432,5433
-compileHaskellToBin:compileHaskellToBin5504,5505
-strCompareIC:strCompareIC5518,5519
-baseName:baseName5538,5539
-dropExt:dropExt5541,5542
-takeExt:takeExt5544,5545
-takeName:takeName5552,5553
-dropName:dropName5560,5561
-takeDir:takeDir5570,5571
-dropNameT:dropNameT5576,5577
-dropExtT:dropExtT5582,5583
-baseNameT:baseNameT5589,5590
-takeFileNameT:takeFileNameT5595,5596
-gotoCurrDir:gotoCurrDir5604,5605
-dirWalk dirWalk5629,5630
-dirWalkPathList:dirWalkPathList5649,5650
-lsCurr:lsCurr5655,5656
-lsDir:lsDir5658,5659
-getDirContent:getDirContent5664,5665
-lsRegex:lsRegex5673,5674
-touch:touch5681,5682
-rm:rm5687,5688
-isDir:isDir5699,5700
-dirExist:dirExist5702,5703
-isFile:isFile5705,5706
-fExist:fExist5713,5714
-fileExistA:fileExistA5716,5717
-fe fe5722,5723
-rmDir:rmDir5730,5731
-pwd:pwd5741,5742
-cd:cd5751,5752
-setCurrentDir:setCurrentDir5757,5758
-en:en5765,5766
-cc:cc5768,5769
-g:g5771,5772
-sleepSec:sleepSec5779,5780
-sleep:sleep5785,5786
-asplitPath:asplitPath5803,5804
-splitPathA:splitPathA5824,5825
-take':take'5828,5829
-takeIf:takeIf5841,5842
-dropIf:dropIf5857,5858
-takeN:takeN5863,5864
-drop':drop'5867,5868
-pathBase:pathBase5870,5871
-dropPath:dropPath5875,5876
-dropPathEnd:dropPathEnd5881,5882
-takePath:takePath5887,5888
-takePathEnd:takePathEnd5892,5893
-copyRename:copyRename5898,5899
-copyFileToDir:copyFileToDir5910,5911
-createFile:createFile5915,5916
-listDirFilter:listDirFilter5924,5925
-copyDir:copyDir5931,5932
-mv:mv5952,5953
-rename:rename5958,5959
-renameAllFile:renameAllFile5964,5965
-mvFiles mvFiles5970,5971
-mvFile mvFile5971,5972
-mkdir:mkdir5977,5978
-mkdirp:mkdirp5980,5981
-sfilter:sfilter5983,5984
-setCursorPos:setCursorPos6006,6007
-setCursorPosStr:setCursorPosStr6009,6010
-getTerminalSize:getTerminalSize6018,6019
-getScreenSize:getScreenSize6032,6033
-sys:sys6076,6077
-typeChar:typeChar6084,6085
-linesBS:linesBS6111,6112
-linesSText:linesSText6120,6121
-linesST linesST6126,6127
-isHex:isHex6140,6141
-isHexStr:isHexStr6148,6149
-isDigitStr:isDigitStr6156,6157
-isLetterStr:isLetterStr6164,6165
-isLetterChar:isLetterChar6174,6175
-isDigitChar:isDigitChar6184,6185
-run':run'6192,6193
-run:run6207,6208
-runCmd:runCmd6229,6230
-runShell runShell6267,6268
-df:df6285,6286
-tangent:tangent6315,6316
-tangentVec:tangentVec6321,6322
-prime prime6331,6332
-oneRoot:oneRoot6356,6357
-rootList:rootList6369,6370
-outer:outer6385,6386
-out:out6415,6416
-outerSum:outerSum6421,6422
-outerMod:outerMod6428,6429
-outerStr:outerStr6431,6432
-(â(â¦¶)6439,6440
-(â(â)6440,6441
-(â(â)6443,6444
-vcol:vcol6461,6462
-getColumn:getColumn6469,6470
-vrow:vrow6477,6478
-getRow:getRow6485,6486
-zipWith2:zipWith26502,6503
-data XNode XNode6507,6508
-data XNode = XNode XNode6507,6508
-insertTries:insertTries6520,6521
-insertTriesList:insertTriesList6531,6532
-containsTries:containsTries6543,6544
-data Tree Tree6556,6557
-data Tree a = EmptyEmpty6556,6557
-            | Node Node6557,6558
-insertNode:insertNode6559,6560
-insertFromList:insertFromList6566,6567
-data LeafyTree LeafyTree6573,6574
-data LeafyTree a = Branch Branch6573,6574
-                   | Leaf Leaf6574,6575
-instance Foldable Foldable LeafyTree6604,6605
-    foldMap foldMap6605,6606
-inorder:inorder6611,6612
-maxlen:maxlen6618,6619
-head':head'6626,6627
-isBST:isBST6640,6641
-binsert:binsert6659,6660
-isSym:isSym6670,6671
-lca:lca6691,6692
-buildTree:buildTree6720,6721
-anagram:anagram6742,6743
-redisExtractAronModule:redisExtractAronModule6783,6784
-redisExtractJavaMethod:redisExtractJavaMethod6858,6859
-redisExtractJavaMethodWithPackage:redisExtractJavaMethodWithPackage6896,6897
-redisExtractSnippet:redisExtractSnippet6941,6942
-textArea:textArea6964,6965
-htmlTable:htmlTable6994,6995
-htmlTableRowCol:htmlTableRowCol7006,7007
-htmlTableRowColSText:htmlTableRowColSText7015,7016
-getOS:getOS7043,7044
-data ShellHistory ShellHistory7051,7052
-data ShellHistory = ShellHistoryShellHistory7051,7052
-  { shId shId7052,7053
-  , shcmd shcmd7053,7054
-instance FromRow FromRow ShellHistory7058,7059
-   fromRow fromRow7059,7060
-instance ToRow ToRow ShellHistory7062,7063
-   toRow toRow7063,7064
-insertShellHistory:insertShellHistory7107,7108
-queryShellHistory:queryShellHistory7135,7136
-appNotify:appNotify7149,7150
-redisGet:redisGet7183,7184
-redisGetConn:redisGetConn7204,7205
-redisSet:redisSet7231,7232
-redisSetConn:redisSetConn7234,7235
-redisSetConnSByteString:redisSetConnSByteString7244,7245
-redisConnectDefault:redisConnectDefault7254,7255
-checkCSSColorFormat:checkCSSColorFormat7264,7265
-cssToStr:cssToStr7270,7271
-concatStyle:concatStyle7276,7277
-fun444:fun4447281,7282
-fun555:fun5557284,7285
-pf:pf7329,7330
-p:p7335,7336
-pp2 pp27339,7340
-fl:fl7341,7342
-pw:pw7355,7356
-fpp:fpp7358,7359
-fw:fw7361,7362
-ff:ff7380,7381
-(?(?)7400,7401
-(<(<<<)7405,7406
-readConfig:readConfig7450,7451
-concatFile:concatFile7465,7466
-extractNumFromStr:extractNumFromStr7471,7472
-strToIntegerMaybe:strToIntegerMaybe7488,7489
-gcdList:gcdList7494,7495
-commentLine:commentLine7499,7500
-commentCode:commentCode7517,7518
-takeBetweenExc:takeBetweenExc7532,7533
-takeIndexBetweenInc:takeIndexBetweenInc7552,7553
-maxList:maxList7555,7556
-printBox:printBox7580,7581
-printBoxColor:printBoxColor7635,7636
-printBoxColor2:printBoxColor27652,7653
-splitWhileStr:splitWhileStr7671,7672
-getLineFlush:getLineFlush7677,7678
-replaceFileLineNoRegex:replaceFileLineNoRegex7694,7695
-replaceLineNoRegexListTuple:replaceLineNoRegexListTuple7701,7702
-runSh runSh7746,7747
-runShStr runShStr7759,7760
-clear:clear7769,7770
-pp:pp7773,7774
-runRawCmd:runRawCmd7797,7798
-ls:ls7833,7834
-getPwd:getPwd7841,7842
-getpwd:getpwd7850,7851
-lsFile:lsFile7867,7868
-lsStr:lsStr7878,7879
-drawInt:drawInt7895,7896
-lsFileFull:lsFileFull7916,7917
-type RegexStr RegexStr7923,7924
-lsRegexFull:lsRegexFull7931,7932
-lsFullRegex:lsFullRegex7944,7945
-randomInt:randomInt7953,7954
-writeFileStr:writeFileStr7964,7965
-writeFileOver writeFileOver7971,7972
-writeFileList:writeFileList7984,7985
-c2w_:c2w_7995,7996
-intToString:intToString8004,8005
-integerToString:integerToString8012,8013
-integerToInt:integerToInt8020,8021
-intToCharDigit:intToCharDigit8036,8037
-extractStr:extractStr8056,8057
-integerToBinary:integerToBinary8059,8060
-charToDecimal:charToDecimal8069,8070
-charToDecimalInteger charToDecimalInteger8072,8073
-charToIntX charToIntX8093,8094
-char0to9ToInt char0to9ToInt8100,8101
-integerToCharDigit:integerToCharDigit8109,8110
-stringToInteger:stringToInteger8128,8129
-strToInteger:strToInteger8136,8137
-stringToInt:stringToInt8166,8167
-strToInt:strToInt8174,8175
-pre:pre8191,8192
-prel:prel8203,8204
-readFileLatin1ToList:readFileLatin1ToList8231,8232
-readFileList:readFileList8241,8242
-readFileStr:readFileStr8244,8245
-readFileDouble:readFileDouble8261,8262
-readFileFloat:readFileFloat8283,8284
-readFileInt:readFileInt8305,8306
-timeNowPico:timeNowPico8316,8317
-timeNowNano:timeNowNano8324,8325
-timeNowMicro:timeNowMicro8330,8331
-timeNowMilli:timeNowMilli8336,8337
-timeNowSecond:timeNowSecond8342,8343
-getLocalTime:getLocalTime8358,8359
-getLocalDate:getLocalDate8370,8371
-getDate:getDate8384,8385
-dateStr:dateStr8394,8395
-date:date8404,8405
-getTime:getTime8416,8417
-showTime:showTime8425,8426
-trim:trim8435,8436
-splitStr:splitStr8459,8460
-splitStrChar:splitStrChar8477,8478
-splitStrCharTrim:splitStrCharTrim8490,8491
-matchAllBS:matchAllBS8498,8499
-len:len8508,8509
-splitStrTuple:splitStrTuple8517,8518
-logFile:logFile8521,8522
-logFile2:logFile28524,8525
-logFileTmp:logFileTmp8531,8532
-logFileNoName:logFileNoName8536,8537
-logFileG:logFileG8544,8545
-logFileSBS2:logFileSBS28555,8556
-showIntAtBaseX:showIntAtBaseX8580,8581
-integerToHex:integerToHex8597,8598
-intToHex:intToHex8613,8614
-hexToInt:hexToInt8626,8627
-unescape unescape8643,8644
-intToUnicode:intToUnicode8654,8655
-hexToUnicode:hexToUnicode8660,8661
-intToChar:intToChar8668,8669
-hexToChar:hexToChar8676,8677
-Ï:Ï8679,8680
-data FrameCount FrameCount8682,8683
-data FrameCount = FrameCount{frameTime:FrameCount{frameTime8682,8683
-data FrameCount = FrameCount{frameTime::Integer, frameCount:frameCount8682,8683
-data FrameCount = FrameCount{frameTime::Integer, frameCount::Integer, frameNewCount:frameNewCount8682,8683
-data FrameCount = FrameCount{frameTime::Integer, frameCount::Integer, frameNewCount::Integer, frameIndex:frameIndex8682,8683
-resetRefFrame:resetRefFrame8685,8686
-readRefFrame2:readRefFrame28701,8702
-readRefFrame:readRefFrame8744,8745
-fileSizeStrToNum:fileSizeStrToNum8770,8771
-whichGetPath:whichGetPath8781,8782
-openFileUtf8:openFileUtf88793,8794
-readFileUtf8:readFileUtf88805,8806
-scientificToFloat:scientificToFloat8821,8822
-sciToFloat:sciToFloat8837,8838
-colorfgStr:colorfgStr8894,8895
-colorbgStr:colorbgStr8923,8924
-createProcessPipeData:createProcessPipeData8962,8963
-writeFileSText:writeFileSText8988,8989
-writeFileLText:writeFileLText8995,8996
-(>(>>>)9002,9003
-pad:pad9015,9016
-nzero:nzero9021,9022
-shiftMatrixLeft:shiftMatrixLeft9034,9035
-shellHighlight:shellHighlight9050,9051
-blockBegEnd:blockBegEnd9105,9106
-pick:pick9134,9135
-containAll:containAll9149,9150
-combin:combin9180,9181
-drawRectBar:drawRectBar9187,9188
-histogram:histogram9206,9207
-insertIndexAt:insertIndexAt9226,9227
-isInList isInList9236,9237
-removeFirstList:removeFirstList9248,9249
-removeFromList:removeFromList9259,9260
-readFileInteger2d:readFileInteger2d9300,9301
-readFileFloat2d:readFileFloat2d9341,9342
-readTable:readTable9352,9353
-alignTable:alignTable9371,9372
-trimList trimList9393,9394
-trimListST trimListST9410,9411
-stepList:stepList9448,9449
-splitWhenFirstNoRegex splitWhenFirstNoRegex9484,9485
-splitWhenLastNoRegex splitWhenLastNoRegex9502,9503
-splitStrCharNoRegex splitStrCharNoRegex9529,9530
-printFile printFile9538,9539
-frequenceCount:frequenceCount9562,9563
-data FileBlock FileBlock9567,9568
-data FileBlock =  DropHeadDropHead9567,9568
-             | DropLastDropLast9568,9569
-             | DropIndex DropIndex9569,9570
-             | PrintIndex PrintIndex9570,9571
-             | PrintHeadPrintHead9571,9572
-             | PrintLastPrintLast9572,9573
-             | PrintAllPrintAll9573,9574
-             | Append Append9574,9575
-             | AppendList AppendList9575,9576
-             | Prepend Prepend9576,9577
-             | NumberOfBlock NumberOfBlock9577,9578
-fileBlock fileBlock9584,9585
-splitPrefix splitPrefix9667,9668
-breakFirst breakFirst9673,9674
-grepx grepx9681,9682
-grepLine grepLine9696,9697
-catx catx9706,9707
-clipBoardcp clipBoardcp9714,9715
-pbcopy pbcopy9720,9721
-clipBoardpa clipBoardpa9723,9724
-pbpaste pbpaste9726,9727
-getContentsCTRLD getContentsCTRLD9738,9739
-hasSubstr hasSubstr9754,9755
-hasStrBlock hasStrBlock9764,9765
-powerSet powerSet9784,9785
-swap swap9791,9792
-fun10:fun109850,9851
+rotateLeft2 rotateLeft23159,3160
+rotateRight2 rotateRight23167,3168
+rotateLeft:rotateLeft3176,3177
+mergeSortC:mergeSortC3186,3187
+mergeSort:mergeSort3207,3208
+mergeSortM:mergeSortM3236,3237
+groupCount:groupCount3271,3272
+vimLink:vimLink3286,3287
+watchDir:watchDir3315,3316
+fileModTime:fileModTime3329,3330
+fileModTimeInt:fileModTimeInt3343,3344
+fileModTimeInteger:fileModTimeInteger3352,3353
+intToCTime:intToCTime3363,3364
+dirModified:dirModified3372,3373
+fileSizeA:fileSizeA3382,3383
+readSnippet:readSnippet3417,3418
+readSnippetStr:readSnippetStr3444,3445
+readSnippetToDatabase:readSnippetToDatabase3468,3469
+queryDatabaseToFile:queryDatabaseToFile3511,3512
+mysqlQuery:mysqlQuery3556,3557
+createConfigMap:createConfigMap3584,3585
+readFileRemote:readFileRemote3602,3603
+readFileRemoteToList:readFileRemoteToList3611,3612
+readFileLatin1:readFileLatin13616,3617
+readFile2d:readFile2d3651,3652
+readFileToInteger2d:readFileToInteger2d3667,3668
+orgList:orgList3692,3693
+orgTable:orgTable3701,3702
+writeToFile:writeToFile3715,3716
+writeFileBS:writeFileBS3727,3728
+writeFileListBS:writeFileListBS3738,3739
+writeToFileAppend:writeToFileAppend3759,3760
+writeFileListAppend:writeFileListAppend3769,3770
+nToFractMat:nToFractMat3782,3783
+toNum:toNum3788,3789
+nToNumMat nToNumMat3796,3797
+rToRatMat:rToRatMat3805,3806
+writeToFile2dMat:writeToFile2dMat3828,3829
+writeToFileMat:writeToFileMat3836,3837
+filtermap filtermap3851,3852
+putStrLnBS:putStrLnBS3859,3860
+putStrBS:putStrBS3862,3863
+bs:bs3891,3892
+fs:fs3931,3932
+listDot:listDot3948,3949
+listDots:listDots3953,3954
+scaleList:scaleList3957,3958
+listScale:listScale3961,3962
+listAdd:listAdd3966,3967
+listSub:listSub3971,3972
+listMul:listMul3976,3977
+listNeg:listNeg3986,3987
+dim:dim3995,3996
+zipWithArr:zipWithArr4006,4007
+zipWithArrToList:zipWithArrToList4026,4027
+det:det4038,4039
+multiMatInt:multiMatInt4051,4052
+multiVec multiVec4056,4057
+multiMatStr:multiMatStr4091,4092
+cart:cart4096,4097
+multiMatDouble:multiMatDouble4104,4105
+multiMatR:multiMatR4128,4129
+multiMatNum:multiMatNum4131,4132
+multiMat:multiMat4156,4157
+matDiv:matDiv4167,4168
+multiRatMat:multiRatMat4171,4172
+sumRatList:sumRatList4174,4175
+addR:addR4179,4180
+ratToInt:ratToInt4195,4196
+normalR:normalR4204,4205
+reduceForm:reduceForm4216,4217
+reduce:reduce4224,4225
+stringToFloat:stringToFloat4250,4251
+strToF strToF4253,4254
+stringToListInt:stringToListInt4267,4268
+word:word4279,4280
+sentence:sentence4293,4294
+isWord:isWord4311,4312
+isInWord isInWord4319,4320
+hasWordChar hasWordChar4338,4339
+isZeroPos:isZeroPos4349,4350
+perm:perm4366,4367
+perm2:perm24431,4432
+rangeNum:rangeNum4444,4445
+perm3 perm34476,4477
+splitR:splitR4488,4489
+multR:multR4499,4500
+multRL:multRL4509,4510
+normR:normR4512,4513
+getVec:getVec4517,4518
+normList:normList4533,4534
+proj:proj4539,4540
+projn:projn4556,4557
+rMatrixUpperTri rMatrixUpperTri4582,4583
+rejection:rejection4604,4605
+qrDecompose':qrDecompose'4620,4621
+addRL:addRL4642,4643
+divR:divR4653,4654
+divR':divR'4659,4660
+invR:invR4665,4666
+subR:subR4676,4677
+negR:negR4679,4680
+negList:negList4682,4683
+subRL:subRL4685,4686
+eightQueen:eightQueen4707,4708
+sumLeft:sumLeft4739,4740
+sumRight:sumRight4751,4752
+rep2d rep2d4764,4765
+replace1d:replace1d4775,4776
+replace2d:replace2d4788,4789
+diag1:diag14794,4795
+uptri:uptri4799,4800
+leftDiagonal:leftDiagonal4817,4818
+rightDiagonal:rightDiagonal4842,4843
+reverseWord:reverseWord4853,4854
+rw rw4856,4857
+tran tran4902,4903
+sortRow:sortRow4926,4927
+upperTri:upperTri4958,4959
+upperTri':upperTri'5008,5009
+divI:divI5081,5082
+inverse:inverse5102,5103
+odds:odds5182,5183
+evens:evens5186,5187
+isInver:isInver5197,5198
+isInvertible:isInvertible5230,5231
+ident:ident5238,5239
+ident':ident'5245,5246
+identS:identS5250,5251
+mlist:mlist5262,5263
+randomTemp:randomTemp5278,5279
+drawInteger:drawInteger5290,5291
+randomInteger:randomInteger5298,5299
+randomDouble:randomDouble5310,5311
+randomFloat:randomFloat5322,5323
+randomFrac:randomFrac5340,5341
+randomList:randomList5346,5347
+randIntList:randIntList5367,5368
+randomIntList:randomIntList5380,5381
+randomIntegerList:randomIntegerList5387,5388
+randomMatrix:randomMatrix5397,5398
+geneRandMat:geneRandMat5409,5410
+data Mat Mat5413,5414
+data Mat = Zero Zero5413,5414
+data Mat = Zero | IdId5413,5414
+geneMat1ToN:geneMat1ToN5422,5423
+geneMatMN:geneMatMN5432,5433
+geneMat:geneMat5437,5438
+help:help5443,5444
+cmd:cmd5465,5466
+compileHaskellToBin:compileHaskellToBin5537,5538
+strCompareIC:strCompareIC5551,5552
+baseName:baseName5571,5572
+dropExt:dropExt5574,5575
+takeExt:takeExt5577,5578
+takeName:takeName5585,5586
+dropName:dropName5593,5594
+takeDir:takeDir5603,5604
+dropNameT:dropNameT5609,5610
+dropExtT:dropExtT5615,5616
+baseNameT:baseNameT5622,5623
+takeFileNameT:takeFileNameT5628,5629
+gotoCurrDir:gotoCurrDir5637,5638
+dirWalk dirWalk5662,5663
+dirWalkPathList:dirWalkPathList5682,5683
+lsCurr:lsCurr5688,5689
+lsDir:lsDir5691,5692
+getDirContent:getDirContent5697,5698
+lsRegex:lsRegex5706,5707
+touch:touch5714,5715
+rm:rm5720,5721
+isDir:isDir5732,5733
+dirExist:dirExist5735,5736
+isFile:isFile5738,5739
+fExist:fExist5746,5747
+fileExistA:fileExistA5749,5750
+fe fe5755,5756
+rmDir:rmDir5763,5764
+pwd:pwd5774,5775
+cd:cd5784,5785
+setCurrentDir:setCurrentDir5790,5791
+en:en5798,5799
+cc:cc5801,5802
+g:g5804,5805
+sleepSec:sleepSec5812,5813
+sleep:sleep5818,5819
+asplitPath:asplitPath5836,5837
+splitPathA:splitPathA5857,5858
+take':take'5861,5862
+takeIf:takeIf5874,5875
+dropIf:dropIf5890,5891
+takeN:takeN5896,5897
+drop':drop'5900,5901
+pathBase:pathBase5903,5904
+dropPath:dropPath5908,5909
+dropPathEnd:dropPathEnd5914,5915
+takePath:takePath5920,5921
+takePathEnd:takePathEnd5925,5926
+copyRename:copyRename5931,5932
+copyFileToDir:copyFileToDir5943,5944
+createFile:createFile5948,5949
+listDirFilter:listDirFilter5957,5958
+copyDir:copyDir5964,5965
+mv:mv5985,5986
+rename:rename5991,5992
+renameAllFile:renameAllFile5997,5998
+mvFiles mvFiles6003,6004
+mvFile mvFile6004,6005
+mkdir:mkdir6010,6011
+mkdirp:mkdirp6013,6014
+sfilter:sfilter6016,6017
+setCursorPos:setCursorPos6039,6040
+setCursorPosStr:setCursorPosStr6042,6043
+getTerminalSize:getTerminalSize6051,6052
+getScreenSize:getScreenSize6065,6066
+sys:sys6109,6110
+typeChar:typeChar6117,6118
+linesBS:linesBS6144,6145
+linesSText:linesSText6153,6154
+linesST linesST6159,6160
+isHex:isHex6173,6174
+isHexStr:isHexStr6181,6182
+isDigitStr:isDigitStr6189,6190
+isLetterStr:isLetterStr6197,6198
+isLetterChar:isLetterChar6207,6208
+isDigitChar:isDigitChar6217,6218
+run':run'6225,6226
+run:run6240,6241
+runCmd:runCmd6262,6263
+runShell runShell6300,6301
+df:df6318,6319
+tangent:tangent6348,6349
+tangentVec:tangentVec6354,6355
+prime prime6364,6365
+oneRoot:oneRoot6389,6390
+rootList:rootList6402,6403
+outer:outer6418,6419
+out:out6448,6449
+outerSum:outerSum6454,6455
+outerMod:outerMod6461,6462
+outerStr:outerStr6464,6465
+(â(â¦¶)6472,6473
+(â(â)6473,6474
+(â(â)6476,6477
+vcol:vcol6494,6495
+getColumn:getColumn6502,6503
+vrow:vrow6510,6511
+getRow:getRow6518,6519
+zipWith2:zipWith26535,6536
+data XNode XNode6540,6541
+data XNode = XNode XNode6540,6541
+insertTries:insertTries6553,6554
+insertTriesList:insertTriesList6564,6565
+containsTries:containsTries6576,6577
+data Tree Tree6589,6590
+data Tree a = EmptyEmpty6589,6590
+            | Node Node6590,6591
+insertNode:insertNode6592,6593
+insertFromList:insertFromList6599,6600
+data LeafyTree LeafyTree6606,6607
+data LeafyTree a = Branch Branch6606,6607
+                   | Leaf Leaf6607,6608
+instance Foldable Foldable LeafyTree6637,6638
+    foldMap foldMap6638,6639
+inorder:inorder6644,6645
+maxlen:maxlen6651,6652
+head':head'6659,6660
+isBST:isBST6673,6674
+binsert:binsert6692,6693
+isSym:isSym6703,6704
+lca:lca6724,6725
+buildTree:buildTree6753,6754
+anagram:anagram6775,6776
+redisExtractAronModule:redisExtractAronModule6816,6817
+redisExtractJavaMethod:redisExtractJavaMethod6891,6892
+redisExtractJavaMethodWithPackage:redisExtractJavaMethodWithPackage6929,6930
+redisExtractSnippet:redisExtractSnippet6974,6975
+textArea:textArea6997,6998
+htmlTable:htmlTable7027,7028
+htmlTableRowCol:htmlTableRowCol7039,7040
+htmlTableRowColSText:htmlTableRowColSText7048,7049
+getOS:getOS7076,7077
+data ShellHistory ShellHistory7084,7085
+data ShellHistory = ShellHistoryShellHistory7084,7085
+  { shId shId7085,7086
+  , shcmd shcmd7086,7087
+instance FromRow FromRow ShellHistory7091,7092
+   fromRow fromRow7092,7093
+instance ToRow ToRow ShellHistory7095,7096
+   toRow toRow7096,7097
+insertShellHistory:insertShellHistory7140,7141
+queryShellHistory:queryShellHistory7168,7169
+appNotify:appNotify7182,7183
+redisGet:redisGet7216,7217
+redisGetConn:redisGetConn7237,7238
+redisSet:redisSet7264,7265
+redisSetConn:redisSetConn7267,7268
+redisSetConnSByteString:redisSetConnSByteString7277,7278
+redisConnectDefault:redisConnectDefault7287,7288
+checkCSSColorFormat:checkCSSColorFormat7297,7298
+cssToStr:cssToStr7303,7304
+concatStyle:concatStyle7309,7310
+fun444:fun4447314,7315
+fun555:fun5557317,7318
+pf:pf7362,7363
+p:p7368,7369
+pp2 pp27372,7373
+fl:fl7374,7375
+pw:pw7388,7389
+fpp:fpp7391,7392
+fw:fw7394,7395
+ff:ff7413,7414
+(?(?)7433,7434
+(<(<<<)7438,7439
+readConfig:readConfig7483,7484
+concatFile:concatFile7498,7499
+extractNumFromStr:extractNumFromStr7504,7505
+strToIntegerMaybe:strToIntegerMaybe7521,7522
+gcdList:gcdList7527,7528
+commentLine:commentLine7532,7533
+commentCode:commentCode7550,7551
+takeBetweenExc:takeBetweenExc7565,7566
+takeIndexBetweenInc:takeIndexBetweenInc7585,7586
+maxList:maxList7588,7589
+printBox:printBox7613,7614
+printBoxColor:printBoxColor7668,7669
+printBoxColor2:printBoxColor27685,7686
+splitWhileStr:splitWhileStr7704,7705
+getLineFlush:getLineFlush7710,7711
+replaceFileLineNoRegex:replaceFileLineNoRegex7727,7728
+replaceLineNoRegexListTuple:replaceLineNoRegexListTuple7734,7735
+runSh runSh7779,7780
+runShStr runShStr7792,7793
+clear:clear7802,7803
+pp:pp7806,7807
+runRawCmd:runRawCmd7830,7831
+ls:ls7866,7867
+getPwd:getPwd7874,7875
+getpwd:getpwd7883,7884
+lsFile:lsFile7900,7901
+lsStr:lsStr7911,7912
+drawInt:drawInt7928,7929
+lsFileFull:lsFileFull7949,7950
+type RegexStr RegexStr7956,7957
+lsRegexFull:lsRegexFull7964,7965
+lsFullRegex:lsFullRegex7977,7978
+randomInt:randomInt7986,7987
+writeFileStr:writeFileStr7997,7998
+writeFileOver writeFileOver8004,8005
+writeFileList:writeFileList8017,8018
+c2w_:c2w_8028,8029
+intToString:intToString8037,8038
+integerToString:integerToString8045,8046
+integerToInt:integerToInt8053,8054
+intToCharDigit:intToCharDigit8069,8070
+extractStr:extractStr8089,8090
+integerToBinary:integerToBinary8092,8093
+charToDecimal:charToDecimal8102,8103
+charToDecimalInteger charToDecimalInteger8105,8106
+charToIntX charToIntX8126,8127
+char0to9ToInt char0to9ToInt8133,8134
+integerToCharDigit:integerToCharDigit8142,8143
+stringToInteger:stringToInteger8161,8162
+strToInteger:strToInteger8169,8170
+stringToInt:stringToInt8199,8200
+strToInt:strToInt8207,8208
+pre:pre8224,8225
+prel:prel8236,8237
+readFileLatin1ToList:readFileLatin1ToList8264,8265
+readFileList:readFileList8274,8275
+readFileStr:readFileStr8277,8278
+readFileDouble:readFileDouble8294,8295
+readFileFloat:readFileFloat8316,8317
+readFileInt:readFileInt8338,8339
+timeNowPico:timeNowPico8349,8350
+timeNowNano:timeNowNano8357,8358
+timeNowMicro:timeNowMicro8363,8364
+timeNowMilli:timeNowMilli8369,8370
+timeNowSecond:timeNowSecond8375,8376
+getLocalTime:getLocalTime8391,8392
+getLocalDate:getLocalDate8403,8404
+getDate:getDate8417,8418
+dateStr:dateStr8427,8428
+date:date8437,8438
+getTime:getTime8449,8450
+showTime:showTime8458,8459
+trim:trim8468,8469
+splitStr:splitStr8492,8493
+splitStrChar:splitStrChar8510,8511
+splitStrCharTrim:splitStrCharTrim8523,8524
+matchAllBS:matchAllBS8531,8532
+len:len8541,8542
+splitStrTuple:splitStrTuple8550,8551
+logFile:logFile8554,8555
+logFile2:logFile28557,8558
+logFileTmp:logFileTmp8564,8565
+logFileNoName:logFileNoName8569,8570
+logFileG:logFileG8577,8578
+logFileSBS2:logFileSBS28588,8589
+showIntAtBaseX:showIntAtBaseX8613,8614
+integerToHex:integerToHex8630,8631
+intToHex:intToHex8646,8647
+hexToInt:hexToInt8659,8660
+unescape unescape8676,8677
+intToUnicode:intToUnicode8687,8688
+hexToUnicode:hexToUnicode8693,8694
+intToChar:intToChar8701,8702
+hexToChar:hexToChar8709,8710
+Ï:Ï8712,8713
+data FrameCount FrameCount8715,8716
+data FrameCount = FrameCount{frameTime:FrameCount{frameTime8715,8716
+data FrameCount = FrameCount{frameTime::Integer, frameCount:frameCount8715,8716
+data FrameCount = FrameCount{frameTime::Integer, frameCount::Integer, frameNewCount:frameNewCount8715,8716
+data FrameCount = FrameCount{frameTime::Integer, frameCount::Integer, frameNewCount::Integer, frameIndex:frameIndex8715,8716
+resetRefFrame:resetRefFrame8718,8719
+readRefFrame2:readRefFrame28734,8735
+readRefFrame:readRefFrame8777,8778
+fileSizeStrToNum:fileSizeStrToNum8803,8804
+whichGetPath:whichGetPath8814,8815
+openFileUtf8:openFileUtf88826,8827
+readFileUtf8:readFileUtf88838,8839
+scientificToFloat:scientificToFloat8854,8855
+sciToFloat:sciToFloat8870,8871
+colorfgStr:colorfgStr8927,8928
+colorbgStr:colorbgStr8956,8957
+createProcessPipeData:createProcessPipeData8995,8996
+writeFileSText:writeFileSText9021,9022
+writeFileLText:writeFileLText9028,9029
+pad:pad9053,9054
+nzero:nzero9059,9060
+shiftMatrixLeft:shiftMatrixLeft9072,9073
+shellHighlight:shellHighlight9088,9089
+blockBegEnd:blockBegEnd9143,9144
+pick:pick9172,9173
+containAll:containAll9187,9188
+combin:combin9218,9219
+drawRectBar:drawRectBar9225,9226
+histogram:histogram9244,9245
+insertIndexAt:insertIndexAt9264,9265
+isInList isInList9274,9275
+removeFirstList:removeFirstList9286,9287
+removeFromList:removeFromList9297,9298
+readFileInteger2d:readFileInteger2d9338,9339
+readFileFloat2d:readFileFloat2d9379,9380
+readTable:readTable9390,9391
+alignTable:alignTable9409,9410
+trimList trimList9431,9432
+trimListST trimListST9448,9449
+stepList:stepList9486,9487
+splitWhenFirstNoRegex splitWhenFirstNoRegex9522,9523
+splitWhenLastNoRegex splitWhenLastNoRegex9540,9541
+splitStrCharNoRegex splitStrCharNoRegex9567,9568
+printFile printFile9576,9577
+frequenceCount:frequenceCount9600,9601
+data FileBlock FileBlock9605,9606
+data FileBlock =  DropHeadDropHead9605,9606
+             | DropLastDropLast9606,9607
+             | DropIndex DropIndex9607,9608
+             | PrintIndex PrintIndex9608,9609
+             | PrintHeadPrintHead9609,9610
+             | PrintLastPrintLast9610,9611
+             | PrintAllPrintAll9611,9612
+             | Append Append9612,9613
+             | AppendList AppendList9613,9614
+             | Prepend Prepend9614,9615
+             | NumberOfBlock NumberOfBlock9615,9616
+fileBlock fileBlock9622,9623
+splitPrefix splitPrefix9705,9706
+breakFirst breakFirst9711,9712
+grepx grepx9719,9720
+grepLine grepLine9734,9735
+catx catx9744,9745
+clipBoardcp clipBoardcp9752,9753
+pbcopy pbcopy9758,9759
+clipBoardpa clipBoardpa9761,9762
+pbpaste pbpaste9764,9765
+getContentsCTRLD getContentsCTRLD9776,9777
+hasSubstr hasSubstr9792,9793
+hasStrBlock hasStrBlock9802,9803
+powerSet powerSet9822,9823
+swap swap9829,9830
+fun10:fun109888,9889
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL.hs,66
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL.hs,66
 module Graphics.Rendering.OpenGL Graphics.Rendering.OpenGL14,15
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/Mipmapping.hs,199
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/Mipmapping.hs,199
 module Graphics.Rendering.OpenGL.GLU.Mipmapping Graphics.Rendering.OpenGL.GLU.Mipmapping14,15
 scaleImage scaleImage29,30
 build1DMipmaps build1DMipmaps43,44
 build2DMipmaps build2DMipmaps55,56
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/Initialization.hs,195
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/Initialization.hs,195
 module Graphics.Rendering.OpenGL.GLU.Initialization Graphics.Rendering.OpenGL.GLU.Initialization14,15
 gluVersion gluVersion25,26
 gluExtensions gluExtensions28,29
 getString getString31,32
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/Quadrics.hs,1499
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/Quadrics.hs,1499
 module Graphics.Rendering.OpenGL.GLU.Quadrics Graphics.Rendering.OpenGL.GLU.Quadrics14,15
 data QuadricDrawStyle QuadricDrawStyle33,34
      PointStylePointStyle34,35
@@ -906,11 +907,11 @@ renderPrimitive renderPrimitive139,140
 type QuadricObj QuadricObj151,152
 isNullQuadricObj isNullQuadricObj153,154
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/Errors.hs,109
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/Errors.hs,109
 module Graphics.Rendering.OpenGL.GLU.Errors Graphics.Rendering.OpenGL.GLU.Errors16,17
 errors errors32,33
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/Matrix.hs,405
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/Matrix.hs,405
 module Graphics.Rendering.OpenGL.GLU.Matrix Graphics.Rendering.OpenGL.GLU.Matrix14,15
 ortho2D ortho2D33,34
 perspective perspective37,38
@@ -924,7 +925,7 @@ withColumnMajor withColumnMajor92,93
 getVertex3 getVertex3102,103
 getVertex4 getVertex4118,119
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/Tessellation.hs,3144
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/Tessellation.hs,3144
 module Graphics.Rendering.OpenGL.GLU.Tessellation Graphics.Rendering.OpenGL.GLU.Tessellation14,15
 data TessWinding TessWinding60,61
      TessWindingOddTessWindingOdd61,62
@@ -998,7 +999,7 @@ setBoundaryOnly setBoundaryOnly512,513
 setTolerance setTolerance516,517
 setNormal setNormal519,520
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/ErrorsInternal.hs,1118
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/ErrorsInternal.hs,1118
 module Graphics.Rendering.OpenGL.GLU.ErrorsInternal Graphics.Rendering.OpenGL.GLU.ErrorsInternal18,19
 data Error Error33,34
 data Error = Error Error33,34
@@ -1027,7 +1028,7 @@ recordInvalidValue recordInvalidValue220,221
 recordOutOfMemory recordOutOfMemory223,224
 getErrorCodesAux getErrorCodesAux227,228
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU/NURBS.hs,2815
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU/NURBS.hs,2815
 module Graphics.Rendering.OpenGL.GLU.NURBS Graphics.Rendering.OpenGL.GLU.NURBS14,15
 type NURBSObj NURBSObj55,56
 isNullNURBSObj isNullNURBSObj57,58
@@ -1091,10 +1092,10 @@ data DisplayMode' DisplayMode'297,298
 marshalDisplayMode' marshalDisplayMode'303,304
 setDisplayMode' setDisplayMode'309,310
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GLU.hs,74
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GLU.hs,74
 module Graphics.Rendering.OpenGL.GLU Graphics.Rendering.OpenGL.GLU14,15
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/SyncObjects.hs,1162
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/SyncObjects.hs,1162
 module Graphics.Rendering.OpenGL.GL.SyncObjects Graphics.Rendering.OpenGL.GL.SyncObjects15,16
 newtype SyncObject SyncObject40,41
 newtype SyncObject = SyncObject { syncID syncID40,41
@@ -1123,7 +1124,7 @@ data SyncStatus SyncStatus101,102
 unmarshalSyncStatus unmarshalSyncStatus106,107
 syncStatus syncStatus112,113
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/ReadCopyPixels.hs,606
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/ReadCopyPixels.hs,606
 module Graphics.Rendering.OpenGL.GL.ReadCopyPixels Graphics.Rendering.OpenGL.GL.ReadCopyPixels15,16
 readPixels readPixels37,38
 readBuffer readBuffer43,44
@@ -1140,11 +1141,11 @@ data BlitBuffer BlitBuffer73,74
 marshalBlitBuffer marshalBlitBuffer79,80
 blitFramebuffer blitFramebuffer87,88
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Bitmaps.hs,109
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Bitmaps.hs,109
 module Graphics.Rendering.OpenGL.GL.Bitmaps Graphics.Rendering.OpenGL.GL.Bitmaps14,15
 bitmap bitmap25,26
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/IOState.hs,652
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/IOState.hs,652
 module Graphics.Rendering.OpenGL.GL.IOState Graphics.Rendering.OpenGL.GL.IOState17,18
 newtype IOState IOState30,31
 newtype IOState s a = IOState { runIOState runIOState30,31
@@ -1165,7 +1166,7 @@ liftIOState liftIOState60,61
 evalIOState evalIOState63,64
 nTimes nTimes66,67
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/BlendingFactor.hs,819
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/BlendingFactor.hs,819
 module Graphics.Rendering.OpenGL.GL.BlendingFactor Graphics.Rendering.OpenGL.GL.BlendingFactor15,16
 data BlendingFactor BlendingFactor23,24
      ZeroZero24,25
@@ -1186,7 +1187,7 @@ data BlendingFactor BlendingFactor23,24
 marshalBlendingFactor marshalBlendingFactor41,42
 unmarshalBlendingFactor unmarshalBlendingFactor59,60
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/QueryObjects.hs,1965
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/QueryObjects.hs,1965
 module Graphics.Rendering.OpenGL.GL.QueryObjects Graphics.Rendering.OpenGL.GL.QueryObjects17,18
 type QueryIndex QueryIndex46,47
 maxVertexStreams maxVertexStreams48,49
@@ -1229,7 +1230,7 @@ getQueryObject getQueryObject151,152
 timestampQuery timestampQuery167,168
 timestamp timestamp173,174
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Framebuffer.hs,2539
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Framebuffer.hs,2539
 module Graphics.Rendering.OpenGL.GL.Framebuffer Graphics.Rendering.OpenGL.GL.Framebuffer15,16
 drawBuffer drawBuffer81,82
 getDrawBuffer getDrawBuffer84,85
@@ -1294,7 +1295,7 @@ data AccumOp AccumOp484,485
 marshalAccumOp marshalAccumOp519,520
 accum accum555,556
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Capability.hs,5283
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Capability.hs,5283
 module Graphics.Rendering.OpenGL.GL.Capability Graphics.Rendering.OpenGL.GL.Capability16,17
 data Capability Capability31,32
      DisabledDisabled32,33
@@ -1412,7 +1413,7 @@ makeIndexedCapability makeIndexedCapability293,294
 isIndexedEnabled isIndexedEnabled299,300
 enableIndexed enableIndexed305,306
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixellikeObject.hs,1372
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixellikeObject.hs,1372
 module Graphics.Rendering.OpenGL.GL.PixellikeObject Graphics.Rendering.OpenGL.GL.PixellikeObject12,13
 data PixellikeObjectGetPName PixellikeObjectGetPName29,30
      RedSizeRedSize30,31
@@ -1439,7 +1440,7 @@ instance QueryableTextureTarget QueryableTextureTarget t => PixellikeObjectTarg
    marshalPixellikeOT marshalPixellikeOT71,72
    pixObjTarQueryFunc pixObjTarQueryFunc78,79
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Clipping.hs,261
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Clipping.hs,261
 module Graphics.Rendering.OpenGL.GL.Clipping Graphics.Rendering.OpenGL.GL.Clipping15,16
 newtype ClipPlaneName ClipPlaneName32,33
 clipPlane clipPlane37,38
@@ -1447,7 +1448,7 @@ nameToCap nameToCap46,47
 clipPlaneAction clipPlaneAction49,50
 maxClipPlanes maxClipPlanes55,56
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PointParameter.hs,467
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PointParameter.hs,467
 module Graphics.Rendering.OpenGL.GL.PointParameter Graphics.Rendering.OpenGL.GL.PointParameter15,16
 data PointParameter PointParameter24,25
      PointSizeMinPointSizeMin25,26
@@ -1458,7 +1459,7 @@ marshalPointParameter marshalPointParameter30,31
 pointParameterf pointParameterf39,40
 pointParameterfv pointParameterfv42,43
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Tensor.hs,5775
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Tensor.hs,5775
 module Graphics.Rendering.OpenGL.GL.Tensor Graphics.Rendering.OpenGL.GL.Tensor16,17
 newtype Vertex1 Vertex137,38
 instance Functor Functor Vertex140,41
@@ -1640,7 +1641,7 @@ nextPtr nextPtr290,291
 pokeFoldable pokeFoldable295,296
 pokeAndAdvance pokeAndAdvance298,299
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/DebugOutput.hs,2897
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/DebugOutput.hs,2897
 module Graphics.Rendering.OpenGL.GL.DebugOutput Graphics.Rendering.OpenGL.GL.DebugOutput16,17
 debugOutput debugOutput59,60
 data DebugMessage DebugMessage64,65
@@ -1701,7 +1702,7 @@ class CanBeLabeled CanBeLabeled321,322
   objectLabel objectLabel322,323
 debugOutputSynchronous debugOutputSynchronous326,327
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Evaluators.hs,2123
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Evaluators.hs,2123
 module Graphics.Rendering.OpenGL.GL.Evaluators Graphics.Rendering.OpenGL.GL.Evaluators15,16
 type Order Order65,66
 maxOrder maxOrder67,68
@@ -1765,7 +1766,7 @@ evalPoint1 evalPoint1357,358
 evalPoint2 evalPoint2360,361
 autoNormal autoNormal365,366
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Queries.hs,2214
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Queries.hs,2214
 module Graphics.Rendering.OpenGL.GL.Texturing.Queries Graphics.Rendering.OpenGL.GL.Texturing.Queries14,15
 data TexLevelParameter TexLevelParameter38,39
      TextureInternalFormatTextureInternalFormat39,40
@@ -1814,7 +1815,7 @@ textureDepthType textureDepthType189,190
 getTexLevelParameteriNoProxy getTexLevelParameteriNoProxy192,193
 getTexLevelParameteri getTexLevelParameteri195,196
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Filter.hs,600
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Filter.hs,600
 module Graphics.Rendering.OpenGL.GL.Texturing.Filter Graphics.Rendering.OpenGL.GL.Texturing.Filter15,16
 data TextureFilter TextureFilter25,26
      NearestNearest26,27
@@ -1828,7 +1829,7 @@ marshalMagnificationFilter marshalMagnificationFilter51,52
 unmarshalMinificationFilter unmarshalMinificationFilter54,55
 unmarshalMagnificationFilter unmarshalMagnificationFilter65,66
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Parameters.hs,1671
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Parameters.hs,1671
 module Graphics.Rendering.OpenGL.GL.Texturing.Parameters Graphics.Rendering.OpenGL.GL.Texturing.Parameters16,17
 textureFilter textureFilter41,42
 data Repetition Repetition49,50
@@ -1866,7 +1867,7 @@ textureCompareOperator textureCompareOperator206,207
 combineTexParams combineTexParams214,215
 combineTexParamsMaybe combineTexParamsMaybe222,223
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Environments.hs,3837
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Environments.hs,3837
 module Graphics.Rendering.OpenGL.GL.Texturing.Environments Graphics.Rendering.OpenGL.GL.Texturing.Environments15,16
 data TextureEnvTarget TextureEnvTarget38,39
      TextureEnvTextureEnv39,40
@@ -1961,7 +1962,7 @@ scale scale342,343
 constantColor constantColor347,348
 textureUnitLODBias textureUnitLODBias352,353
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Specification.hs,2678
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Specification.hs,2678
 module Graphics.Rendering.OpenGL.GL.Texturing.Specification Graphics.Rendering.OpenGL.GL.Texturing.Specification16,17
 type Level Level88,89
 type Border Border90,91
@@ -2017,7 +2018,7 @@ maxDepthTextureSamples maxDepthTextureSamples344,345
 maxIntegerSamples maxIntegerSamples347,348
 maxTextureSizeWith maxTextureSizeWith350,351
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TexParameter.hs,1459
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TexParameter.hs,1459
 module Graphics.Rendering.OpenGL.GL.Texturing.TexParameter Graphics.Rendering.OpenGL.GL.Texturing.TexParameter15,16
 data TexParameter TexParameter31,32
      TextureMinFilterTextureMinFilter32,33
@@ -2052,7 +2053,7 @@ glTexParameterC4f glTexParameterC4f124,125
 glGetTexParameterC4f glGetTexParameterC4f127,128
 getTexParameteri getTexParameteri130,131
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TextureObject.hs,568
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TextureObject.hs,568
 module Graphics.Rendering.OpenGL.GL.Texturing.TextureObject Graphics.Rendering.OpenGL.GL.Texturing.TextureObject15,16
 newtype TextureObject TextureObject29,30
 newtype TextureObject = TextureObject { textureID textureID29,30
@@ -2064,11 +2065,11 @@ instance GeneratableObjectName GeneratableObjectName TextureObject41,42
 instance CanBeLabeled CanBeLabeled TextureObject47,48
    objectLabel objectLabel48,49
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Application.hs,139
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Application.hs,139
 module Graphics.Rendering.OpenGL.GL.Texturing.Application Graphics.Rendering.OpenGL.GL.Texturing.Application15,16
 texture texture25,26
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Objects.hs,447
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/Objects.hs,447
 module Graphics.Rendering.OpenGL.GL.Texturing.Objects Graphics.Rendering.OpenGL.GL.Texturing.Objects15,16
 textureBinding textureBinding35,36
 defaultTextureObject defaultTextureObject42,43
@@ -2079,7 +2080,7 @@ texturePriority texturePriority69,70
 prioritizeTextures prioritizeTextures72,73
 generateMipmap' generateMipmap'84,85
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TextureTarget.hs,9116
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TextureTarget.hs,9116
 module Graphics.Rendering.OpenGL.GL.Texturing.TextureTarget Graphics.Rendering.OpenGL.GL.Texturing.TextureTarget15,16
 class BindableTextureTarget BindableTextureTarget50,51
    marshalBindableTextureTarget marshalBindableTextureTarget51,52
@@ -2200,7 +2201,7 @@ instance BindableTextureTarget BindableTextureTarget TextureTargetBuffer292,29
    marshalBindableTextureTarget marshalBindableTextureTarget293,294
    marshalBindableTextureTargetPName1I marshalBindableTextureTargetPName1I295,296
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/PixelInternalFormat.hs,4809
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/PixelInternalFormat.hs,4809
 module Graphics.Rendering.OpenGL.GL.Texturing.PixelInternalFormat Graphics.Rendering.OpenGL.GL.Texturing.PixelInternalFormat15,16
 data PixelInternalFormat PixelInternalFormat24,25
      Alpha'Alpha'25,26
@@ -2336,7 +2337,7 @@ marshalPixelInternalFormat marshalPixelInternalFormat156,157
 marshalPixelInternalFormat' marshalPixelInternalFormat'289,290
 unmarshalPixelInternalFormat unmarshalPixelInternalFormat292,293
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TextureUnit.hs,463
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing/TextureUnit.hs,463
 module Graphics.Rendering.OpenGL.GL.Texturing.TextureUnit Graphics.Rendering.OpenGL.GL.Texturing.TextureUnit15,16
 newtype TextureUnit TextureUnit28,29
 instance Storable Storable TextureUnit34,35
@@ -2349,7 +2350,7 @@ instance Storable Storable TextureUnit34,35
 marshalTextureUnit marshalTextureUnit45,46
 unmarshalTextureUnit unmarshalTextureUnit48,49
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Face.hs,251
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Face.hs,251
 module Graphics.Rendering.OpenGL.GL.Face Graphics.Rendering.OpenGL.GL.Face15,16
 data Face Face23,24
      FrontFront24,25
@@ -2358,7 +2359,7 @@ data Face Face23,24
 marshalFace marshalFace29,30
 unmarshalFace unmarshalFace35,36
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Colors.hs,4863
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Colors.hs,4863
 module Graphics.Rendering.OpenGL.GL.Colors Graphics.Rendering.OpenGL.GL.Colors15,16
 lighting lighting63,64
 newtype Light Light68,69
@@ -2473,10 +2474,10 @@ marshalClampMode marshalClampMode491,492
 unmarshalClampMode unmarshalClampMode497,498
 clampColor clampColor506,507
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders.hs,88
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders.hs,88
 module Graphics.Rendering.OpenGL.GL.Shaders Graphics.Rendering.OpenGL.GL.Shaders15,16
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PeekPoke.hs,328
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PeekPoke.hs,328
 module Graphics.Rendering.OpenGL.GL.PeekPoke Graphics.Rendering.OpenGL.GL.PeekPoke15,16
 poke1 poke131,32
 poke2 poke236,37
@@ -2491,7 +2492,7 @@ peek2M peek2M85,86
 peek3M peek3M92,93
 peek4M peek4M100,101
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/EdgeFlag.hs,344
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/EdgeFlag.hs,344
 module Graphics.Rendering.OpenGL.GL.EdgeFlag Graphics.Rendering.OpenGL.GL.EdgeFlag15,16
 data EdgeFlag EdgeFlag27,28
 data EdgeFlag = BeginsInteriorEdge BeginsInteriorEdge27,28
@@ -2499,7 +2500,7 @@ data EdgeFlag = BeginsInteriorEdge | BeginsBoundaryEdgeBeginsBoundaryEdge27,28
 marshalEdgeFlag marshalEdgeFlag30,31
 unmarshalEdgeFlag unmarshalEdgeFlag33,34
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/LineSegments.hs,356
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/LineSegments.hs,356
 module Graphics.Rendering.OpenGL.GL.LineSegments Graphics.Rendering.OpenGL.GL.LineSegments15,16
 lineWidth lineWidth80,81
 lineStipple lineStipple114,115
@@ -2508,7 +2509,7 @@ aliasedLineWidthRange aliasedLineWidthRange134,135
 smoothLineWidthRange smoothLineWidthRange140,141
 smoothLineWidthGranularity smoothLineWidthGranularity147,148
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/BeginEnd.hs,280
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/BeginEnd.hs,280
 module Graphics.Rendering.OpenGL.GL.BeginEnd Graphics.Rendering.OpenGL.GL.BeginEnd15,16
 renderPrimitive renderPrimitive89,90
 unsafeRenderPrimitive unsafeRenderPrimitive95,96
@@ -2516,10 +2517,10 @@ renderPrim renderPrim99,100
 primitiveRestart primitiveRestart105,106
 edgeFlag edgeFlag125,126
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing.hs,92
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Texturing.hs,92
 module Graphics.Rendering.OpenGL.GL.Texturing Graphics.Rendering.OpenGL.GL.Texturing14,15
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/VertexAttributes.hs,6541
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/VertexAttributes.hs,6541
 module Graphics.Rendering.OpenGL.GL.VertexAttributes Graphics.Rendering.OpenGL.GL.VertexAttributes16,17
 newtype TexCoord1 TexCoord139,40
 instance Functor Functor TexCoord142,43
@@ -2722,7 +2723,7 @@ nextPtr nextPtr322,323
 pokeFoldable pokeFoldable327,328
 pokeAndAdvance pokeAndAdvance330,331
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/MatrixComponent.hs,1320
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/MatrixComponent.hs,1320
 module Graphics.Rendering.OpenGL.GL.MatrixComponent Graphics.Rendering.OpenGL.GL.MatrixComponent16,17
 class Storable c => MatrixComponent MatrixComponent26,27
    getMatrix getMatrix27,28
@@ -2758,7 +2759,7 @@ instance MatrixComponent MatrixComponent GLdouble50,51
    translate translate59,60
    scale scale60,61
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/BufferMode.hs,837
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/BufferMode.hs,837
 module Graphics.Rendering.OpenGL.GL.BufferMode Graphics.Rendering.OpenGL.GL.BufferMode15,16
 data BufferMode BufferMode30,31
      NoBuffersNoBuffers31,32
@@ -2779,7 +2780,7 @@ unmarshalBufferModeSafe unmarshalBufferModeSafe94,95
 maxAuxBuffer maxAuxBuffer111,112
 maxColorAttachments maxColorAttachments114,115
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/ByteString.hs,413
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/ByteString.hs,413
 module Graphics.Rendering.OpenGL.GL.ByteString Graphics.Rendering.OpenGL.GL.ByteString15,16
 stringQuery stringQuery34,35
 createByteString createByteString43,44
@@ -2791,10 +2792,10 @@ unpackUtf8 unpackUtf862,63
 getStringWith getStringWith65,66
 peekGLstring peekGLstring68,69
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles.hs,104
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles.hs,104
 module Graphics.Rendering.OpenGL.GL.PixelRectangles Graphics.Rendering.OpenGL.GL.PixelRectangles15,16
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/ComparisonFunction.hs,480
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/ComparisonFunction.hs,480
 module Graphics.Rendering.OpenGL.GL.ComparisonFunction Graphics.Rendering.OpenGL.GL.ComparisonFunction15,16
 data ComparisonFunction ComparisonFunction24,25
      NeverNever25,26
@@ -2808,7 +2809,7 @@ data ComparisonFunction ComparisonFunction24,25
 marshalComparisonFunction marshalComparisonFunction35,36
 unmarshalComparisonFunction unmarshalComparisonFunction46,47
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Antialiasing.hs,261
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Antialiasing.hs,261
 module Graphics.Rendering.OpenGL.GL.Antialiasing Graphics.Rendering.OpenGL.GL.Antialiasing15,16
 sampleBuffers sampleBuffers26,27
 samples samples29,30
@@ -2816,7 +2817,7 @@ multisample multisample32,33
 subpixelBits subpixelBits35,36
 antialiasingInfo antialiasingInfo38,39
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/VertexArrays.hs,4518
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/VertexArrays.hs,4518
 module Graphics.Rendering.OpenGL.GL.VertexArrays Graphics.Rendering.OpenGL.GL.VertexArrays15,16
 type NumComponents NumComponents64,65
 type Stride Stride66,67
@@ -2919,7 +2920,7 @@ vertexAttribArray vertexAttribArray473,474
 getVertexAttribArray getVertexAttribArray477,478
 setVertexAttribArray setVertexAttribArray481,482
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/DataType.hs,1903
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/DataType.hs,1903
 module Graphics.Rendering.OpenGL.GL.DataType Graphics.Rendering.OpenGL.GL.DataType15,16
 data DataType DataType25,26
      UnsignedByteUnsignedByte26,27
@@ -2963,7 +2964,7 @@ data DataRepresentationDataRepresentation128,129
    | UnsignedIntRepresentationUnsignedIntRepresentation133,134
 unmarshalDataRepresentation unmarshalDataRepresentation136,137
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/StringQueries.hs,674
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/StringQueries.hs,674
 module Graphics.Rendering.OpenGL.GL.StringQueries Graphics.Rendering.OpenGL.GL.StringQueries16,17
 vendor vendor35,36
 renderer renderer38,39
@@ -2982,7 +2983,7 @@ majorMinor majorMinor87,88
 runParser runParser94,95
 parseVersion parseVersion102,103
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Hints.hs,753
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Hints.hs,753
 module Graphics.Rendering.OpenGL.GL.Hints Graphics.Rendering.OpenGL.GL.Hints14,15
 data HintTarget HintTarget24,25
      PerspectiveCorrectionPerspectiveCorrection25,26
@@ -3004,7 +3005,7 @@ marshalHintMode marshalHintMode68,69
 unmarshalHintMode unmarshalHintMode74,75
 hint hint83,84
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/SavingState.hs,1726
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/SavingState.hs,1726
 module Graphics.Rendering.OpenGL.GL.SavingState Graphics.Rendering.OpenGL.GL.SavingState15,16
 data ServerAttributeGroup ServerAttributeGroup25,26
      CurrentAttributesCurrentAttributes26,27
@@ -3040,7 +3041,7 @@ marshalClientAttributeGroup marshalClientAttributeGroup91,92
 preservingClientAttrib preservingClientAttrib99,100
 pushClientAttrib pushClientAttrib103,104
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Selection.hs,567
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Selection.hs,567
 module Graphics.Rendering.OpenGL.GL.Selection Graphics.Rendering.OpenGL.GL.Selection14,15
 data HitRecord HitRecord31,32
 data HitRecord = HitRecord HitRecord31,32
@@ -3057,7 +3058,7 @@ loadName loadName80,81
 maxNameStackDepth maxNameStackDepth83,84
 nameStackDepth nameStackDepth86,87
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Rectangles.hs,462
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Rectangles.hs,462
 module Graphics.Rendering.OpenGL.GL.Rectangles Graphics.Rendering.OpenGL.GL.Rectangles16,17
 class Rect Rect46,47
    rect rect47,48
@@ -3075,7 +3076,7 @@ instance Rect Rect GLdouble62,63
    rect rect63,64
    rectv rectv64,65
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/Queries.hs,3077
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/Queries.hs,3077
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.Queries Graphics.Rendering.OpenGL.GL.FramebufferObjects.Queries12,13
 data GetFramebufferAttachmentPName GetFramebufferAttachmentPName40,41
      AttachmentObjectTypeAttachmentObjectType41,42
@@ -3133,7 +3134,7 @@ renderbufferAlphaSize renderbufferAlphaSize221,222
 renderbufferDepthSize renderbufferDepthSize225,226
 renderbufferStencilSize renderbufferStencilSize229,230
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferTarget.hs,372
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferTarget.hs,372
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferTarget Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferTarget15,16
 data FramebufferTarget FramebufferTarget23,24
      DrawFramebufferDrawFramebuffer24,25
@@ -3141,7 +3142,7 @@ data FramebufferTarget FramebufferTarget23,24
    | FramebufferFramebuffer26,27
 marshalFramebufferTarget marshalFramebufferTarget29,30
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/Attachments.hs,391
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/Attachments.hs,391
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.Attachments Graphics.Rendering.OpenGL.GL.FramebufferObjects.Attachments12,13
 framebufferRenderbuffer framebufferRenderbuffer35,36
 framebufferTexture1D framebufferTexture1D41,42
@@ -3149,7 +3150,7 @@ framebufferTexture2D framebufferTexture2D48,49
 framebufferTexture3D framebufferTexture3D56,57
 framebufferTextureLayer framebufferTextureLayer62,63
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/RenderbufferObjects.hs,628
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/RenderbufferObjects.hs,628
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.RenderbufferObjects Graphics.Rendering.OpenGL.GL.FramebufferObjects.RenderbufferObjects12,13
 noRenderbufferObject noRenderbufferObject32,33
 data RenderbufferSize RenderbufferSize37,38
@@ -3161,7 +3162,7 @@ setRenderbuffer setRenderbuffer54,55
 renderbufferStorageMultiSample renderbufferStorageMultiSample60,61
 renderbufferStorage renderbufferStorage67,68
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/RenderbufferTarget.hs,387
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/RenderbufferTarget.hs,387
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.RenderbufferTarget Graphics.Rendering.OpenGL.GL.FramebufferObjects.RenderbufferTarget14,15
 data RenderbufferTarget RenderbufferTarget25,26
 data RenderbufferTarget = RenderbufferRenderbuffer25,26
@@ -3169,7 +3170,7 @@ marshalRenderbufferTarget marshalRenderbufferTarget28,29
 getRBParameteriv getRBParameteriv34,35
 newtype Samples Samples41,42
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferObjects.hs,874
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferObjects.hs,874
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferObjects Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferObjects12,13
 defaultFramebufferObject defaultFramebufferObject26,27
 bindFramebuffer bindFramebuffer31,32
@@ -3187,7 +3188,7 @@ data FramebufferStatus FramebufferStatus51,52
 unmarshalFramebufferStatus unmarshalFramebufferStatus61,62
 framebufferStatus framebufferStatus76,77
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferObject.hs,633
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferObject.hs,633
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferObject Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferObject15,16
 newtype FramebufferObject FramebufferObject29,30
 newtype FramebufferObject = FramebufferObject { framebufferID framebufferID29,30
@@ -3199,7 +3200,7 @@ instance GeneratableObjectName GeneratableObjectName FramebufferObject40,41
 instance CanBeLabeled CanBeLabeled FramebufferObject46,47
    objectLabel objectLabel47,48
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferObjectAttachment.hs,1489
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/FramebufferObjectAttachment.hs,1489
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferObjectAttachment Graphics.Rendering.OpenGL.GL.FramebufferObjects.FramebufferObjectAttachment15,16
 data FramebufferObjectAttachment FramebufferObjectAttachment34,35
      ColorAttachment ColorAttachment35,36
@@ -3225,7 +3226,7 @@ instance FramebufferAttachment FramebufferAttachment BufferMode91,92
    unmarshalAttachmentSafe unmarshalAttachmentSafe94,95
 getFBAParameteriv getFBAParameteriv98,99
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/RenderbufferObject.hs,641
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects/RenderbufferObject.hs,641
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects.RenderbufferObject Graphics.Rendering.OpenGL.GL.FramebufferObjects.RenderbufferObject15,16
 newtype RenderbufferObject RenderbufferObject30,31
 newtype RenderbufferObject = RenderbufferObject { renderbufferID renderbufferID30,31
@@ -3237,7 +3238,7 @@ instance GeneratableObjectName GeneratableObjectName RenderbufferObject41,42
 instance CanBeLabeled CanBeLabeled RenderbufferObject47,48
    objectLabel objectLabel48,49
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Domain.hs,1146
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Domain.hs,1146
 module Graphics.Rendering.OpenGL.GL.Domain Graphics.Rendering.OpenGL.GL.Domain17,18
 class Storable d => Domain Domain28,29
    glMap1 glMap129,30
@@ -3276,7 +3277,7 @@ instance Domain Domain GLdouble56,57
    get2 get266,67
    get4 get467,68
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Polygons.hs,1303
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Polygons.hs,1303
 module Graphics.Rendering.OpenGL.GL.Polygons Graphics.Rendering.OpenGL.GL.Polygons14,15
 polygonSmooth polygonSmooth36,37
 cullFace cullFace41,42
@@ -3305,7 +3306,7 @@ polygonOffsetPoint polygonOffsetPoint131,132
 polygonOffsetLine polygonOffsetLine134,135
 polygonOffsetFill polygonOffsetFill137,138
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Minmax.hs,609
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Minmax.hs,609
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.Minmax Graphics.Rendering.OpenGL.GL.PixelRectangles.Minmax15,16
 data MinmaxTarget MinmaxTarget31,32
      MinmaxMinmax32,33
@@ -3321,7 +3322,7 @@ data GetMinmaxParameterPName GetMinmaxParameterPName70,71
 marshalGetMinmaxParameterPName marshalGetMinmaxParameterPName74,75
 getMinmaxParameteri getMinmaxParameteri81,82
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/PixelStorage.hs,1263
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/PixelStorage.hs,1263
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.PixelStorage Graphics.Rendering.OpenGL.GL.PixelRectangles.PixelStorage15,16
 data PixelStoreDirection PixelStoreDirection27,28
      PackPack28,29
@@ -3355,12 +3356,12 @@ skipImages skipImages101,102
 pixelStoreb pixelStoreb107,108
 pixelStorei pixelStorei113,114
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Rasterization.hs,188
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Rasterization.hs,188
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.Rasterization Graphics.Rendering.OpenGL.GL.PixelRectangles.Rasterization15,16
 drawPixels drawPixels29,30
 pixelZoom pixelZoom34,35
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/PixelTransfer.hs,2373
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/PixelTransfer.hs,2373
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.PixelTransfer Graphics.Rendering.OpenGL.GL.PixelRectangles.PixelTransfer15,16
 data PixelTransfer PixelTransfer29,30
      MapColorMapColor30,31
@@ -3415,7 +3416,7 @@ pixelTransferi pixelTransferi205,206
 pixelTransferf pixelTransferf211,212
 pixelTransfer4f pixelTransfer4f217,218
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Sink.hs,258
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Sink.hs,258
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.Sink Graphics.Rendering.OpenGL.GL.PixelRectangles.Sink15,16
 data Sink Sink24,25
      PassThroughPassThrough25,26
@@ -3423,7 +3424,7 @@ data Sink Sink24,25
 marshalSink marshalSink29,30
 unmarshalSink unmarshalSink32,33
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/ColorTable.hs,2603
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/ColorTable.hs,2603
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.ColorTable Graphics.Rendering.OpenGL.GL.PixelRectangles.ColorTable15,16
 data ColorTableStage ColorTableStage39,40
      ColorTableStageColorTableStage40,41
@@ -3477,7 +3478,7 @@ colorTableRGBASizes colorTableRGBASizes229,230
 colorTableLuminanceSize colorTableLuminanceSize238,239
 colorTableIntesitySize colorTableIntesitySize243,244
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Convolution.hs,2801
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Convolution.hs,2801
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.Convolution Graphics.Rendering.OpenGL.GL.PixelRectangles.Convolution15,16
 data ConvolutionTarget ConvolutionTarget43,44
      Convolution1DConvolution1D44,45
@@ -3532,14 +3533,14 @@ convolutionC4f convolutionC4f262,263
 getConvolutionParameterC4f getConvolutionParameterC4f267,268
 convolutionParameterC4f convolutionParameterC4f275,276
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Reset.hs,223
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Reset.hs,223
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.Reset Graphics.Rendering.OpenGL.GL.PixelRectangles.Reset15,16
 data Reset Reset24,25
      NoResetNoReset25,26
    | ResetReset26,27
 marshalReset marshalReset29,30
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/PixelMap.hs,2031
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/PixelMap.hs,2031
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.PixelMap Graphics.Rendering.OpenGL.GL.PixelRectangles.PixelMap17,18
 data PixelMapTarget PixelMapTarget34,35
      IToIIToI35,36
@@ -3593,7 +3594,7 @@ sample sample190,191
 setPixelMapXToY setPixelMapXToY198,199
 newGLpixelmap newGLpixelmap207,208
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Histogram.hs,1190
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelRectangles/Histogram.hs,1190
 module Graphics.Rendering.OpenGL.GL.PixelRectangles.Histogram Graphics.Rendering.OpenGL.GL.PixelRectangles.Histogram15,16
 data HistogramTarget HistogramTarget34,35
      HistogramHistogram35,36
@@ -3619,10 +3620,10 @@ marshalGetHistogramParameterPName marshalGetHistogramParameterPName106,107
 histogramRGBASizes histogramRGBASizes119,120
 histogramLuminanceSize histogramLuminanceSize128,129
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects.hs,110
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FramebufferObjects.hs,110
 module Graphics.Rendering.OpenGL.GL.FramebufferObjects Graphics.Rendering.OpenGL.GL.FramebufferObjects13,14
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/QueryObject.hs,561
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/QueryObject.hs,561
 module Graphics.Rendering.OpenGL.GL.QueryObject Graphics.Rendering.OpenGL.GL.QueryObject15,16
 newtype QueryObject QueryObject29,30
 newtype QueryObject = QueryObject { queryID queryID29,30
@@ -3635,12 +3636,12 @@ instance GeneratableObjectName GeneratableObjectName QueryObject44,45
 instance CanBeLabeled CanBeLabeled QueryObject50,51
    objectLabel objectLabel51,52
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/GLboolean.hs,178
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/GLboolean.hs,178
 module Graphics.Rendering.OpenGL.GL.GLboolean Graphics.Rendering.OpenGL.GL.GLboolean15,16
 marshalGLboolean marshalGLboolean23,24
 unmarshalGLboolean unmarshalGLboolean28,29
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Points.hs,556
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Points.hs,556
 module Graphics.Rendering.OpenGL.GL.Points Graphics.Rendering.OpenGL.GL.Points14,15
 pointSize pointSize127,128
 vertexProgramPointSize vertexProgramPointSize132,133
@@ -3653,7 +3654,7 @@ aliasedPointSizeRange aliasedPointSizeRange201,202
 smoothPointSizeRange smoothPointSizeRange207,208
 smoothPointSizeGranularity smoothPointSizeGranularity214,215
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/QueryUtils.hs,506
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/QueryUtils.hs,506
 module Graphics.Rendering.OpenGL.GL.QueryUtils Graphics.Rendering.OpenGL.GL.QueryUtils15,16
 lightIndexToEnum lightIndexToEnum41,42
 maxLightIndex maxLightIndex46,47
@@ -3666,7 +3667,7 @@ getObjectLabelWith getObjectLabelWith87,88
 setObjectLabelWith setObjectLabelWith98,99
 maxLabelLength maxLabelLength103,104
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Exception.hs,229
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Exception.hs,229
 module Graphics.Rendering.OpenGL.GL.Exception Graphics.Rendering.OpenGL.GL.Exception17,18
 bracket bracket27,28
 bracket_ bracket_31,32
@@ -3674,12 +3675,12 @@ finally finally34,35
 unsafeBracket_ unsafeBracket_41,42
 finallyRet finallyRet49,50
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PrimitiveModeInternal.hs,218
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PrimitiveModeInternal.hs,218
 module Graphics.Rendering.OpenGL.GL.PrimitiveModeInternal Graphics.Rendering.OpenGL.GL.PrimitiveModeInternal15,16
 marshalPrimitiveMode marshalPrimitiveMode24,25
 unmarshalPrimitiveMode unmarshalPrimitiveMode38,39
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Program.hs,2083
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Program.hs,2083
 module Graphics.Rendering.OpenGL.GL.Shaders.Program Graphics.Rendering.OpenGL.GL.Shaders.Program16,17
 newtype Program Program35,36
 newtype Program = Program { programID programID35,36
@@ -3722,7 +3723,7 @@ programVar1 programVar1108,109
 programVar3 programVar3111,112
 programVarN programVarN114,115
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ProgramObjects.hs,997
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ProgramObjects.hs,997
 module Graphics.Rendering.OpenGL.GL.Shaders.ProgramObjects Graphics.Rendering.OpenGL.GL.Shaders.ProgramObjects15,16
 createProgram createProgram54,55
 attachShader attachShader59,60
@@ -3746,7 +3747,7 @@ numAttachedShaders numAttachedShaders136,137
 bindFragDataLocation bindFragDataLocation150,151
 getFragDataLocation getFragDataLocation157,158
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Attribs.hs,362
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Attribs.hs,362
 module Graphics.Rendering.OpenGL.GL.Shaders.Attribs Graphics.Rendering.OpenGL.GL.Shaders.Attribs15,16
 activeAttributes activeAttributes28,29
 activeAttributeMaxLength activeAttributeMaxLength31,32
@@ -3755,7 +3756,7 @@ getAttribLocation getAttribLocation41,42
 bindAttribLocation bindAttribLocation47,48
 activeAttribs activeAttribs54,55
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ShaderBinaries.hs,342
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ShaderBinaries.hs,342
 module Graphics.Rendering.OpenGL.GL.Shaders.ShaderBinaries Graphics.Rendering.OpenGL.GL.Shaders.ShaderBinaries15,16
 newtype ShaderBinaryFormat ShaderBinaryFormat29,30
 shaderBinaryFormats shaderBinaryFormats32,33
@@ -3763,7 +3764,7 @@ data ShaderBinary ShaderBinary38,39
 data ShaderBinary = ShaderBinary ShaderBinary38,39
 shaderBinary shaderBinary41,42
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ShaderObjects.hs,1747
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ShaderObjects.hs,1747
 module Graphics.Rendering.OpenGL.GL.Shaders.ShaderObjects Graphics.Rendering.OpenGL.GL.Shaders.ShaderObjects15,16
 shaderCompiler shaderCompiler44,45
 data ShaderType ShaderType50,51
@@ -3806,7 +3807,7 @@ data PrecisionType PrecisionType164,165
 marshalPrecisionType marshalPrecisionType173,174
 shaderPrecisionFormat shaderPrecisionFormat184,185
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Uniform.hs,5289
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Uniform.hs,5289
 module Graphics.Rendering.OpenGL.GL.Shaders.Uniform Graphics.Rendering.OpenGL.GL.Shaders.Uniform16,17
 numActiveUniforms numActiveUniforms42,43
 activeUniformMaxLength activeUniformMaxLength45,46
@@ -3943,7 +3944,7 @@ instance MatrixComponent MatrixComponent a => Uniform (GLmatrix a)261,262
 isRowMajor isRowMajor269,270
 getUniformWith getUniformWith272,273
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Limits.hs,551
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Limits.hs,551
 module Graphics.Rendering.OpenGL.GL.Shaders.Limits Graphics.Rendering.OpenGL.GL.Shaders.Limits14,15
 maxVertexTextureImageUnits maxVertexTextureImageUnits29,30
 maxTextureImageUnits maxTextureImageUnits35,36
@@ -3955,7 +3956,7 @@ maxVertexAttribs maxVertexAttribs69,70
 maxVaryingFloats maxVaryingFloats75,76
 getLimit getLimit78,79
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Shader.hs,390
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Shader.hs,390
 module Graphics.Rendering.OpenGL.GL.Shaders.Shader Graphics.Rendering.OpenGL.GL.Shaders.Shader15,16
 newtype Shader Shader28,29
 newtype Shader = Shader { shaderID shaderID28,29
@@ -3965,7 +3966,7 @@ instance ObjectName ObjectName Shader31,32
 instance CanBeLabeled CanBeLabeled Shader35,36
    objectLabel objectLabel36,37
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ProgramBinaries.hs,507
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/ProgramBinaries.hs,507
 module Graphics.Rendering.OpenGL.GL.Shaders.ProgramBinaries Graphics.Rendering.OpenGL.GL.Shaders.ProgramBinaries15,16
 newtype ProgramBinaryFormat ProgramBinaryFormat30,31
 programBinaryFormats programBinaryFormats33,34
@@ -3977,7 +3978,7 @@ bind4th bind4th54,55
 setProgramBinary setProgramBinary57,58
 programBinaryLength programBinaryLength61,62
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Variables.hs,2152
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Shaders/Variables.hs,2152
 module Graphics.Rendering.OpenGL.GL.Shaders.Variables Graphics.Rendering.OpenGL.GL.Shaders.Variables16,17
 data VariableType VariableType33,34
      Float'Float'34,35
@@ -4033,7 +4034,7 @@ data VariableType VariableType33,34
 unmarshalVariableType unmarshalVariableType86,87
 activeVars activeVars142,143
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/BufferObjects.hs,4928
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/BufferObjects.hs,4928
 module Graphics.Rendering.OpenGL.GL.BufferObjects Graphics.Rendering.OpenGL.GL.BufferObjects15,16
 newtype BufferObject BufferObject61,62
 newtype BufferObject = BufferObject { bufferID bufferID61,62
@@ -4146,7 +4147,7 @@ indexedBufferStart indexedBufferStart435,436
 marshalIndexedBufferSize marshalIndexedBufferSize438,439
 indexedBufferSize indexedBufferSize445,446
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/RenderMode.hs,398
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/RenderMode.hs,398
 module Graphics.Rendering.OpenGL.GL.RenderMode Graphics.Rendering.OpenGL.GL.RenderMode15,16
 data RenderMode RenderMode26,27
      RenderRender27,28
@@ -4158,7 +4159,7 @@ withRenderMode withRenderMode47,48
 setRenderMode setRenderMode53,54
 renderMode renderMode58,59
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PolygonMode.hs,291
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PolygonMode.hs,291
 module Graphics.Rendering.OpenGL.GL.PolygonMode Graphics.Rendering.OpenGL.GL.PolygonMode15,16
 data PolygonMode PolygonMode23,24
      PointPoint24,25
@@ -4167,7 +4168,7 @@ data PolygonMode PolygonMode23,24
 marshalPolygonMode marshalPolygonMode29,30
 unmarshalPolygonMode unmarshalPolygonMode35,36
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/VertexSpec.hs,20143
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/VertexSpec.hs,20143
 module Graphics.Rendering.OpenGL.GL.VertexSpec Graphics.Rendering.OpenGL.GL.VertexSpec17,18
 class VertexComponent VertexComponent76,77
    vertex2 vertex277,78
@@ -4653,7 +4654,7 @@ instance VertexAttribComponent VertexAttribComponent a => VertexAttrib (Index1 
    vertexAttribv vertexAttribv979,980
 maxTextureUnit maxTextureUnit989,990
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/RasterPos.hs,3756
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/RasterPos.hs,3756
 module Graphics.Rendering.OpenGL.GL.RasterPos Graphics.Rendering.OpenGL.GL.RasterPos17,18
 currentRasterPosition currentRasterPosition36,37
 class RasterPosComponent RasterPosComponent42,43
@@ -4745,7 +4746,7 @@ currentRasterTexCoords currentRasterTexCoords174,175
 currentRasterPositionValid currentRasterPositionValid178,179
 rasterPositionUnclipped rasterPositionUnclipped185,186
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PerFragment.hs,2208
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PerFragment.hs,2208
 module Graphics.Rendering.OpenGL.GL.PerFragment Graphics.Rendering.OpenGL.GL.PerFragment15,16
 rasterizerDiscard rasterizerDiscard66,67
 discardingRasterizer discardingRasterizer69,70
@@ -4811,7 +4812,7 @@ marshalLogicOp marshalLogicOp352,353
 unmarshalLogicOp unmarshalLogicOp371,372
 logicOp logicOp393,394
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/ConditionalRendering.hs,552
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/ConditionalRendering.hs,552
 module Graphics.Rendering.OpenGL.GL.ConditionalRendering Graphics.Rendering.OpenGL.GL.ConditionalRendering15,16
 data ConditionalRenderMode ConditionalRenderMode26,27
      QueryWaitQueryWait27,28
@@ -4823,7 +4824,7 @@ beginConditionalRender beginConditionalRender42,43
 endConditionalRender endConditionalRender46,47
 withConditionalRender withConditionalRender49,50
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Fog.hs,1470
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Fog.hs,1470
 module Graphics.Rendering.OpenGL.GL.Fog Graphics.Rendering.OpenGL.GL.Fog14,15
 fog fog32,33
 data FogParameter FogParameter37,38
@@ -4868,7 +4869,7 @@ marshalFogDistanceMode marshalFogDistanceMode177,178
 unmarshalFogDistanceMode unmarshalFogDistanceMode183,184
 fogDistanceMode fogDistanceMode193,194
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/TransformFeedback.hs,1161
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/TransformFeedback.hs,1161
 module Graphics.Rendering.OpenGL.GL.TransformFeedback Graphics.Rendering.OpenGL.GL.TransformFeedback12,13
 beginTransformFeedback beginTransformFeedback44,45
 endTransformFeedback endTransformFeedback47,48
@@ -4887,7 +4888,7 @@ numTransformFeedbackVaryings numTransformFeedbackVaryings111,112
 transformFeedbackVaryingMaxLength transformFeedbackVaryingMaxLength116,117
 transformFeedbackVaryings transformFeedbackVaryings121,122
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/DisplayLists.hs,1050
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/DisplayLists.hs,1050
 module Graphics.Rendering.OpenGL.GL.DisplayLists Graphics.Rendering.OpenGL.GL.DisplayLists15,16
 newtype DisplayList DisplayList38,39
 newtype DisplayList = DisplayList { displayListID displayListID38,39
@@ -4914,7 +4915,7 @@ callList callList118,119
 callLists callLists121,122
 listBase listBase126,127
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/QueryUtils/PName.hs,25548
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/QueryUtils/PName.hs,25548
 module Graphics.Rendering.OpenGL.GL.QueryUtils.PName Graphics.Rendering.OpenGL.GL.QueryUtils.PName13,14
 class GetPName GetPName46,47
     marshalGetPName marshalGetPName47,48
@@ -5397,7 +5398,7 @@ data GetPointervPName GetPointervPName1235,1236
 marshalGetPointervPName marshalGetPointervPName1255,1256
 getPointer getPointer1274,1275
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/QueryUtils/VertexAttrib.hs,1395
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/QueryUtils/VertexAttrib.hs,1395
 module Graphics.Rendering.OpenGL.GL.QueryUtils.VertexAttrib Graphics.Rendering.OpenGL.GL.QueryUtils.VertexAttrib13,14
 newtype AttribLocation AttribLocation29,30
 data GetVertexAttribPName GetVertexAttribPName34,35
@@ -5421,12 +5422,12 @@ data GetVertexAttribPointerPName GetVertexAttribPointerPName85,86
 marshalGetVertexAttribPointerPName marshalGetVertexAttribPointerPName88,89
 getVertexAttribPointer getVertexAttribPointer94,95
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/FlushFinish.hs,136
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/FlushFinish.hs,136
 module Graphics.Rendering.OpenGL.GL.FlushFinish Graphics.Rendering.OpenGL.GL.FlushFinish15,16
 flush flush39,40
 finish finish48,49
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/ControlPoint.hs,3991
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/ControlPoint.hs,3991
 module Graphics.Rendering.OpenGL.GL.ControlPoint Graphics.Rendering.OpenGL.GL.ControlPoint15,16
 class ControlPoint ControlPoint30,31
    map1Target map1Target31,32
@@ -5529,13 +5530,13 @@ data MapTarget MapTarget122,123
    | Map2Vertex4Map2Vertex4140,141
 marshalMapTarget marshalMapTarget142,143
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelData.hs,205
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelData.hs,205
 module Graphics.Rendering.OpenGL.GL.PixelData Graphics.Rendering.OpenGL.GL.PixelData15,16
 data PixelData PixelData26,27
 data PixelData a = PixelData PixelData26,27
 withPixelData withPixelData29,30
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PrimitiveMode.hs,688
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PrimitiveMode.hs,688
 module Graphics.Rendering.OpenGL.GL.PrimitiveMode Graphics.Rendering.OpenGL.GL.PrimitiveMode15,16
 data PrimitiveMode PrimitiveMode35,36
      PointsPoints36,37
@@ -5555,7 +5556,7 @@ patchDefaultOuterLevel patchDefaultOuterLevel100,101
 patchDefaultInnerLevel patchDefaultInnerLevel111,112
 maxTessGenLevel maxTessGenLevel121,122
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/PixelFormat.hs,1204
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/PixelFormat.hs,1204
 module Graphics.Rendering.OpenGL.GL.PixelFormat Graphics.Rendering.OpenGL.GL.PixelFormat15,16
 data PixelFormat PixelFormat23,24
      ColorIndexColorIndex24,25
@@ -5593,7 +5594,7 @@ data PixelFormat PixelFormat23,24
 marshalPixelFormat marshalPixelFormat58,59
 unmarshalPixelFormat unmarshalPixelFormat93,94
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/CoordTrans.hs,3553
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/CoordTrans.hs,3553
 module Graphics.Rendering.OpenGL.GL.CoordTrans Graphics.Rendering.OpenGL.GL.CoordTrans15,16
 depthRange depthRange69,70
 data Position Position75,76
@@ -5688,7 +5689,7 @@ setMode setMode464,465
 getPlane getPlane472,473
 setPlane setPlane479,480
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/Feedback.hs,2014
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/Feedback.hs,2014
 module Graphics.Rendering.OpenGL.GL.Feedback Graphics.Rendering.OpenGL.GL.Feedback14,15
 data FeedbackToken FeedbackToken32,33
      PointToken PointToken33,34
@@ -5742,11 +5743,11 @@ parseGLfloat parseGLfloat186,187
 newtype PassThroughValue PassThroughValue191,192
 passThrough passThrough194,195
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/ColorSum.hs,115
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/ColorSum.hs,115
 module Graphics.Rendering.OpenGL.GL.ColorSum Graphics.Rendering.OpenGL.GL.ColorSum14,15
 colorSum colorSum23,24
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL/VertexArrayObjects.hs,708
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL/VertexArrayObjects.hs,708
 module Graphics.Rendering.OpenGL.GL.VertexArrayObjects Graphics.Rendering.OpenGL.GL.VertexArrayObjects12,13
 newtype VertexArrayObject VertexArrayObject28,29
 newtype VertexArrayObject = VertexArrayObject { vertexArrayID vertexArrayID28,29
@@ -5762,10 +5763,10 @@ getVAO getVAO50,51
 bindVAO bindVAO55,56
 noVAO noVAO58,59
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Graphics_tmp/Rendering/OpenGL/GL.hs,72
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Graphics_tmp/Rendering/OpenGL/GL.hs,72
 module Graphics.Rendering.OpenGL.GL Graphics.Rendering.OpenGL.GL15,16
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/AronGraphic.hs,9361
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronGraphic.hs,9382
 module AronGraphic AronGraphic2,3
 epsilon_ epsilon_54,55
 lightDiffuse lightDiffuse56,57
@@ -5779,1049 +5780,498 @@ blue blue88,89
 white white89,90
 black black90,91
 gray gray91,92
-cyan cyan92,93
-magenta magenta93,94
-yellow yellow94,95
-data SegEndPt SegEndPt96,97
-data SegEndPt = No No96,97
-                | End End97,98
-                | Beg Beg98,99
-                | Both Both99,100
-                | Cen Cen100,101
-                | All All101,102
-data NormalDir NormalDir109,110
-data NormalDir = NCCW NCCW109,110
-data NormalDir = NCCW | NCW NCW109,110
-dist:dist123,124
-distX:distX139,140
-sqdist:sqdist153,154
-dot3ve:dot3ve157,158
-dot3vx:dot3vx161,162
-(+(+:)172,173
-(-(-:)178,179
-(â(â¥)181,182
-perpcw:perpcw189,190
-perpccw:perpccw197,198
-(*(*:)203,204
-(/(/:)206,207
-(*(**:)216,217
-(*(*>:)219,220
-(>(>>:)222,223
-(.(.>)225,226
-(â(â)229,230
-(â(â)232,233
-(â(â)235,236
-(â(â)239,240
-v2x:v2x242,243
-x2v:x2v245,246
-skew:skew275,276
-skew':skew'298,299
-(â(â)310,311
-isCoplanar:isCoplanar330,331
-cross:cross343,344
-normal3:normal3350,351
-normal3':normal3'361,362
-instance (N(Num a) => Num (Vertex3 a)365,366
-    (-(-)366,367
-    (+(+)367,368
-    negate negate368,369
-    abs abs369,370
-    signum signum370,371
-    (*(*)371,372
-    fromInteger fromInteger372,373
-instance (N(Num a) => Num (Vector3 a)375,376
-    (-(-)376,377
-    (+(+)377,378
-    negate negate378,379
-    abs abs379,380
-    signum signum380,381
-    (*(*)381,382
-    fromInteger fromInteger382,383
-vec:vec385,386
-ray:ray403,404
-ray2:ray2420,421
-perpenLine:perpenLine444,445
-curvePt:curvePt453,454
-curvePtD:curvePtD456,457
-curvePtV:curvePtV459,460
-drawCurve:drawCurve480,481
-drawCurveList:drawCurveList485,486
-drawCurveListWithEndPt:drawCurveListWithEndPt490,491
-drawCurveD:drawCurveD498,499
-drawCurveV:drawCurveV503,504
-drawSurface:drawSurface516,517
-drawSurfaceR:drawSurfaceR529,530
-plotPts:plotPts564,565
-tangentLine:tangentLine586,587
-interpolate':interpolate'594,595
-drawTangentLine:drawTangentLine609,610
-normalLine:normalLine625,626
-normalLineNew:normalLineNew636,637
-drawNormalLine:drawNormalLine648,649
-drawNormalLineNew:drawNormalLineNew655,656
-cen:cen664,665
-isPerpen:isPerpen668,669
-isColinear:isColinear688,689
-isInSegment:isInSegment762,763
-data PtSeg PtSeg770,771
-data PtSeg = OnEndPtOnEndPt770,771
-             | InSegInSeg771,772
-             | OutSeg OutSeg772,773
-ptOnSegment:ptOnSegment807,808
-drawPrimitive:drawPrimitive835,836
-drawPrimitiveVex:drawPrimitiveVex871,872
-drawTriangleList drawTriangleList884,885
-drawTriangleStrip:drawTriangleStrip887,888
-drawTriangleVex:drawTriangleVex912,913
-triangle:triangle933,934
-drawPrimitive':drawPrimitive'957,958
-drawPrimitive2:drawPrimitive2963,964
-drawLines:drawLines969,970
-drawSegmentWithEndPt:drawSegmentWithEndPt989,990
-drawSegmentNoEndPt:drawSegmentNoEndPt997,998
-drawSegmentNoEndPt2:drawSegmentNoEndPt21003,1004
-drawFatSegmentEndPt:drawFatSegmentEndPt1020,1021
-drawSegments:drawSegments1075,1076
-drawSegmentls:drawSegmentls1098,1099
-drawSegmentList:drawSegmentList1117,1118
-drawSegment:drawSegment1134,1135
-drawSegmentD:drawSegmentD1153,1154
-drawSeg:drawSeg1166,1167
-drawSegNoEnd:drawSegNoEnd1169,1170
-drawSegmentNoEnd:drawSegmentNoEnd1175,1176
-drawSegmentNoEnd2:drawSegmentNoEnd21186,1187
-drawSegment':drawSegment'1205,1206
-drawSegmentArg:drawSegmentArg1232,1233
-drawSpherePt:drawSpherePt1275,1276
-spherePts:spherePts1292,1293
-drawSphere:drawSphere1322,1323
-drawParaboloid:drawParaboloid1353,1354
-drawConic:drawConic1389,1390
-drawGrid:drawGrid1433,1434
-drawPlane:drawPlane1466,1467
-circlePt:circlePt1482,1483
-circle':circle'1495,1496
-circle2:circle21501,1502
-circleN:circleN1513,1514
-circleNArc:circleNArc1548,1549
-circleXY:circleXY1556,1557
-circleXZ:circleXZ1565,1566
-circleYZ:circleYZ1574,1575
-drawDot:drawDot1594,1595
-drawDotR:drawDotR1611,1612
-drawDotColor:drawDotColor1616,1617
-drawDotRColor:drawDotRColor1621,1622
-cartToPolar:cartToPolar1635,1636
-roty roty1654,1655
-rotz rotz1672,1673
-coordTip:coordTip1677,1678
-coordTipX:coordTipX1684,1685
-coordTipY:coordTipY1700,1701
-coordTipZ:coordTipZ1718,1719
-show3dStr:show3dStr1736,1737
-renderCoordinates:renderCoordinates1761,1762
-drawCircleVec:drawCircleVec1799,1800
-matVx matVx1830,1831
-matVe matVe1840,1841
-veMat veMat1850,1851
-drawRect:drawRect1880,1881
-drawRectColor:drawRectColor1890,1891
-drawRectColor2:drawRectColor21900,1901
-drawRect2d:drawRect2d1922,1923
-drawQuads:drawQuads1938,1939
-drawQuadsColor:drawQuadsColor1950,1951
-drawQuadsXZColor:drawQuadsXZColor1956,1957
-drawQuadsYZColor:drawQuadsYZColor1965,1966
-drawRectFill2d:drawRectFill2d1987,1988
-drawCircle':drawCircle'2004,2005
-drawCircle2:drawCircle22008,2009
-drawCircleThreePt:drawCircleThreePt2032,2033
-drawCircleThreePtList drawCircleThreePtList2042,2043
-drawCircleThreePtListX drawCircleThreePtListX2052,2053
-threePtCircle:threePtCircle2065,2066
-threePtCircleList threePtCircleList2080,2081
-center:center2090,2091
-drawCircleColorN:drawCircleColorN2103,2104
-drawCircleXYZ:drawCircleXYZ2107,2108
-drawCircleXYZColor:drawCircleXYZColor2113,2114
-drawCircleColor:drawCircleColor2125,2126
-drawCircleColor2:drawCircleColor22128,2129
-drawCircleColor':drawCircleColor'2138,2139
-conic:conic2145,2146
-det2:det22159,2160
-inverseR:inverseR2169,2170
-inv2:inv22272,2273
-data SegColinear SegColinear2280,2281
-data SegColinear = Colinear3 Colinear32280,2281
-                   | Colinear4 Colinear42281,2282
-                   | None None2282,2283
-fourPtColinear:fourPtColinear2294,2295
-intersectLine:intersectLine2368,2369
-intersectLine2:intersectLine22415,2416
-onePtOverlappedSeg:onePtOverlappedSeg2476,2477
-intersectLine':intersectLine'2487,2488
-pointToLine:pointToLine2519,2520
-intersectSeg:intersectSeg2566,2567
-intersectSegNoEndPt:intersectSegNoEndPt2587,2588
-intersectSegNoEndPt2:intersectSegNoEndPt22614,2615
-isIntersectedSeg:isIntersectedSeg2631,2632
-intersectLineR:intersectLineR2643,2644
-threePtDeterminant:threePtDeterminant2737,2738
-threePtCCW:threePtCCW2749,2750
-threePtCW:threePtCW2756,2757
-threePtCollinear:threePtCollinear2779,2780
-ptOnLeftLine:ptOnLeftLine2846,2847
-ptInsideTri:ptInsideTri2886,2887
-isPtInsideTri:isPtInsideTri2899,2900
-isPtInsideTriList:isPtInsideTriList2908,2909
-perpPlane:perpPlane2921,2922
-lineIntersectPlane:lineIntersectPlane2961,2962
-convexHull:convexHull3083,3084
-convexHull2:convexHull23092,3093
-convexHullAllSeg:convexHullAllSeg3189,3190
-vertexWithAllTri vertexWithAllTri3208,3209
-meshAllTriangle meshAllTriangle3229,3230
-drawTriangulation drawTriangulation3245,3246
-drawTriangulationWithCircle drawTriangulationWithCircle3266,3267
-collectSegment collectSegment3278,3279
-triangulateSimple triangulateSimple3291,3292
-lsToTup2 lsToTup23305,3306
-lsToTup3 lsToTup33311,3312
-tupTols3 tupTols33317,3318
-tupTols2 tupTols23320,3321
-flipEdge flipEdge3330,3331
-isPtOnInscribeCircle isPtOnInscribeCircle3346,3347
-isPtInsideInscribeCircle isPtInsideInscribeCircle3353,3354
-intersectSegNoEndPt3:intersectSegNoEndPt33360,3361
-cmpVex:cmpVex3363,3364
-sortVex:sortVex3367,3368
-sortVexL sortVexL3370,3371
-intersectSegNoEndPtList intersectSegNoEndPtList3377,3378
-convexHull3 convexHull33393,3394
-convexHullLoop convexHullLoop3422,3423
-shiftX shiftX3449,3450
-shiftXList shiftXList3450,3451
-shiftY shiftY3453,3454
-shiftYList shiftYList3454,3455
-shiftXY shiftXY3456,3457
-shiftXYList shiftXYList3458,3459
-shiftTriX shiftTriX3460,3461
-shiftTriY shiftTriY3463,3464
-ptInsidePolygon:ptInsidePolygon3481,3482
-containPt:containPt3491,3492
-projv:projv3499,3500
-nr:nr3514,3515
-nr2:nr23517,3518
-uv:uv3525,3526
-rod rod3538,3539
-cosVex3:cosVex33569,3570
-angleThreePts:angleThreePts3592,3593
-nonCrossSegmentNoEndPt:nonCrossSegmentNoEndPt3643,3644
-rmAdjacentSeg:rmAdjacentSeg3681,3682
-affineTri:affineTri3697,3698
-drawSegmentFromTo:drawSegmentFromTo3714,3715
-drawSegmentFromTo2:drawSegmentFromTo23731,3732
-drawSegmentFromToD:drawSegmentFromToD3744,3745
-grid:grid3763,3764
-grid2:grid23771,3772
-grid3:grid33785,3786
-drawParamSurf:drawParamSurf3793,3794
-torus2:torus23825,3826
-drawTorus2:drawTorus23840,3841
-type Fx Fx3846,3847
-type Fy Fy3847,3848
-type Fz Fz3848,3849
-drawParamSurface:drawParamSurface3850,3851
-drawParamSurfaceN:drawParamSurfaceN3896,3897
-drawParamSurfaceN_new:drawParamSurfaceN_new3915,3916
-geneParamSurface:geneParamSurface3936,3937
-drawSurfaceFromList:drawSurfaceFromList3944,3945
-grid2Ratio:grid2Ratio3955,3956
-list3ToVertex3:list3ToVertex33968,3969
-vertex3ToList:vertex3ToList3977,3978
-readGLScript:readGLScript4012,4013
-strToVector3:strToVector34020,4021
-strToTriple:strToTriple4039,4040
-vertex3ToTriple:vertex3ToTriple4054,4055
-tripleToVertex3:tripleToVertex34060,4061
-strToVertex3:strToVertex34066,4067
-strToVertex3':strToVertex3'4081,4082
-takeVertex3:takeVertex34095,4096
-drawComplex drawComplex4117,4118
+gray1 gray192,93
+cyan cyan93,94
+magenta magenta94,95
+yellow yellow95,96
+data SegEndPt SegEndPt97,98
+data SegEndPt = No No97,98
+                | End End98,99
+                | Beg Beg99,100
+                | Both Both100,101
+                | Cen Cen101,102
+                | All All102,103
+data NormalDir NormalDir110,111
+data NormalDir = NCCW NCCW110,111
+data NormalDir = NCCW | NCW NCW110,111
+dist:dist124,125
+distX:distX140,141
+sqdist:sqdist154,155
+dot3ve:dot3ve158,159
+dot3vx:dot3vx162,163
+(+(+:)173,174
+(-(-:)179,180
+(â(â¥)182,183
+perpcw:perpcw190,191
+perpccw:perpccw198,199
+(*(*:)204,205
+(/(/:)207,208
+(*(**:)217,218
+(*(*>:)220,221
+(>(>>:)223,224
+(.(.>)226,227
+(â(â)230,231
+(â(â)233,234
+(â(â)236,237
+(â(â)240,241
+v2x:v2x243,244
+x2v:x2v246,247
+skew:skew276,277
+skew':skew'299,300
+(â(â)311,312
+isCoplanar:isCoplanar331,332
+cross:cross344,345
+normal3:normal3351,352
+normal3':normal3'362,363
+instance (N(Num a) => Num (Vertex3 a)366,367
+    (-(-)367,368
+    (+(+)368,369
+    negate negate369,370
+    abs abs370,371
+    signum signum371,372
+    (*(*)372,373
+    fromInteger fromInteger373,374
+instance (N(Num a) => Num (Vector3 a)376,377
+    (-(-)377,378
+    (+(+)378,379
+    negate negate379,380
+    abs abs380,381
+    signum signum381,382
+    (*(*)382,383
+    fromInteger fromInteger383,384
+vec:vec386,387
+ray:ray404,405
+ray2:ray2421,422
+perpenLine:perpenLine445,446
+curvePt:curvePt454,455
+curvePtD:curvePtD457,458
+curvePtV:curvePtV460,461
+drawCurve:drawCurve481,482
+drawCurveList:drawCurveList486,487
+drawCurveListWithEndPt:drawCurveListWithEndPt491,492
+drawCurveD:drawCurveD499,500
+drawCurveV:drawCurveV504,505
+drawSurface:drawSurface517,518
+drawSurfaceR:drawSurfaceR530,531
+plotPts:plotPts565,566
+tangentLine:tangentLine587,588
+interpolate':interpolate'595,596
+drawTangentLine:drawTangentLine610,611
+normalLine:normalLine626,627
+normalLineNew:normalLineNew637,638
+drawNormalLine:drawNormalLine649,650
+drawNormalLineNew:drawNormalLineNew656,657
+cen:cen665,666
+isPerpen:isPerpen669,670
+isColinear:isColinear689,690
+isInSegment:isInSegment763,764
+data PtSeg PtSeg771,772
+data PtSeg = OnEndPtOnEndPt771,772
+             | InSegInSeg772,773
+             | OutSeg OutSeg773,774
+ptOnSegment:ptOnSegment808,809
+drawPrimitive:drawPrimitive836,837
+drawPrimitiveVex:drawPrimitiveVex872,873
+drawTriangleList drawTriangleList885,886
+drawTriangleStrip:drawTriangleStrip888,889
+drawTriangleVex:drawTriangleVex913,914
+triangle:triangle934,935
+drawPrimitive':drawPrimitive'958,959
+drawPrimitive2:drawPrimitive2964,965
+drawLines:drawLines970,971
+drawSegmentWithEndPt:drawSegmentWithEndPt990,991
+drawSegmentNoEndPt:drawSegmentNoEndPt998,999
+drawSegmentNoEndPt2:drawSegmentNoEndPt21004,1005
+drawFatSegmentEndPt:drawFatSegmentEndPt1021,1022
+drawSegments:drawSegments1076,1077
+drawSegmentls:drawSegmentls1099,1100
+drawSegmentList:drawSegmentList1118,1119
+drawSegment:drawSegment1135,1136
+drawSegmentD:drawSegmentD1154,1155
+drawSeg:drawSeg1167,1168
+drawSegNoEnd:drawSegNoEnd1170,1171
+drawSegmentNoEnd:drawSegmentNoEnd1176,1177
+drawSegmentNoEnd2:drawSegmentNoEnd21187,1188
+drawSegment':drawSegment'1206,1207
+drawSegmentArg:drawSegmentArg1233,1234
+drawSpherePt:drawSpherePt1276,1277
+spherePts:spherePts1293,1294
+drawSphere:drawSphere1323,1324
+drawParaboloid:drawParaboloid1354,1355
+drawConic:drawConic1390,1391
+drawGrid:drawGrid1434,1435
+drawPlane:drawPlane1467,1468
+circlePt:circlePt1483,1484
+circle':circle'1496,1497
+circle2:circle21502,1503
+circleN:circleN1514,1515
+circleNArc:circleNArc1549,1550
+circleXY:circleXY1557,1558
+circleXZ:circleXZ1566,1567
+circleYZ:circleYZ1575,1576
+drawDot:drawDot1595,1596
+drawDotR:drawDotR1612,1613
+drawDotColor:drawDotColor1617,1618
+drawDotRColor:drawDotRColor1622,1623
+cartToPolar:cartToPolar1636,1637
+roty roty1655,1656
+rotz rotz1673,1674
+coordTip:coordTip1678,1679
+coordTipX:coordTipX1685,1686
+coordTipY:coordTipY1701,1702
+coordTipZ:coordTipZ1719,1720
+show3dStr:show3dStr1737,1738
+renderCoordinates:renderCoordinates1762,1763
+drawCircleVec:drawCircleVec1800,1801
+matVx matVx1831,1832
+matVe matVe1841,1842
+veMat veMat1851,1852
+drawRect:drawRect1881,1882
+drawRectColor:drawRectColor1891,1892
+drawRectColor2:drawRectColor21901,1902
+drawRect2d:drawRect2d1923,1924
+drawQuads:drawQuads1939,1940
+drawQuadsColor:drawQuadsColor1951,1952
+drawQuadsXZColor:drawQuadsXZColor1957,1958
+drawQuadsYZColor:drawQuadsYZColor1966,1967
+drawRectFill2d:drawRectFill2d1988,1989
+drawCircle':drawCircle'2005,2006
+drawCircle2:drawCircle22009,2010
+drawCircleThreePt:drawCircleThreePt2033,2034
+drawCircleThreePtList drawCircleThreePtList2043,2044
+drawCircleThreePtListX drawCircleThreePtListX2053,2054
+threePtCircle:threePtCircle2066,2067
+threePtCircleList threePtCircleList2081,2082
+center:center2091,2092
+drawCircleColorN:drawCircleColorN2104,2105
+drawCircleXYZ:drawCircleXYZ2108,2109
+drawCircleXYZColor:drawCircleXYZColor2114,2115
+drawCircleColor:drawCircleColor2126,2127
+drawCircleColor2:drawCircleColor22129,2130
+drawCircleColor':drawCircleColor'2139,2140
+conic:conic2146,2147
+det2:det22160,2161
+inverseR:inverseR2170,2171
+inv2:inv22273,2274
+data SegColinear SegColinear2281,2282
+data SegColinear = Colinear3 Colinear32281,2282
+                   | Colinear4 Colinear42282,2283
+                   | None None2283,2284
+fourPtColinear:fourPtColinear2295,2296
+intersectLine:intersectLine2369,2370
+intersectLine2:intersectLine22416,2417
+onePtOverlappedSeg:onePtOverlappedSeg2477,2478
+intersectLine':intersectLine'2488,2489
+pointToLine:pointToLine2520,2521
+intersectSeg:intersectSeg2567,2568
+intersectSegNoEndPt:intersectSegNoEndPt2588,2589
+intersectSegNoEndPt2:intersectSegNoEndPt22615,2616
+isIntersectedSeg:isIntersectedSeg2632,2633
+intersectLineR:intersectLineR2644,2645
+threePtDeterminant:threePtDeterminant2738,2739
+threePtCCW:threePtCCW2750,2751
+threePtCW:threePtCW2757,2758
+threePtCollinear:threePtCollinear2780,2781
+ptOnLeftLine:ptOnLeftLine2847,2848
+ptInsideTri:ptInsideTri2887,2888
+isPtInsideTri:isPtInsideTri2900,2901
+isPtInsideTriList:isPtInsideTriList2909,2910
+perpPlane:perpPlane2922,2923
+lineIntersectPlane:lineIntersectPlane2962,2963
+convexHull:convexHull3084,3085
+convexHull2:convexHull23093,3094
+convexHullAllSeg:convexHullAllSeg3190,3191
+vertexWithAllTri vertexWithAllTri3209,3210
+meshAllTriangle meshAllTriangle3230,3231
+drawTriangulation drawTriangulation3246,3247
+drawTriangulationWithCircle drawTriangulationWithCircle3267,3268
+collectSegment collectSegment3279,3280
+triangulateSimple triangulateSimple3292,3293
+lsToTup2 lsToTup23306,3307
+lsToTup3 lsToTup33312,3313
+tupTols3 tupTols33318,3319
+tupTols2 tupTols23321,3322
+flipEdge flipEdge3331,3332
+isPtOnInscribeCircle isPtOnInscribeCircle3347,3348
+isPtInsideInscribeCircle isPtInsideInscribeCircle3354,3355
+intersectSegNoEndPt3:intersectSegNoEndPt33361,3362
+cmpVex:cmpVex3364,3365
+sortVex:sortVex3368,3369
+sortVexL sortVexL3371,3372
+intersectSegNoEndPtList intersectSegNoEndPtList3378,3379
+convexHull3 convexHull33394,3395
+convexHullLoop convexHullLoop3423,3424
+shiftX shiftX3450,3451
+shiftXList shiftXList3451,3452
+shiftY shiftY3454,3455
+shiftYList shiftYList3455,3456
+shiftXY shiftXY3457,3458
+shiftXYList shiftXYList3459,3460
+shiftTriX shiftTriX3461,3462
+shiftTriY shiftTriY3464,3465
+ptInsidePolygon:ptInsidePolygon3482,3483
+containPt:containPt3492,3493
+projv:projv3500,3501
+nr:nr3515,3516
+nr2:nr23518,3519
+uv:uv3526,3527
+rod rod3539,3540
+cosVex3:cosVex33570,3571
+angleThreePts:angleThreePts3593,3594
+nonCrossSegmentNoEndPt:nonCrossSegmentNoEndPt3644,3645
+rmAdjacentSeg:rmAdjacentSeg3682,3683
+affineTri:affineTri3698,3699
+drawSegmentFromTo:drawSegmentFromTo3715,3716
+drawSegmentFromTo2:drawSegmentFromTo23732,3733
+drawSegmentFromToD:drawSegmentFromToD3745,3746
+grid:grid3764,3765
+grid2:grid23772,3773
+grid3:grid33786,3787
+drawParamSurf:drawParamSurf3794,3795
+torus2:torus23826,3827
+drawTorus2:drawTorus23841,3842
+type Fx Fx3847,3848
+type Fy Fy3848,3849
+type Fz Fz3849,3850
+drawParamSurface:drawParamSurface3851,3852
+drawParamSurfaceN:drawParamSurfaceN3897,3898
+drawParamSurfaceN_new:drawParamSurfaceN_new3916,3917
+geneParamSurface:geneParamSurface3937,3938
+drawSurfaceFromList:drawSurfaceFromList3945,3946
+grid2Ratio:grid2Ratio3956,3957
+list3ToVertex3:list3ToVertex33969,3970
+vertex3ToList:vertex3ToList3978,3979
+readGLScript:readGLScript4013,4014
+strToVector3:strToVector34021,4022
+strToTriple:strToTriple4040,4041
+vertex3ToTriple:vertex3ToTriple4055,4056
+tripleToVertex3:tripleToVertex34061,4062
+strToVertex3:strToVertex34067,4068
+strToVertex3':strToVertex3'4082,4083
+takeVertex3:takeVertex34096,4097
+drawComplex drawComplex4118,4119
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Main_2.hs,3739
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Main.hs,3554
 module Main Main6,7
-tmpfile tmpfile112,113
-mc:mc114,115
-convexPts:convexPts117,118
-drawCylinderX:drawCylinderX129,130
-helpme:helpme133,134
-errorString errorString154,155
-say:say161,162
-emptyLine:emptyLine164,165
-colorls colorls167,168
-testHint:testHint182,183
-conform:conform214,215
-grid:grid225,226
-grid2:grid2234,235
-grid4:grid4250,251
-grid4' grid4'259,260
-trig trig263,264
-segment1 segment1265,266
-test_circle:test_circle267,268
-splitPt:splitPt275,276
-mergeChunk:mergeChunk280,281
-bigChunk:bigChunk283,284
-renderSurface:renderSurface286,287
-type Vex3 Vex3315,316
-type V3d V3d316,317
-drawHistogram:drawHistogram319,320
-drawHistogram2:drawHistogram2327,328
-drawHis:drawHis360,361
-drawTri:drawTri367,368
-moveToX:moveToX392,393
-moveToY:moveToY398,399
-moveToZ:moveToZ404,405
-renderText:renderText412,413
-cylinder:cylinder429,430
-cylinderPt:cylinderPt435,436
-lsfun lsfun463,464
-takeVector3:takeVector3488,489
-takeTriangleVex:takeTriangleVex511,512
-vertex3Triple:vertex3Triple524,525
-listToTuple3Vex:listToTuple3Vex540,541
-listToTuple3VexD:listToTuple3VexD551,552
-listToTuple2Vex:listToTuple2Vex572,573
-mymain mymain595,596
-takeSegment:takeSegment660,661
-takePoint:takePoint682,683
-circleNArc':circleNArc'691,692
-curvePtK:curvePtK727,728
-interpolate:interpolate730,731
-drawArc:drawArc740,741
-curveSet:curveSet753,754
-throwUp:throwUp769,770
-throwUpPath:throwUpPath772,773
-testmultMatrix:testmultMatrix835,836
-multModelviewVec:multModelviewVec855,856
-getMatrixTest:getMatrixTest877,878
-getModelviewMatrix:getModelviewMatrix899,900
-matrixTest:matrixTest910,911
-xor:xor921,922
-flipAxis:flipAxis947,948
-xAxis:xAxis960,961
-yAxis:yAxis963,964
-zAxis:zAxis966,967
-initXYZAxis:initXYZAxis969,970
-initGlobal:initGlobal972,973
-keyBoardCallBackXYZ:keyBoardCallBackXYZ989,990
-keyBoardCallBack2:keyBoardCallBack21013,1014
-drawRectX:drawRectX1089,1090
-vecdTovecf:vecdTovecf1117,1118
-spherePtsX:spherePtsX1129,1130
-drawRectX2:drawRectX21159,1160
-drawRectMouse:drawRectMouse1166,1167
-d2f:d2f1196,1197
-isPtInsideRectTran:isPtInsideRectTran1224,1225
-isPtInsideRect:isPtInsideRect1230,1231
-getFOVDegree:getFOVDegree1333,1334
-setFOVDegree:setFOVDegree1342,1343
-getStr:getStr1371,1372
-setXYZAxis:setXYZAxis1378,1379
-getXYZAxis:getXYZAxis1406,1407
-getDrawPts:getDrawPts1412,1413
-getRandomPts:getRandomPts1415,1416
-setCursor:setCursor1427,1428
-setMousePressed:setMousePressed1461,1462
-getCursorPosf:getCursorPosf1489,1490
-getMousePressed:getMousePressed1495,1496
-getCursor:getCursor1501,1502
-getDrawRectX:getDrawRectX1507,1508
-getTranVecDrawRectX:getTranVecDrawRectX1536,1537
-mouseCallback:mouseCallback1548,1549
-drawTriangleMouse:drawTriangleMouse1592,1593
-drawTriangleClick:drawTriangleClick1608,1609
-drawPolygonClick:drawPolygonClick1625,1626
-drawRectFillColorClick:drawRectFillColorClick1638,1639
-screenCSToGraphicCS:screenCSToGraphicCS1740,1741
-normDist:normDist1754,1755
-drawConvexHull:drawConvexHull1757,1758
-seg:seg1767,1768
-findAllChildren:findAllChildren1770,1771
-combineCurveAndCurve combineCurveAndCurve1782,1783
-combineListAndCurve combineListAndCurve1805,1806
-combineListAndList combineListAndList1823,1824
-combineCurveAndList combineCurveAndList1831,1832
-parabolicPath:parabolicPath1844,1845
-io io1892,1893
-moveNext moveNext1895,1896
-randomVexList randomVexList1907,1908
-randomVexListX randomVexListX1929,1930
-drawFirstRect drawFirstRect1938,1939
-drawRectGrid drawRectGrid1959,1960
-moveSqure moveSqure1979,1980
-movingPath movingPath1988,1989
-movingPathVex movingPathVex2006,2007
-mainLoop mainLoop2020,2021
-main main2522,2523
+tmpfile tmpfile104,105
+mc mc106,107
+convexPts convexPts109,110
+drawCylinderX drawCylinderX121,122
+helpme helpme124,125
+errorString errorString144,145
+say say151,152
+emptyLine emptyLine154,155
+colorls colorls157,158
+randomColor randomColor173,174
+grid grid200,201
+grid4 grid4215,216
+grid4' grid4'224,225
+trig trig226,227
+segment1 segment1228,229
+test_circle test_circle230,231
+splitPt splitPt242,243
+mergeChunk mergeChunk246,247
+bigChunk bigChunk249,250
+renderSurface renderSurface252,253
+type Vex3 Vex3280,281
+type V3d V3d282,283
+drawHistogram drawHistogram284,285
+drawHistogram2 drawHistogram2290,291
+drawHis drawHis323,324
+drawTri drawTri329,330
+moveToX moveToX352,353
+moveToY moveToY358,359
+moveToZ moveToZ364,365
+renderText renderText370,371
+cylinder cylinder384,385
+cylinderPt cylinderPt387,388
+lsfun lsfun417,418
+takeVector3 takeVector3441,442
+takeTriangleVex takeTriangleVex463,464
+vertex3Triple vertex3Triple474,475
+listToTuple3Vex listToTuple3Vex488,489
+listToTuple3VexD listToTuple3VexD509,510
+listToTuple2Vex listToTuple2Vex537,538
+mymain mymain566,567
+takeSegment takeSegment626,627
+takePoint takePoint647,648
+circleNArc' circleNArc'656,657
+curvePtK curvePtK694,695
+testmultMatrix testmultMatrix756,757
+multModelviewVec multModelviewVec793,794
+getMatrixTest getMatrixTest831,832
+getModelviewMatrix getModelviewMatrix853,854
+matrixTest matrixTest864,865
+xor xor874,875
+flipAxis flipAxis898,899
+xAxis xAxis912,913
+yAxis yAxis915,916
+zAxis zAxis918,919
+initXYZAxis initXYZAxis921,922
+moveBrick moveBrick924,925
+rotateN rotateN927,928
+tetris1 tetris1935,936
+initGlobal initGlobal946,947
+keyBoardCallBack2 keyBoardCallBack21020,1021
+drawRectX drawRectX1246,1247
+vecdTovecf vecdTovecf1275,1276
+spherePtsX spherePtsX1285,1286
+drawRectX2 drawRectX21317,1318
+drawRectMouse drawRectMouse1324,1325
+d2f d2f1353,1354
+isPtInsideRectTran isPtInsideRectTran1379,1380
+isPtInsideRect isPtInsideRect1385,1386
+getFOVDegree getFOVDegree1405,1406
+getStr getStr1410,1411
+getXYZAxis getXYZAxis1415,1416
+getDrawPts getDrawPts1420,1421
+getRandomPts getRandomPts1423,1424
+getCursorPosf getCursorPosf1428,1429
+getMousePressed getMousePressed1433,1434
+getCursor getCursor1438,1439
+getDrawRectX getDrawRectX1443,1444
+getTranVecDrawRectX getTranVecDrawRectX1446,1447
+mouseCallback mouseCallback1457,1458
+screenCSToGraphicCS screenCSToGraphicCS1589,1590
+normDist normDist1602,1603
+drawConvexHull drawConvexHull1605,1606
+seg seg1615,1616
+findAllChildren findAllChildren1618,1619
+moveNext moveNext1621,1622
+randomVexList randomVexList1640,1641
+randomVexListInt randomVexListInt1649,1650
+randomVexListX randomVexListX1672,1673
+getShape:getShape1682,1683
+innerBrick innerBrick1685,1686
+drawFirstRect drawFirstRect1708,1709
+drawFirstRectColor drawFirstRectColor1736,1737
+initRectGrid initRectGrid1776,1777
+drawRectGridX drawRectGridX1790,1791
+drawBlock drawBlock1818,1819
+centerBlockMove centerBlockMove1846,1847
+centerBlock00 centerBlock001874,1875
+centerBlock centerBlock1906,1907
+drawRectGrid drawRectGrid1920,1921
+rotateBlock rotateBlock1947,1948
+drawRectGridColor drawRectGridColor1991,1992
+addBlock addBlock2019,2020
+moveSqure moveSqure2023,2024
+showCurrBoard showCurrBoard2034,2035
+currBrick currBrick2047,2048
+checkMove checkMove2070,2071
+mainLoop mainLoop2093,2094
+mainLoop mainLoop2101,2102
+main main2429,2430
+bk1 bk12439,2440
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Main.hs,3855
-module Main Main6,7
-tmpfile tmpfile113,114
-mc:mc115,116
-convexPts:convexPts118,119
-drawCylinderX:drawCylinderX130,131
-helpme:helpme134,135
-errorString errorString155,156
-say:say162,163
-emptyLine:emptyLine165,166
-colorls colorls168,169
-randomColor randomColor183,184
-testHint:testHint203,204
-conform:conform235,236
-grid:grid246,247
-grid2:grid2255,256
-grid4:grid4271,272
-grid4' grid4'280,281
-trig trig284,285
-segment1 segment1286,287
-test_circle:test_circle288,289
-splitPt:splitPt296,297
-mergeChunk:mergeChunk301,302
-bigChunk:bigChunk304,305
-renderSurface:renderSurface307,308
-type Vex3 Vex3336,337
-type V3d V3d337,338
-drawHistogram:drawHistogram340,341
-drawHistogram2:drawHistogram2348,349
-drawHis:drawHis381,382
-drawTri:drawTri388,389
-moveToX:moveToX413,414
-moveToY:moveToY419,420
-moveToZ:moveToZ425,426
-renderText:renderText433,434
-cylinder:cylinder450,451
-cylinderPt:cylinderPt456,457
-lsfun lsfun484,485
-takeVector3:takeVector3509,510
-takeTriangleVex:takeTriangleVex532,533
-vertex3Triple:vertex3Triple545,546
-listToTuple3Vex:listToTuple3Vex561,562
-listToTuple3VexD:listToTuple3VexD572,573
-listToTuple2Vex:listToTuple2Vex593,594
-mymain mymain616,617
-takeSegment:takeSegment684,685
-takePoint:takePoint706,707
-circleNArc':circleNArc'715,716
-curvePtK:curvePtK751,752
-interpolate:interpolate754,755
-drawArc:drawArc764,765
-curveSet:curveSet777,778
-throwUp:throwUp793,794
-throwUpPath:throwUpPath796,797
-testmultMatrix:testmultMatrix859,860
-multModelviewVec:multModelviewVec879,880
-getMatrixTest:getMatrixTest901,902
-getModelviewMatrix:getModelviewMatrix923,924
-matrixTest:matrixTest934,935
-xor:xor945,946
-flipAxis:flipAxis971,972
-xAxis:xAxis984,985
-yAxis:yAxis987,988
-zAxis:zAxis990,991
-initXYZAxis:initXYZAxis993,994
-initGlobal:initGlobal996,997
-keyBoardCallBackXYZ:keyBoardCallBackXYZ1013,1014
-keyBoardCallBack2:keyBoardCallBack21037,1038
-drawRectX:drawRectX1113,1114
-vecdTovecf:vecdTovecf1141,1142
-spherePtsX:spherePtsX1153,1154
-drawRectX2:drawRectX21183,1184
-drawRectMouse:drawRectMouse1190,1191
-d2f:d2f1220,1221
-isPtInsideRectTran:isPtInsideRectTran1248,1249
-isPtInsideRect:isPtInsideRect1254,1255
-getFOVDegree:getFOVDegree1278,1279
-getStr:getStr1286,1287
-getXYZAxis:getXYZAxis1292,1293
-getDrawPts:getDrawPts1298,1299
-getRandomPts:getRandomPts1301,1302
-getCursorPosf:getCursorPosf1309,1310
-getMousePressed:getMousePressed1315,1316
-getCursor:getCursor1321,1322
-getDrawRectX:getDrawRectX1327,1328
-getTranVecDrawRectX:getTranVecDrawRectX1332,1333
-mouseCallback:mouseCallback1344,1345
-drawTriangleMouse:drawTriangleMouse1388,1389
-drawTriangleClick:drawTriangleClick1404,1405
-drawPolygonClick:drawPolygonClick1421,1422
-drawRectFillColorClick:drawRectFillColorClick1434,1435
-screenCSToGraphicCS:screenCSToGraphicCS1536,1537
-normDist:normDist1550,1551
-drawConvexHull:drawConvexHull1553,1554
-seg:seg1563,1564
-findAllChildren:findAllChildren1566,1567
-combineCurveAndCurve combineCurveAndCurve1578,1579
-combineListAndCurve combineListAndCurve1601,1602
-combineListAndList combineListAndList1619,1620
-combineCurveAndList combineCurveAndList1627,1628
-parabolicPath:parabolicPath1640,1641
-io io1688,1689
-moveNext moveNext1691,1692
-randomVexList randomVexList1710,1711
-randomVexListInt randomVexListInt1719,1720
-randomVexListX randomVexListX1744,1745
-drawFirstRect drawFirstRect1753,1754
-drawFirstRectColor drawFirstRectColor1774,1775
-drawRectGrid drawRectGrid1796,1797
-drawRectGridColor drawRectGridColor1816,1817
-moveSqure moveSqure1836,1837
-moveSqureColor moveSqureColor1844,1845
-moveSqureColorX moveSqureColorX1852,1853
-movingPath movingPath1860,1861
-movingPathVex movingPathVex1878,1879
-mainLoop mainLoop1892,1893
-main main2412,2413
-
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/AronOpenGL.hs,2124
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronOpenGL.hs,3351
 module AronOpenGL AronOpenGL0,1
 vertexList vertexList33,34
 pts pts68,69
 _STEP _STEP83,84
-data Cam Cam85,86
-data Cam = Cam{alpha:Cam{alpha85,86
-data Cam = Cam{alpha::Double, beta:beta85,86
-data Cam = Cam{alpha::Double, beta::Double, gramma:gramma85,86
-data Cam = Cam{alpha::Double, beta::Double, gramma::Double, dist:dist85,86
-data Step Step86,87
-data Step = Step{xx:Step{xx86,87
-data Step = Step{xx::Double, yy:yy86,87
-data Step = Step{xx::Double, yy::Double, zz:zz86,87
-data Step = Step{xx::Double, yy::Double, zz::Double, ww:ww86,87
-data XYZAxis XYZAxis87,88
-data XYZAxis = XYZAxis{xa:XYZAxis{xa87,88
-data XYZAxis = XYZAxis{xa::Bool, ya:ya87,88
-data XYZAxis = XYZAxis{xa::Bool, ya::Bool, za:za87,88
-data GlobalRef GlobalRef90,91
-data GlobalRef = GlobalRef{GlobalRef{90,91
-                    str_:str_91,92
-                    ,windowSize_:windowSize_92,93
-                    ,cursor_:cursor_93,94
-                    ,xyzAxis_:xyzAxis_94,95
-                    ,mousePressed_:mousePressed_95,96
-                    ,drawRectX_ drawRectX_96,97
-                    ,tranDrawRectX_ tranDrawRectX_97,98
-                    ,fovDegree_ fovDegree_98,99
-                    ,drawPts_ drawPts_99,100
-                    ,randomPts_ randomPts_100,101
-                    ,randomWalk_ randomWalk_101,102
-                    ,randomWalkInt_ randomWalkInt_102,103
-                    ,boardMap_ boardMap_103,104
-initCam initCam106,107
-initStep initStep108,109
-keyBoardCallBack:keyBoardCallBack119,120
-keyboardRot:keyboardRot175,176
-drawTriangle:drawTriangle234,235
-drawTriangle':drawTriangle'255,256
-bool bool267,268
-unless' unless'270,271
-maybe' maybe'275,276
-errorCallback errorCallback281,282
-printGLVersion:printGLVersion284,285
-torus:torus298,299
-torusR:torusR317,318
-sphere:sphere357,358
-torus':torus'365,366
-parabolic:parabolic375,376
-surface1:surface1384,385
-surface2:surface2391,392
-surface3:surface3398,399
-lightingInfo:lightingInfo405,406
-randomVertex:randomVertex420,421
-saveImageOpenGL saveImageOpenGL464,465
+data RectGrid RectGrid85,86
+data RectGrid = RectGrid{minX_ RectGrid{minX_85,86
+                        ,maxX_ maxX_86,87
+                        ,maxY_ maxY_87,88
+                        ,minY_ minY_88,89
+                        ,xCount_ xCount_89,90
+                        ,yCount_ yCount_90,91
+                        ,xEdge_ xEdge_91,92
+                        ,yEdge_ yEdge_92,93
+                        ,rotStep rotStep93,94
+data Cam Cam96,97
+data Cam = Cam{alpha:Cam{alpha96,97
+data Cam = Cam{alpha::Double, beta:beta96,97
+data Cam = Cam{alpha::Double, beta::Double, gramma:gramma96,97
+data Cam = Cam{alpha::Double, beta::Double, gramma::Double, dist:dist96,97
+data Step Step97,98
+data Step = Step{xx:Step{xx97,98
+data Step = Step{xx::Double, yy:yy97,98
+data Step = Step{xx::Double, yy::Double, zz:zz97,98
+data Step = Step{xx::Double, yy::Double, zz::Double, ww:ww97,98
+data XYZAxis XYZAxis98,99
+data XYZAxis = XYZAxis{xa:XYZAxis{xa98,99
+data XYZAxis = XYZAxis{xa::Bool, ya:ya98,99
+data XYZAxis = XYZAxis{xa::Bool, ya::Bool, za:za98,99
+data Block_ Block_102,103
+data Block_ = Block_ Block_102,103
+                     blockGrid_ blockGrid_103,104
+data GlobalRef GlobalRef107,108
+data GlobalRef = GlobalRef{GlobalRef{107,108
+                    str_:str_108,109
+                    ,windowSize_:windowSize_109,110
+                    ,cursor_:cursor_110,111
+                    ,xyzAxis_:xyzAxis_111,112
+                    ,mousePressed_:mousePressed_112,113
+                    ,drawRectX_ drawRectX_113,114
+                    ,tranDrawRectX_ tranDrawRectX_114,115
+                    ,fovDegree_ fovDegree_115,116
+                    ,drawPts_ drawPts_116,117
+                    ,randomPts_ randomPts_117,118
+                    ,randomWalk_ randomWalk_118,119
+                    ,randomWalkInt_ randomWalkInt_119,120
+                    ,boardMap_ boardMap_120,121
+                    ,moveX_ moveX_122,123
+                    ,moveY_ moveY_123,124
+                    ,block1_ block1_124,125
+                    ,rectGrid_ rectGrid_125,126
+                    ,centerBrick_ centerBrick_126,127
+                    ,rot_ rot_127,128
+                    ,rotDeg_ rotDeg_128,129
+                    ,time1_ time1_129,130
+                    ,count1_ count1_130,131
+                    ,rotN_ rotN_131,132
+                    ,bk1_ bk1_134,135
+                    ,bk2_ bk2_135,136
+                    ,blockCount blockCount141,142
+                    ,tetris1_ tetris1_142,143
+initCam initCam145,146
+initStep initStep147,148
+keyBoardCallBack:keyBoardCallBack158,159
+keyboardRot:keyboardRot213,214
+drawTriangle:drawTriangle272,273
+drawTriangle':drawTriangle'293,294
+bool bool305,306
+unless' unless'308,309
+maybe' maybe'313,314
+errorCallback errorCallback319,320
+printGLVersion:printGLVersion322,323
+torus:torus336,337
+torusR:torusR355,356
+sphere:sphere395,396
+torus':torus'403,404
+parabolic:parabolic413,414
+surface1:surface1422,423
+surface2:surface2429,430
+surface3:surface3436,437
+lightingInfo:lightingInfo443,444
+randomVertex:randomVertex458,459
+saveImageOpenGL saveImageOpenGL502,503
 
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/WaiLib.hs,13703
-module WaiLib WaiLib29,30
-query_redis query_redis189,190
-eleIdCodeBlock=eleIdCodeBlock190,191
-pdfdir pdfdir191,192
-keyLastCmd:keyLastCmd197,198
-indexEditorHTML indexEditorHTML200,201
-indexEditorJSON indexEditorJSON201,202
-s2Text s2Text203,204
-data Block Block205,206
-data Block = Block{bblock:Block{bblock205,206
-data MBlock MBlock206,207
-data MBlock = MBlock{mblock:MBlock{mblock206,207
-data GeneMatrix GeneMatrix207,208
-data GeneMatrix = GeneMatrix{GeneMatrix{207,208
-                             cmd cmd208,209
-                             ncol ncol209,210
-                             nrow nrow210,211
-instance DA.FromJSON DA-FromJSON GeneMatrix213,214
-instance DA.ToJSON DA-ToJSON GeneMatrix214,215
-    toEncoding toEncoding215,216
-data Bgcolor Bgcolor218,219
-data Bgcolor = Bgcolor{ Bgcolor{218,219
-data Bgcolor = Bgcolor{ colorname colorname218,219
-instance DA.FromJSON DA-FromJSON Bgcolor219,220
-instance DA.ToJSON DA-ToJSON Bgcolor220,221
-    toEncoding toEncoding221,222
-data Textcolor Textcolor223,224
-data Textcolor = Textcolor{ Textcolor{223,224
-data Textcolor = Textcolor{ textcolor textcolor223,224
-instance DA.FromJSON DA-FromJSON Textcolor224,225
-instance DA.ToJSON DA-ToJSON Textcolor225,226
-    toEncoding toEncoding226,227
-data User User228,229
-data User = User User228,229
-data User = User   {uid:uid228,229
-data User = User   {uid::Int64, name:name228,229
-data User = User   {uid::Int64, name::TS.Text, email:email228,229
-data User = User   {uid::Int64, name::TS.Text, email::TS.Text, password:password228,229
-data User = User   {uid::Int64, name::TS.Text, email::TS.Text, password::TS.Text, task:task228,229
-data User = User   {uid::Int64, name::TS.Text, email::TS.Text, password::TS.Text, task::TS.Text, money:money228,229
-data Image Image229,230
-data Image = Image Image229,230
-data Image = Image {iid:iid229,230
-data Image = Image {iid::Int64, imagename:imagename229,230
-data Image = Image {iid::Int64, imagename::TS.Text, uid:uid229,230
-instance FromRow FromRow User231,232
-  fromRow fromRow232,233
-instance FromRow FromRow Image234,235
-  fromRow fromRow235,236
-instance ToRow ToRow User237,238
-  toRow toRow238,239
-instance ToRow ToRow Image240,241
-  toRow toRow241,242
-data CompileCode CompileCode246,247
-data CompileCode = CompileCode{CompileCode{246,247
-                                compiler compiler247,248
-                                option option248,249
-                                code code249,250
-instance DA.FromJSON DA-FromJSON CompileCode252,253
-instance DA.ToJSON DA-ToJSON CompileCode253,254
-    toEncoding toEncoding254,255
-data MatInt MatInt258,259
-data MatInt = MatInt{name:MatInt{name258,259
-data MatInt = MatInt{name::TS.Text, matrix:matrix258,259
-instance DA.FromJSON DA-FromJSON MatInt259,260
-instance DA.ToJSON DA-ToJSON MatInt260,261
-    toEncoding toEncoding261,262
-data SnippetJSON SnippetJSON263,264
-data SnippetJSON = SnippetJSON{pidls:SnippetJSON{pidls263,264
-data SnippetJSON = SnippetJSON{pidls::[Integer], name:name263,264
-data SnippetJSON = SnippetJSON{pidls::[Integer], name::TS.Text, snippet:snippet263,264
-instance DA.FromJSON DA-FromJSON SnippetJSON264,265
-instance DA.ToJSON DA-ToJSON SnippetJSON265,266
-    toEncoding toEncoding266,267
-data HTMLTable HTMLTable274,275
-data HTMLTable = HTMLTable{name:HTMLTable{name274,275
-data HTMLTable = HTMLTable{name::TS.Text, matrix:matrix274,275
-instance DA.FromJSON DA-FromJSON HTMLTable275,276
-instance DA.ToJSON DA-ToJSON HTMLTable276,277
-    toEncoding toEncoding277,278
-data PreColor PreColor279,280
-data PreColor = PreColor PreColor279,280
-data PreColor = PreColor {color:color279,280
-data PreColor = PreColor {color::TS.Text, background:background279,280
-instance DA.FromJSON DA-FromJSON PreColor280,281
-instance DA.ToJSON DA-ToJSON PreColor281,282
-    toEncoding toEncoding282,283
-updateRetcmd:updateRetcmd285,286
-updateOk:updateOk288,289
-instance DA.FromJSON DA-FromJSON Block291,292
-instance DA.ToJSON DA-ToJSON Block292,293
-    toEncoding toEncoding297,298
-instance DA.FromJSON DA-FromJSON MBlock299,300
-instance DA.ToJSON DA-ToJSON MBlock300,301
-    toEncoding toEncoding305,306
-data Person Person308,309
-  PersonPerson309,310
-    { personId personId310,311
-    , personName personName311,312
-    , personAge personAge312,313
-data UserInput UserInput341,342
-  UserInputUserInput342,343
-    { cmdId cmdId343,344
-    , xcmd xcmd344,345
-instance FromRow FromRow Person347,348
-  fromRow fromRow348,349
-instance FromRow FromRow UserInput350,351
-  fromRow fromRow351,352
-instance ToRow ToRow Person354,355
-  toRow toRow355,356
-instance ToRow ToRow UserInput358,359
-  toRow toRow359,360
-updir updir361,362
-hiddenLATEXCODE hiddenLATEXCODE363,364
-hiddenCOMPILESAVE hiddenCOMPILESAVE364,365
-dbname dbname368,369
-configFile configFile369,370
-lookupJust lookupJust371,372
-confMap:confMap373,374
-getHostName:getHostName381,382
-getRootDirFull:getRootDirFull396,397
-styleChar:styleChar403,404
-href:href415,416
-changeSymbol:changeSymbol419,420
-listToByteStr:listToByteStr428,429
-cssStrong:cssStrong431,432
-cssHead:cssHead438,439
-htmlLess:htmlLess443,444
-htmlGreater:htmlGreater448,449
-keyWord:keyWord453,454
-redisGetLastCmd:redisGetLastCmd458,459
-aplSymbol:aplSymbol475,476
-keyWord1:keyWord1491,492
-keyDash:keyDash496,497
-keySymbol1:keySymbol1506,507
-keyName:keyName514,515
-specialName:specialName518,519
-javaClassName:javaClassName522,523
-javaFunClass:javaFunClass533,534
-javaKeyWords:javaKeyWords538,539
-javaCmdKeyWords:javaCmdKeyWords543,544
-mysqlKeyWords:mysqlKeyWords549,550
-keyURL:keyURL556,557
-spChar:spChar561,562
-bracketChar:bracketChar569,570
-sbChar:sbChar577,578
-transformX transformX587,588
-wsApp wsApp607,608
-type Client Client616,617
-broadcast broadcast618,619
-addClient addClient621,622
-removeClient removeClient625,626
-chat chat628,629
-alternateLineColor2:alternateLineColor2647,648
-blockId:blockId661,662
-svgIconUpdate:svgIconUpdate664,665
-svgIconInsert:svgIconInsert671,672
-svgIconDelete:svgIconDelete679,680
-svgIconSubtract:svgIconSubtract687,688
-svgIconAdd:svgIconAdd696,697
-hiddenForm2:hiddenForm2742,743
-foldListList:foldListList807,808
-foldListList2:foldListList2902,903
-myfun myfun957,958
-fun4 fun4958,959
-foldListListTxt:foldListListTxt960,961
-foldListListTxt2:foldListListTxt2964,965
-pdfname pdfname975,976
-img img976,977
-pdfPath pdfPath977,978
-docRoot docRoot978,979
-doc doc979,980
-cmdLog cmdLog980,981
-currCmdFile currCmdFile982,983
-logCurrCmd:logCurrCmd984,985
-readCurrCmd:readCurrCmd987,988
-type HMap2 HMap2997,998
-type PDFMap PDFMap999,1000
-type RespMap RespMap1002,1003
-genePDF:genePDF1004,1005
-app2:app21029,1030
-resourceList:resourceList1250,1251
-plainIndex:plainIndex1276,1277
-pdfFile:pdfFile1283,1284
-sendPDF:sendPDF1293,1294
-sendImage:sendImage1308,1309
-pdfSentX:pdfSentX1325,1326
-insertinfo:insertinfo1335,1336
-insertUser:insertUser1342,1343
-loginHtml:loginHtml1349,1350
-searchUI:searchUI1356,1357
-notFound notFound1364,1365
-notFoundStr:notFoundStr1371,1372
-snippetP snippetP1378,1379
-mapClear2:mapClear21383,1384
-insertAll2:insertAll21386,1387
-insertAppend2:insertAppend21390,1391
-listToPrefixMap:listToPrefixMap1400,1401
-spanBlockX1:spanBlockX11458,1459
-spanBlockFunc:spanBlockFunc1464,1465
-spanBlockXX2:spanBlockXX21470,1471
-(â(â)1474,1475
-htmlPre:htmlPre1478,1479
-replyHtml:replyHtml1484,1485
-anyRoute2:anyRoute21507,1508
-getQueryString:getQueryString1527,1528
-responseFromCmd:responseFromCmd1531,1532
-uploadPage:uploadPage1560,1561
-data SearchType SearchType1567,1568
-data SearchType = CmdT CmdT1567,1568
-data SearchType = CmdT | JavaT JavaT1567,1568
-data SearchType = CmdT | JavaT | HaskellT HaskellT1567,1568
-data SearchType = CmdT | JavaT | HaskellT | SnippetTSnippetT1567,1568
-readCmd:readCmd1569,1570
-groupCountFilter:groupCountFilter1592,1593
-optionHtml:optionHtml1597,1598
-responseNothing:responseNothing1600,1601
-responseNothingBS:responseNothingBS1606,1607
-responseJSON:responseJSON1615,1616
-responseJSONBS:responseJSONBS1618,1619
-responseNothingTest:responseNothingTest1625,1626
-replyTaskHtml:replyTaskHtml1632,1633
-listPage:listPage1654,1655
-responseTaskBS:responseTaskBS1664,1665
-responseCmd:responseCmd1690,1691
-queryUserInput:queryUserInput1731,1732
-responseJavaHtml:responseJavaHtml1740,1741
-responseGenePDFHtml:responseGenePDFHtml1763,1764
-responseHaskellHtml:responseHaskellHtml1775,1776
-queryRedisSnippet:queryRedisSnippet1794,1795
-ghcidRun:ghcidRun1817,1818
-queryLibHaskell:queryLibHaskell1853,1854
-queryLibCpp:queryLibCpp1892,1893
-queryLibJava:queryLibJava1929,1930
-queryLibJavaPackage:queryLibJavaPackage1948,1949
-responseSearch:responseSearch1991,1992
-searchMainHtml:searchMainHtml2033,2034
-responseSnippetHTML2:responseSnippetHTML22070,2071
-responseSnippetTxt2:responseSnippetTxt22125,2126
-responseSnippetJSON:responseSnippetJSON2156,2157
-geneRectMat:geneRectMat2199,2200
-geneHTMLTable:geneHTMLTable2231,2232
-getPreFromRedis:getPreFromRedis2285,2286
-updateCodeBlock:updateCodeBlock2326,2327
-validateFormat:validateFormat2383,2384
-insertCodeBlock:insertCodeBlock2405,2406
-data EditorCode EditorCode2458,2459
-data EditorCode = EditorCode{EditorCode{2458,2459
-  editorbeg:editorbeg2459,2460
-  editorend:editorend2460,2461
-  editorfile:editorfile2461,2462
-  editorcmd:editorcmd2462,2463
-  editorcode:editorcode2463,2464
-  editortheme:editortheme2464,2465
-  editormode:editormode2465,2466
-instance DA.FromJSON DA-FromJSON EditorCode2468,2469
-instance DA.ToJSON DA-ToJSON EditorCode2469,2470
-    toEncoding toEncoding2470,2471
-data EditorCodeReply EditorCodeReply2472,2473
-data EditorCodeReply = EditorCodeReply{EditorCodeReply{2472,2473
-  replybeg:replybeg2473,2474
-  replyend:replyend2474,2475
-  ret:ret2475,2476
-  replydata:replydata2476,2477
-  replyfname:replyfname2477,2478
-  replytheme:replytheme2478,2479
-  replymode:replymode2479,2480
-instance DA.FromJSON DA-FromJSON EditorCodeReply2482,2483
-instance DA.ToJSON DA-ToJSON EditorCodeReply2483,2484
-    toEncoding toEncoding2484,2485
-type MyLens MyLens2487,2488
-getRet:getRet2490,2491
-setRet:setRet2493,2494
-getReplytheme:getReplytheme2496,2497
-setReplytheme:setReplytheme2499,2500
-getL getL2504,2505
-setL setL2507,2508
-modL modL2510,2511
-ret':ret'2513,2514
-replytheme':replytheme'2516,2517
-(^(^=)2522,2523
-(l(l^=b)2523,2524
-data ProcLatex ProcLatex2531,2532
-data ProcLatex = ProcLatex ProcLatex2531,2532
-data ProcLatex = ProcLatex {x1cmd x1cmd2531,2532
-                            x1opt x1opt2532,2533
-                            x1cwd x1cwd2533,2534
-myloop:myloop2535,2536
-loopDelay:loopDelay2540,2541
-runOnExternalProgram runOnExternalProgram2553,2554
-data LatexFilePath LatexFilePath2626,2627
-data LatexFilePath = LatexFilePath{xHtmlPath:LatexFilePath{xHtmlPath2626,2627
-data LatexFilePath = LatexFilePath{xHtmlPath::String, xLatexPath:xLatexPath2626,2627
-data LatexFilePath = LatexFilePath{xHtmlPath::String, xLatexPath::String, xPDFPath:xPDFPath2626,2627
-randomName:randomName2628,2629
-data EFileType EFileType2632,2633
-data EFileType = EHTML EHTML2632,2633
-data EFileType = EHTML | EPDF EPDF2632,2633
-data EFileType = EHTML | EPDF | EJSONEJSON2632,2633
-datadirFull:datadirFull2644,2645
-receiveEditorData:receiveEditorData2690,2691
-respondMatrix:respondMatrix2873,2874
-commandService:commandService2964,2965
-deleteCodeBlock:deleteCodeBlock3100,3101
-updatePrefixMap:updatePrefixMap3137,3138
-splitWhenTwo:splitWhenTwo3150,3151
-getPreStyle:getPreStyle3179,3180
-updateBackground:updateBackground3246,3247
-updateTextColor:updateTextColor3289,3290
-receiveCode:receiveCode3319,3320
-receiveCode2:receiveCode23347,3348
-responseEditor:responseEditor3374,3375
-responseJavascript:responseJavascript3386,3387
-responseCSS:responseCSS3393,3394
-responsePDF:responsePDF3408,3409
-responsePNG:responsePNG3425,3426
-responseHtml:responseHtml3435,3436
-replyEditor replyEditor3449,3450
-responseHelp responseHelp3456,3457
-replyCssButton replyCssButton3463,3464
-wordcountReply wordcountReply3470,3471
-matrixReply matrixReply3477,3478
-sendHTMLTableCmd sendHTMLTableCmd3484,3485
-replyJS replyJS3491,3492
-insertDatabase:insertDatabase3514,3515
-readDatabaseCodeBlock:readDatabaseCodeBlock3566,3567
-readSnippet2:readSnippet23618,3619
-queryCreateTable:queryCreateTable3638,3639
-createCodeBlockTable:createCodeBlockTable3650,3651
-addCodeBlockTable:addCodeBlockTable3658,3659
-updateDatabaseCodeBlockTable:updateDatabaseCodeBlockTable3669,3670
-updateDatabaseNewCodeTable:updateDatabaseNewCodeTable3705,3706
-updateDatabaseScoreTable:updateDatabaseScoreTable3713,3714
-updateDatabaseShowTable:updateDatabaseShowTable3723,3724
-updateScoreCodeBlock:updateScoreCodeBlock3734,3735
-addScoreCodeBlock:addScoreCodeBlock3767,3768
-subtractScoreCodeBlock:subtractScoreCodeBlock3772,3773
-insertDatabaseNewCodeTable:insertDatabaseNewCodeTable3786,3787
-duplicatedRowNoShow:duplicatedRowNoShow3795,3796
-deleteDatabaseNewCodeTable:deleteDatabaseNewCodeTable3808,3809
-deleteDatabaseCodeBlockTable:deleteDatabaseCodeBlockTable3818,3819
-loginCheck:loginCheck3826,3827
-securityValidate:securityValidate3851,3852
-insertUserDB:insertUserDB3865,3866
-upload:upload3928,3929
-searchMap:searchMap3959,3960
-searchForm:searchForm3993,3994
-
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/Main_1.hs,3738
-module Main Main6,7
-tmpfile tmpfile104,105
-mc:mc106,107
-convexPts:convexPts109,110
-drawCylinderX:drawCylinderX121,122
-helpme:helpme125,126
-errorString errorString146,147
-say:say153,154
-emptyLine:emptyLine156,157
-colorls colorls159,160
-testHint:testHint174,175
-conform:conform206,207
-grid:grid217,218
-grid2:grid2226,227
-grid4:grid4242,243
-grid4' grid4'251,252
-trig trig255,256
-segment1 segment1257,258
-test_circle:test_circle259,260
-splitPt:splitPt267,268
-mergeChunk:mergeChunk272,273
-bigChunk:bigChunk275,276
-renderSurface:renderSurface278,279
-type Vex3 Vex3307,308
-type V3d V3d308,309
-drawHistogram:drawHistogram311,312
-drawHistogram2:drawHistogram2319,320
-drawHis:drawHis352,353
-drawTri:drawTri359,360
-moveToX:moveToX384,385
-moveToY:moveToY390,391
-moveToZ:moveToZ396,397
-renderText:renderText404,405
-cylinder:cylinder421,422
-cylinderPt:cylinderPt427,428
-lsfun lsfun455,456
-takeVector3:takeVector3480,481
-takeTriangleVex:takeTriangleVex503,504
-vertex3Triple:vertex3Triple516,517
-listToTuple3Vex:listToTuple3Vex532,533
-listToTuple3VexD:listToTuple3VexD543,544
-listToTuple2Vex:listToTuple2Vex564,565
-mymain mymain587,588
-takeSegment:takeSegment635,636
-takePoint:takePoint657,658
-circleNArc':circleNArc'666,667
-curvePtK:curvePtK702,703
-interpolate:interpolate705,706
-drawArc:drawArc715,716
-curveSet:curveSet728,729
-throwUp:throwUp744,745
-throwUpPath:throwUpPath747,748
-testmultMatrix:testmultMatrix810,811
-multModelviewVec:multModelviewVec830,831
-getMatrixTest:getMatrixTest852,853
-getModelviewMatrix:getModelviewMatrix874,875
-matrixTest:matrixTest885,886
-xor:xor896,897
-flipAxis:flipAxis922,923
-xAxis:xAxis935,936
-yAxis:yAxis938,939
-zAxis:zAxis941,942
-initXYZAxis:initXYZAxis944,945
-initGlobal:initGlobal948,949
-keyBoardCallBackXYZ:keyBoardCallBackXYZ963,964
-keyBoardCallBack2:keyBoardCallBack2987,988
-drawRectX:drawRectX1058,1059
-vecdTovecf:vecdTovecf1086,1087
-spherePtsX:spherePtsX1098,1099
-drawRectX2:drawRectX21128,1129
-drawRectMouse:drawRectMouse1135,1136
-d2f:d2f1165,1166
-isPtInsideRectTran:isPtInsideRectTran1193,1194
-isPtInsideRect:isPtInsideRect1199,1200
-setStr:setStr1217,1218
-setDrawPts:setDrawPts1240,1241
-setRandomPts:setRandomPts1262,1263
-getFOVDegree:getFOVDegree1289,1290
-setFOVDegree:setFOVDegree1297,1298
-getStr:getStr1322,1323
-setXYZAxis:setXYZAxis1329,1330
-getXYZAxis:getXYZAxis1354,1355
-getDrawPts:getDrawPts1360,1361
-getRandomPts:getRandomPts1363,1364
-setCursor:setCursor1375,1376
-setMousePressed:setMousePressed1406,1407
-getCursorPosf:getCursorPosf1431,1432
-getMousePressed:getMousePressed1437,1438
-getCursor:getCursor1443,1444
-getDrawRectX:getDrawRectX1449,1450
-setDrawRectX:setDrawRectX1455,1456
-setTranVecDrawRectX:setTranVecDrawRectX1476,1477
-incTranVecDrawRectX:incTranVecDrawRectX1497,1498
-getTranVecDrawRectX:getTranVecDrawRectX1520,1521
-mouseCallback:mouseCallback1532,1533
-drawTriangleMouse:drawTriangleMouse1568,1569
-drawTriangleClick:drawTriangleClick1584,1585
-drawPolygonClick:drawPolygonClick1601,1602
-drawRectFillColorClick:drawRectFillColorClick1614,1615
-screenCSToGraphicCS:screenCSToGraphicCS1716,1717
-normDist:normDist1730,1731
-drawConvexHull:drawConvexHull1733,1734
-seg:seg1743,1744
-findAllChildren:findAllChildren1746,1747
-combineCurveAndCurve combineCurveAndCurve1758,1759
-combineListAndCurve combineListAndCurve1781,1782
-combineListAndList combineListAndList1799,1800
-combineCurveAndList combineCurveAndList1807,1808
-parabolicPath:parabolicPath1820,1821
-movingPath movingPath1839,1840
-movingPathVex movingPathVex1857,1858
-mainLoop mainLoop1871,1872
-main main2724,2725
-
-/Users/aaa/myfile/bitbucket/stackproject/PlotGeometry/src/AronHtml.hs,389
-module AronHtml AronHtml7,8
-divT divT60,61
-divC divC61,62
-tableT tableT62,63
-tableC tableC63,64
-tableAC tableAC64,65
-tdT tdT65,66
-tdC tdC66,67
-tdAC tdAC67,68
-trC trC68,69
-tr_ tr_69,70
-class_ class_70,71
-ondblclick_ ondblclick_71,72
-mystyle_ mystyle_72,73
-align_ align_74,75
-id_ id_75,76
-td1 td177,78
-tr1 tr178,79
-table1 table181,82
-table:table91,92
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronHtml2.hs,629
+module AronHtml2 AronHtml22,3
+htmlHeadBody:htmlHeadBody32,33
+htmlBody:htmlBody61,62
+attrStyle:attrStyle75,76
+style_:style_80,81
+styleTag_:styleTag_88,89
+attrId:attrId94,95
+id_:id_97,98
+attrClass:attrClass100,101
+class_:class_103,104
+attr:attr106,107
+attrOndblclick:attrOndblclick110,111
+ondblclick_:ondblclick_113,114
+textAreaNew:textAreaNew122,123
+table:table128,129
+td:td134,135
+tr:tr140,141
+pre_:pre_146,147
+div_:div_152,153
+label_:label_158,159
+input_:input_164,165
+span_:span_170,171
+htmlbr htmlbr176,177
+createTag:createTag178,179
+htmlBox:htmlBox199,200
+ccat ccat202,203
