@@ -598,10 +598,10 @@ mymain = do
       -- writeIORef refGlobal $ setRandomPts globalRef2 randomPts
       modifyIORef refGlobal (\x -> x {randomPts_ = randomPts})
 
-      refFrame <- (timeNowMilli >>= \x -> newIORef FrameCount {frameTime = x, frameCount = 1, frameIndex = 0})
+      refFrame <- timeNowMilli >>= \x -> newIORef FrameCount {frameTime = x, frameCount = 1, frameIndex = 0}
 
       let cx = circleNArc' (Vertex3 0.4 0 0) 0.4 40 (0, pi)
-      let cy = curvePtK (\x -> 0) (0, 0.8) 40
+      let cy = curvePtK (const 0) (0, 0.8) 40
       let cx' = [cx, cy]
 
       ls <- randomIntList 10 (1, 4) >>= \cx -> return $ randomVexList (Vertex3 0.0 0.0 0.0) cx
@@ -610,11 +610,30 @@ mymain = do
       lt <- randomIntList 10 (1, 4) >>= \cx -> return $ randomVexListInt (-8, 0) cx
       modifyIORef refGlobal (\x -> x {randomWalkInt_ = lt})
 
-      mainLoop window ref refStep refGlobal refFrame cx'
+      let rr = initRectGrid
+      let nx = div (xCount_ rr) 2
+      let ny = div (yCount_ rr) 2
+
+      let blockAttr = BlockAttr{isFilled_ = False, typeId_ = 0, blockNum_ = 0, color_ = green}
+      ioArray <- DAO.newArray ((-nx, -ny, 0) , (nx - 1, ny - 1, 0)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
+      -- ioArray <- DAO.newArray ((0, -ny, -nx) , (0, ny - 1, nx - 1)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
+      {--
+      ioArray <- let x0 = -nx
+                     x1 =  nx - 1
+                     y0 = -ny
+                     y1 =  ny - 1
+                     z0 =  0
+                     z1 =  0
+                     xx = x1 - x0 + 1
+                     yy = y1 - y0 + 1
+                     zz = z1 - z0 + 1
+                 in DAO.newListArray ((0, -ny, -nx) , (0, ny - 1, nx - 1)) $ replicate (xx * yy * zz) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
+      --}
+      mainLoop window ref refStep refGlobal refFrame cx' ioArray
       G.destroyWindow window
       G.terminate
       exitSuccess
-
+  
 -- |
 --    KEY: convert 'String' to 'Vertex3' 'GLfloat'
 --
@@ -635,7 +654,7 @@ takeSegment cx = cs
     beg = "segment"
     end = "endsegment"
     ss = filter (\x -> (len . trim) x > 0) $ takeBetweenExc beg end cx
-    cs = map (\x -> strToVertex3 x) ss
+    cs = map strToVertex3 ss
 
 -- |
 --    KEY: convert 'String' to 'Vertex3' 'GLfloat'
@@ -656,7 +675,7 @@ takePoint cx = cs
     beg = "point"
     end = "endpoint"
     ss = filter (\x -> (len . trim) x > 0) $ takeBetweenExc beg end cx
-    cs = map (\x -> strToVertex3 x) ss
+    cs = map strToVertex3 ss
 
 circleNArc' :: Vertex3 GLfloat -> Double -> Integer -> (GLfloat, GLfloat) -> [Vertex3 GLfloat]
 circleNArc' (Vertex3 x₀ y₀ z₀) r n (r₀, r₁) =
@@ -937,8 +956,8 @@ rotateN n = foldl (\f g -> f . g) id $ take (abs n) $ repeat $ n >= 0 ? (reverse
 --          tetris type     |             |
 --     Global ID  |         |             |
 --           |    |         |             |
-tetris1 :: Int -> Int -> (Int, Int, Color3 GLdouble, [[Int]])
-tetris1 bt bid = (bt, bid, white, bk)
+mkTetris1 :: Int -> Int -> (Int, Int, Color3 GLdouble, [[Int]])
+mkTetris1 bt bid = (bt, bid, white, bk)
   where
     bk =
       [ [0, 0, 1, 0, 0],
@@ -948,8 +967,8 @@ tetris1 bt bid = (bt, bid, white, bk)
         [0, 0, 0, 0, 0]
       ]
 
-randomBlock :: IORef GlobalRef -> IO (Int, Int, Color3 GLdouble, [[Int]])
-randomBlock ref = do
+randomBlockX :: IORef GlobalRef -> IO (BlockAttr, [[Int]])
+randomBlockX ref = do
             let bk1 =
                   [
                        [0, 0, 0, 0, 0],
@@ -966,14 +985,14 @@ randomBlock ref = do
                        [0, 0, 0, 0, 0],
                        [0, 0, 0, 0, 0]
                    ]
-            blockCount <- readIORef ref >>= return . blockCount_
-            let btype1 = 1
-            let btype2 = 2
-            let ls = [(blockCount + 1, btype1, gray, bk1), (blockCount + 2, btype2, gray1, bk2)]
-            modifyIORef ref (\s -> s{blockCount_ = (blockCount_ s)+ 2})
+            let t1 = 1
+            let t2 = 2
+            let br1 = BlockAttr{isFilled_ = True, typeId_ = t1, blockNum_ = 0, color_ = white}
+            let br2 = BlockAttr{isFilled_ = True, typeId_ = t2, blockNum_ = 0, color_ = cyan}
+            let ls = [(br1, bk1), (br2, bk2)]
             inx <- randomInt 0 (len ls - 1)
             return $ ls !! inx
-
+  
 initGlobal :: GlobalRef
 initGlobal =
   GlobalRef
@@ -998,7 +1017,7 @@ initGlobal =
           ((4 - 2, 0 + 8), gray)
         ],
       rectGrid_ = initRectGrid,
-      centerBrick_ = map (\y -> map (\x -> (x - 2, y - 2)) [0 .. 4]) $ reverse [0 .. 4],
+      centerBrick_ = map (\y -> map (\x -> (x - 2, y - 2)) [0 .. (len $ head $ bk1_ initGlobal) - 1]) $ reverse [0 .. (len $ bk1_ initGlobal) - 1],
       bk1_ =
         [ [0, 0, 0, 0, 0],
           [0, 0, 1, 0, 0],
@@ -1019,9 +1038,11 @@ initGlobal =
       count1_ = 10000000,
       rotN_ = 0,
       blockCount_ = 1,
-      tetris1_ = tetris1 (blockCount_ initGlobal) 0
+      tetris1_ = mkTetris1 (blockCount_ initGlobal) 0,
+      tetris1X_ = (BlockAttr {isFilled_ = True, typeId_ = 1, blockNum_ = (blockCount_ initGlobal), color_ = blue}, bk1_ initGlobal) 
     }
 
+  
 {--
 
 ```
@@ -1049,15 +1070,15 @@ let r = MyRec = {a_ = 3, b_ = a_ + 4}
 -- |
 --    KEY:
 --    NOTE: USED
-keyBoardCallBack2 :: IORef Step -> IORef GlobalRef -> G.KeyCallback
-keyBoardCallBack2 refStep refGlobalRef window key scanCode keyState modKeys = do
+keyBoardCallBack2 :: IORef Step -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
+keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modKeys = do
   pp "keyBoardCallBack in $b/haskelllib/AronOpenGL.hs"
   putStrLn $ "inside =>" ++ show keyState ++ " " ++ show key
   globalRef <- readIORef refGlobalRef
   let axisOld = xyzAxis_ globalRef
   let fovOld = fovDegree_ globalRef
   logFileG ["fovOld=" ++ show fovOld]
-  rr <- readIORef refGlobalRef >>= return . rectGrid_
+  rr <- readIORef refGlobalRef <&> rectGrid_
   case keyState of
     ks
       | ks `elem` [G.KeyState'Pressed, G.KeyState'Repeating] -> do
@@ -1066,9 +1087,9 @@ keyBoardCallBack2 refStep refGlobalRef window key scanCode keyState modKeys = do
         case key of
           k
             | k == G.Key'Right -> writeIORef refStep Step {xx = _STEP, yy = 0.0, zz = 0.0, ww = 0.0}
-            | k == G.Key'Left -> writeIORef refStep Step {xx = (- _STEP), yy = 0.0, zz = 0.0, ww = 0.0}
+            | k == G.Key'Left -> writeIORef refStep Step {xx = -_STEP, yy = 0.0, zz = 0.0, ww = 0.0}
             | k == G.Key'Up -> writeIORef refStep Step {xx = 0.0, yy = _STEP, zz = 0.0, ww = 0.0}
-            | k == G.Key'Down -> writeIORef refStep Step {xx = 0.0, yy = (- _STEP), zz = 0.0, ww = 0.0}
+            | k == G.Key'Down -> writeIORef refStep Step {xx = 0.0, yy = -_STEP, zz = 0.0, ww = 0.0}
             | k == G.Key'9 -> writeIORef refStep Step {xx = 0.0, yy = 0.0, zz = _STEP, ww = 0.0}
             | k == G.Key'0 -> writeIORef refStep Step {xx = 0.0, yy = 0.0, zz = - _STEP, ww = 0.0}
             | k == G.Key'8 -> writeIORef refStep Step {xx = 0.0, yy = 0.0, zz = 0.0, ww = _STEP}
@@ -1109,40 +1130,7 @@ keyBoardCallBack2 refStep refGlobalRef window key scanCode keyState modKeys = do
                                                        )
                               print block1
             --}
-
-            | k == G.Key'R -> do
-              bmap <- readIORef refGlobalRef >>= return . boardMap_
-              bmapX <- readIORef refGlobalRef >>= return . boardMap1_
-              centerBrick <- readIORef refGlobalRef >>= return . centerBrick_
-              rotN <- readIORef refGlobalRef >>= return . rotN_
-              bk1 <- readIORef refGlobalRef >>= return . bk1_
-              tet <- readIORef refGlobalRef >>= return . tetris1_
-              let bk1' = rotateN rotN bk1
-              let bk1'X = rotateN rotN (tet ^._4)
-              
-              -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
-              -- let ls = map fst lz
-              let ls = getShape centerBrick bk1'
-              let lsX = getShape centerBrick bk1'X
-              
-              -- let skr = (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1
-              -- let sks = (map . filter) (\(x, y) -> y == 1) skr
-
-              modifyIORef
-                refGlobalRef
-                ( \s ->
-                    s
-                      { moveX_ =
-                          let mx = moveX_ s
-                              my = moveY_ s
-                              m = map (\(a, b) -> (a + mx + 1, b + my)) lsX
-                              b = checkMoveX m bmapX rr
-                           in b ? mx + 1 $ mx
-                      }
-                )
-
-              fw "sks"
-              pp "ok"
+  
             | k == G.Key'W -> do
               nowTime <- timeNowMilli
               modifyIORef refGlobalRef (\s -> s {count1_ = 0})
@@ -1151,41 +1139,54 @@ keyBoardCallBack2 refStep refGlobalRef window key scanCode keyState modKeys = do
               fw "Rotate Block"
               pp "rotate me"
             | k == G.Key'A -> do
-              moveX <- readIORef refGlobalRef >>= return . moveX_
-              moveY <- readIORef refGlobalRef >>= return . moveY_
-              bmap <- readIORef refGlobalRef >>= return . boardMap_
-              bmapX <- readIORef refGlobalRef >>= return . boardMap1_
-              centerBrick <- readIORef refGlobalRef >>= return . centerBrick_
-              rotN <- readIORef refGlobalRef >>= return . rotN_
-              bk1 <- readIORef refGlobalRef >>= return . bk1_
-              tet <- readIORef refGlobalRef >>= return . tetris1_
-              let bk1' = rotateN 1 bk1
-              let bk1'X = rotateN 0 (tet ^._4)
+              moveX <- readIORef refGlobalRef <&> moveX_
+              moveY <- readIORef refGlobalRef <&> moveY_
+              bmap <- readIORef refGlobalRef <&> boardMap_
+              bmapX <- readIORef refGlobalRef <&> boardMap1_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              rotN <- readIORef refGlobalRef <&> rotN_
+              bk1 <- readIORef refGlobalRef <&> bk1_
+              tet <- readIORef refGlobalRef <&> tetris1_
+              tetX <- readIORef refGlobalRef <&> tetris1X_
+              array <- getAssocs ioArray
+              -- let bk1' = rotateN 1 bk1
+              let bk1' = rotateN 1 (snd tetX)
+              -- let bk1'X = rotateN 0 (tet ^._4)
+              let bk1'X = rotateN 0 (snd tetX)
 
               -- /Users/aaa/myfile/bitbucket/tmp/xx_5248.x
               let currBr = innerBrick (moveX, moveY) centerBrick bk1'
               let currBrX = innerBrick (moveX, moveY) centerBrick bk1'X
-              let b = checkMove currBr bmap rr
-              let bX = checkMoveX currBrX bmapX rr
+              let currBrXX = map (\(x, y) -> (x, y, 0)) currBrX
+              let -- b = checkMove currBr bmap rr
+              -- let bX = checkMoveX currBrX bmapX rr
+              let bX = checkMoveArr currBrXX array rr
               -- modifyIORef refGlobalRef (\s -> s{bk1_ = b ? bk1' $ bk1})
               -- modifyIORef refGlobalRef (\s -> s {count1_ = b ? 0 $ count1_ s})
               modifyIORef refGlobalRef (\s -> s {count1_ = bX ? 0 $ count1_ s})
               -- modifyIORef refGlobalRef (\s -> s{rotN_ = bX ? (let n = (rotN_ s) + 1 in mod n 4 )$ rotN_ s})
               pp "rotateN 1"
-            | k == G.Key'L -> do
-              bmap <- readIORef refGlobalRef >>= return . boardMap_
-              bmapX <- readIORef refGlobalRef >>= return . boardMap1_
-              centerBrick <- readIORef refGlobalRef >>= return . centerBrick_
-              rotN <- readIORef refGlobalRef >>= return . rotN_
+            | k == G.Key'L || k == G.Key'R -> do
+              bmap <- readIORef refGlobalRef <&> boardMap_
+              bmapX <- readIORef refGlobalRef <&> boardMap1_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              rotN <- readIORef refGlobalRef <&> rotN_
               -- bk1 <- readIORef refGlobalRef >>= return . bk1_
-              tet <- readIORef refGlobalRef >>= return . tetris1_
+              tet <- readIORef refGlobalRef <&> tetris1_
+              tetX <- readIORef refGlobalRef <&> tetris1X_
               let bk1' = rotateN rotN bk1
-              let bk1'X = rotateN rotN (tet ^._4)
+              -- let bk1'X = rotateN rotN (tet ^._4)
+              let bk1'X = rotateN rotN (snd tetX)
+              lsArr <- getAssocs ioArray
               -- let mk = (join . join) $ (map . map) fst $ (map . filter) (\(_, n) -> n == 1) $ (map . zip) centerBrick bk1
               -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
               -- let ls = map fst lz
-              let ls = getShape centerBrick bk1'
+              -- let ls = getShape centerBrick bk1'
               let lsX = getShape centerBrick bk1'X
+              logFileG ["lsX"]
+              logFileG $ map show lsX
+              logFileG ["lsArr"]
+              logFileG $ map show lsArr
               -- block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
               modifyIORef
                 refGlobalRef
@@ -1194,20 +1195,21 @@ keyBoardCallBack2 refStep refGlobalRef window key scanCode keyState modKeys = do
                       { moveX_ =
                           let mx = moveX_ s
                               my = moveY_ s
-                              m = map (\(a, b) -> (a + mx - 1, b + my)) lsX
-                              b = checkMoveX m bmapX rr
-                           in b ? mx - 1 $ mx
+                              one = k == G.Key'L ? -1 $ 1
+                              mX = map (\(a, b) -> (a + mx + one, b + my, 0)) lsX
+                              b = checkMoveArr mX lsArr rr
+                           in b ? mx + one $ mx
                       }
                 )
 
               print "kk"
             | k == G.Key'U -> do
-              bmap <- readIORef refGlobalRef >>= return . boardMap_
-              bmapX <- readIORef refGlobalRef >>= return . boardMap1_
-              centerBrick <- readIORef refGlobalRef >>= return . centerBrick_
-              rotN <- readIORef refGlobalRef >>= return . rotN_
-              bk1 <- readIORef refGlobalRef >>= return . bk1_
-              tet <- readIORef refGlobalRef >>= return . tetris1_
+              bmap <- readIORef refGlobalRef <&> boardMap_
+              bmapX <- readIORef refGlobalRef <&> boardMap1_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              rotN <- readIORef refGlobalRef <&> rotN_
+              bk1 <- readIORef refGlobalRef <&> bk1_
+              tet <- readIORef refGlobalRef <&> tetris1_
               let bk1' = rotateN rotN bk1
               let bk1'X = rotateN rotN (tet ^._4)
 
@@ -1232,44 +1234,43 @@ keyBoardCallBack2 refStep refGlobalRef window key scanCode keyState modKeys = do
 
               print "kk"
             | k == G.Key'D -> do
-              mx <- readIORef refGlobalRef >>= return . moveX_
-              my <- readIORef refGlobalRef >>= return . moveY_
-              bmap <- readIORef refGlobalRef >>= return . boardMap_
-              bmapX <- readIORef refGlobalRef >>= return . boardMap1_
-              centerBrick <- readIORef refGlobalRef >>= return . centerBrick_
-              tet <- readIORef refGlobalRef >>= return . tetris1_
-
-              rotN <- readIORef refGlobalRef >>= return . rotN_
-              bk1 <- readIORef refGlobalRef >>= return . bk1_
+              mx <- readIORef refGlobalRef <&>  moveX_
+              my <- readIORef refGlobalRef <&> moveY_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              tetX <- readIORef refGlobalRef <&> tetris1X_
+              rotN <- readIORef refGlobalRef <&> rotN_
+              bk1 <- readIORef refGlobalRef <&> bk1_
+              lsArr <- getAssocs ioArray
               -- let bk1' = rotateN rotN bk1
 
               -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
               -- let ls = map fst lz
               -- let ls = getShape centerBrick bk1'
-              let ls = getShape centerBrick $ rotateN rotN (tet ^._4)
+              -- let ls = getShape centerBrick $ rotateN rotN (tet ^._4)
+              let ls = getShape centerBrick $ rotateN rotN (snd tetX)
+
               
-              let md = map (\(a, b) -> ((a + mx, b + my), (tet ^._3))) ls
-              let mdX = map (\(a, b) -> ((a + mx, b + my), (tet ^._1, tet ^._2, tet ^._3))) ls
-
-              -- block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
-
-              let m = map (\(a, b) -> (a + mx, b + my - 1)) ls
-              let b = checkMoveX m bmapX rr
-              newBlock <- randomBlock refGlobalRef
+              let mX = map (\(a, b) -> (a + mx, b + my - 1, 0)) ls
+              
+              let b = checkMoveArr mX lsArr rr
+              
+              when (not b) $ do
+                let ls3 = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) ls
+                mapM_ (uncurry $ DAO.writeArray ioArray) ls3
+  
+              newBlock <- randomBlockX refGlobalRef
               modifyIORef
                 refGlobalRef
                 ( \s ->
                     s
                       { moveX_ = b ? moveX_ s $ 0,
                         moveY_ = b ? my - 1 $ 0,
-                        boardMap1_ = b ? boardMap1_ s $ addBlockX bmapX mdX,
                         count1_ = b ? count1_ s $ 10000000,
                         rotN_ = b ? rotN_ s $ 0,
-                        tetris1_ = b ? tetris1_ s $ newBlock
+                        tetris1X_ = b ? tetris1X_ s $ newBlock
                       }
                 )
-              bc <- readIORef refGlobalRef >>= return . blockCount_
-              logFileG ["blockCount=", show bc]
+  
               print "kk"
             | otherwise -> pp $ "Unknown Key Press" ++ show key
       | ks == G.KeyState'Released -> do
@@ -1306,7 +1307,7 @@ drawRectX w (p0@(Vertex3 x0 y0 z0), p1@(Vertex3 x1 y1 z1)) c@(x, y) = do
   -- NDC [-x, +x] = [-2, +2], [-y, +y] = [-2, +2]
   let ndcWidth = 4.0
   (width, height) <- G.getFramebufferSize w
-  (winW, winH) <- G.getWindowSize w >>= \(w, h) -> return $ (rf w, rf h)
+  (winW, winH) <- G.getWindowSize w >>= \(w, h) -> return (rf w, rf h)
   -- let (winW, winH) = (rf winWidth, rf winHeight)
   let (w, h) = (rf width, rf height)
   let upLeftX = winW / 2 + x0 * (winW / ndcWidth)
@@ -1370,7 +1371,7 @@ spherePtsX = geneParamSurface fx fy fz n
           j' = rf j
           α = δ * i'
           β = δ * j'
-       in r * sin (α)
+       in r * sin α
 
 drawRectX2 :: G.Window -> IORef GlobalRef -> (Vertex3 GLfloat, Vertex3 GLfloat) -> (GLfloat, GLfloat) -> IO ()
 drawRectX2 w ioGlobalRef (p0@(Vertex3 x0 y0 z0), p1@(Vertex3 x1 y1 z1)) c@(x, y) = do
@@ -1461,48 +1462,48 @@ isPtInsideRect w (Vertex3 x0 y0 z0, Vertex3 x1 y1 z1) (x, y) = do
 --    KEY: getter for fovDegree_
 --    NOTE: zoom in, zoom out
 getFOVDegree :: IORef GlobalRef -> IO GLdouble
-getFOVDegree ioGlobalRef = readIORef ioGlobalRef >>= return . fovDegree_
+getFOVDegree ioGlobalRef = readIORef ioGlobalRef <&> fovDegree_
 
 -- |
 --    KEY: getter for str_
 getStr :: IORef GlobalRef -> IO String
-getStr ioGlobalRef = readIORef ioGlobalRef >>= return . str_
+getStr ioGlobalRef = readIORef ioGlobalRef <&>str_
 
 -- |
 --    KEY: getter for xyzAxis_
 getXYZAxis :: IORef GlobalRef -> IO XYZAxis
-getXYZAxis ioGlobalRef = readIORef ioGlobalRef >>= return . xyzAxis_
+getXYZAxis ioGlobalRef = readIORef ioGlobalRef <&> xyzAxis_
 
 -- |
 --    KEY: getter for drawPts_
 getDrawPts :: IORef GlobalRef -> IO [[Vertex3 GLfloat]]
-getDrawPts ioGlobalRef = readIORef ioGlobalRef >>= return . drawPts_
+getDrawPts ioGlobalRef = readIORef ioGlobalRef <&> drawPts_
 
 getRandomPts :: IORef GlobalRef -> IO [Vertex3 GLfloat]
-getRandomPts ioGlobalRef = readIORef ioGlobalRef >>= return . randomPts_
+getRandomPts ioGlobalRef = readIORef ioGlobalRef <&> randomPts_
 
 -- |
 --    KEY:
 getCursorPosf :: G.Window -> IO (GLfloat, GLfloat)
-getCursorPosf w = G.getCursorPos w >>= \(x, y) -> return $ (rf x, rf y) :: IO (GLfloat, GLfloat)
+getCursorPosf w = G.getCursorPos w >>= \(x, y) -> return (rf x, rf y) :: IO (GLfloat, GLfloat)
 
 -- |
 --    KEY:
 getMousePressed :: IORef GlobalRef -> IO (Bool, (GLfloat, GLfloat))
-getMousePressed ioGlobalRef = readIORef ioGlobalRef >>= return . mousePressed_
+getMousePressed ioGlobalRef = readIORef ioGlobalRef <&>  mousePressed_
 
 -- |
 --    KEY:
 getCursor :: IORef GlobalRef -> IO (GLfloat, GLfloat)
-getCursor ioGlobalRef = readIORef ioGlobalRef >>= return . cursor_
+getCursor ioGlobalRef = readIORef ioGlobalRef <&> cursor_
 
 -- |
 --    KEY:
 getDrawRectX :: IORef GlobalRef -> IO (Vertex3 GLfloat, Vertex3 GLfloat)
-getDrawRectX ioGlobalRef = readIORef ioGlobalRef >>= return . drawRectX_
+getDrawRectX ioGlobalRef = readIORef ioGlobalRef <&> drawRectX_
 
 getTranVecDrawRectX :: IORef GlobalRef -> IO (Vector3 GLdouble)
-getTranVecDrawRectX ioGlobalRef = readIORef ioGlobalRef >>= return . tranDrawRectX_
+getTranVecDrawRectX ioGlobalRef = readIORef ioGlobalRef <&> tranDrawRectX_
 
 -- |
 --    KEY:
@@ -1520,7 +1521,7 @@ mouseCallback globalRef window but butState mk = do
         v
           | v == G.MouseButton'1 -> do
             (fbw, fbh) <- G.getFramebufferSize window
-            pos <- G.getCursorPos window >>= \(x, y) -> return $ (rf x, rf y) :: IO (GLfloat, GLfloat)
+            pos <- G.getCursorPos window >>= \(x, y) -> return  (rf x, rf y) :: IO (GLfloat, GLfloat)
             ws <- G.getWindowSize window
             let str = PR.printf "cx=%.2f cy=%.2f wx=%d wy=%d bx=%d by=%d" (fst pos) (snd pos) (fst ws) (snd ws) fbw fbh :: String
 
@@ -1674,19 +1675,19 @@ seg :: Vertex3 GLfloat -> Vertex3 GLfloat -> [Vertex3 GLfloat]
 seg v0 v1 = cmpVex v0 v1 ? [v0, v1] $ [v1, v0]
 
 findAllChildren :: Vertex3 GLfloat -> [(Vertex3 GLfloat, Vertex3 GLfloat)] -> [Vertex3 GLfloat]
-findAllChildren v cx = unique $ map fromJust $ filter (\x -> x /= Nothing) $ map (\(v0, v1) -> v == v0 ? Just v1 $ (v == v1 ? Just v0 $ Nothing)) cx
+findAllChildren v cx = unique $ map fromJust $ filter (/= Nothing) $ map (\(v0, v1) -> v == v0 ? Just v1 $ (v == v1 ? Just v0 $ Nothing)) cx
 
 moveNext :: Vertex3 GLfloat -> IO (Vertex3 GLfloat)
 moveNext (Vertex3 x y z) = do
   n <- randomInt 1 4
   let b = 0.8 :: GLfloat
-  v <- case n of
+  case n of
     1 -> if x < b then let v = Vertex3 (x + 0.1) y z in return v else moveNext (Vertex3 x y z)
     2 -> if x > - b then let v = Vertex3 (x - 0.1) y z in return v else moveNext (Vertex3 x y z)
     3 -> if y < b then let v = Vertex3 x (y + 0.1) z in return v else moveNext (Vertex3 x y z)
     4 -> if y > - b then let v = Vertex3 x (y - 0.1) z in return v else moveNext (Vertex3 x y z)
     _ -> error "ERROR randomInt"
-  return v
+  
 
 {--
              1
@@ -1698,10 +1699,10 @@ moveNext (Vertex3 x y z) = do
 randomVexList :: Vertex3 GLfloat -> [Int] -> [Vertex3 GLfloat]
 randomVexList _ [] = []
 randomVexList v@(Vertex3 x y z) (c : cx) = case c of
-  1 -> x < 1.0 ? (let u = Vertex3 (x + 0.1) y z in u : (randomVexList u cx)) $ randomVexList v cx
-  2 -> x > -1.0 ? (let u = Vertex3 (x - 0.1) y z in u : (randomVexList u cx)) $ randomVexList v cx
-  3 -> y < 1.0 ? (let u = Vertex3 x (y + 0.1) z in u : (randomVexList u cx)) $ randomVexList v cx
-  4 -> y > -1.0 ? (let u = Vertex3 x (y - 0.1) z in u : (randomVexList u cx)) $ randomVexList v cx
+  1 -> x < 1.0 ? (let u = Vertex3 (x + 0.1) y z in u : randomVexList u cx) $ randomVexList v cx
+  2 -> x > -1.0 ? (let u = Vertex3 (x - 0.1) y z in u : randomVexList u cx) $ randomVexList v cx
+  3 -> y < 1.0 ? (let u = Vertex3 x (y + 0.1) z in u : randomVexList u cx) $ randomVexList v cx
+  4 -> y > -1.0 ? (let u = Vertex3 x (y - 0.1) z in u : randomVexList u cx) $ randomVexList v cx
   _ -> error "ERROR randomInt"
 
 randomVexListInt :: (Int, Int) -> [Int] -> [(Int, Int)]
@@ -1730,16 +1731,19 @@ randomVexListInt v@(x, y) (c : cx) = case c of
 randomVexListX :: (Int, Int) -> (Int, Int) -> [Int] -> [(Int, Int)]
 randomVexListX _ _ [] = []
 randomVexListX ix@(x0, y0) v@(x, y) (c : cx) = case c of
-  1 -> x > x0 ? (let u = (x - 1, y) in u : (randomVexListX ix u cx)) $ randomVexListX ix v cx
-  2 -> x < - x0 ? (let u = (x + 1, y) in u : (randomVexListX ix u cx)) $ randomVexListX ix v cx
-  3 -> y < y0 ? (let u = (x, y + 1) in u : (randomVexListX ix u cx)) $ randomVexListX ix v cx
-  4 -> y > - y0 ? (let u = (x, y - 1) in u : (randomVexListX ix u cx)) $ randomVexListX ix v cx
+  1 -> x > x0 ? (let u = (x - 1, y) in u : randomVexListX ix u cx) $ randomVexListX ix v cx
+  2 -> x < - x0 ? (let u = (x + 1, y) in u : randomVexListX ix u cx) $ randomVexListX ix v cx
+  3 -> y < y0 ? (let u = (x, y + 1) in u : randomVexListX ix u cx) $ randomVexListX ix v cx
+  4 -> y > - y0 ? (let u = (x, y - 1) in u : randomVexListX ix u cx) $ randomVexListX ix v cx
   _ -> error "ERROR randomInt"
 
 
 getShape:: [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
 getShape centerBrick bk = map fst $ join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk
-
+  
+getShapeX:: [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
+getShapeX centerBrick bk = map fst $ join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk
+  
 innerBrick :: (Int, Int) -> [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
 innerBrick (moveX, moveY) centerBrick bk1 = currBr
   where
@@ -1819,18 +1823,18 @@ drawFirstRectColor color = do
     )
     [0]
 
-{--
-data RectGrid = RectGrid{minX_ :: Float
-                        ,maxX_ :: Float
-                        ,maxY_ :: Float
-                        ,minY_ :: Float
-                        ,xCount_ :: Int
-                        ,yCount_ :: Int
-                        ,xEdge_ :: Float
-                        ,yEdge_ :: Float
-                        } deriving (Show, Eq)
---}
 
+{-|
+
+               minY_
+                |
+        minX_ - +  - -> maxX_
+                |
+               maxY_
+
+        |<-    xCount_    ->|
+                20
+-}
 initRectGrid :: RectGrid
 initRectGrid =
   RectGrid
@@ -1847,8 +1851,8 @@ initRectGrid =
 
 drawRectGridX :: RectGrid -> IO ()
 drawRectGridX r = do
-  let xc = [0 .. (xCount_ r) - 1]
-  let yc = [0 .. (yCount_ r) - 1]
+  let xc = [0 .. xCount_ r - 1]
+  let yc = [0 .. yCount_ r - 1]
   mapM_ (\ny -> mapM_ (\nx -> drawBlock (nx, ny) r) xc) yc
 
 {--
@@ -1940,8 +1944,8 @@ centerBlock00 (nx, ny) r color = do
     let x1 = maxY_ r; y1 = minY_ r
     let vx0 = v (x0, y0, 0)
     let vx1 = v (x1, y1, 0)
-    let width = (x1 - x0) / (fi $ xCount_ r)
-    let height = (y0 - y1) / (fi $ yCount_ r)
+    let width = (x1 - x0) / fi (xCount_ r)
+    let height = (y0 - y1) / fi (yCount_ r)
     let vo = Vertex3 0 0 0
     let vf = Vertex3 (fi nx * width) (fi ny * height) 0
     let vm = vf -: vo
@@ -1992,10 +1996,10 @@ drawRectGrid sx sy e = do
     ( \ny ->
         mapM_
           ( \nx ->
-              let ex0 = x0 + (fi $ nx) * delx + wx
-                  ey0 = y0 - (fi $ ny) * dely - wy
-                  ex1 = x0 + (fi $ nx + 1) * delx - wx
-                  ey1 = y0 - (fi $ ny + 1) * dely + wy
+              let ex0 = x0 + fi nx * delx + wx
+                  ey0 = y0 - fi ny * dely - wy
+                  ex1 = x0 + (fi nx + 1) * delx - wx
+                  ey1 = y0 - (fi ny + 1) * dely + wy
                in drawRectColor green (v (ex0, ey0, 0), v (ex1, ey1, 0))
           )
           sx
@@ -2005,46 +2009,49 @@ drawRectGrid sx sy e = do
 rotateBlock :: IORef GlobalRef -> RectGrid -> IO ()
 rotateBlock refGlobal r = do
   preservingMatrix $ do
-    count1 <- readIORef refGlobal >>= return . count1_
-    mx <- readIORef refGlobal >>= return . moveX_
-    my <- readIORef refGlobal >>= return . moveY_
+    count1 <- readIORef refGlobal <&> count1_
+    mx <- readIORef refGlobal <&> moveX_
+    my <- readIORef refGlobal <&> moveY_
     let mx' = fi mx
     let my' = fi my
     let r = initRectGrid
     let x0 = minX_ r; y0 = maxY_ r
     -- bottom right corner
     let x1 = maxY_ r; y1 = minY_ r
-    let width = (x1 - x0) / (fi $ xCount_ r)
-    let height = (y0 - y1) / (fi $ yCount_ r)
+    let width = (x1 - x0) / fi (xCount_ r)
+    let height = (y0 - y1) / fi (yCount_ r)
     let x0 = let w = width / 2 in w + mx' * width
     let y0 = let h = height / 2 in h + my' * height
     let vo = Vertex3 0 0 0
     let vf = Vertex3 x0 y0 0
     let vm = vf -: vo
-    let del = 90 / (fi $ rotStep r)
-    let deln = del * (fi count1)
+    let del = 90 / fi (rotStep r)
+    let deln = del * fi count1
     translate vm
     rotate deln $ (Vector3 0 0 1 :: Vector3 GLdouble)
     translate $ negate vm
 
-    centerBrick <- readIORef refGlobal >>= return . centerBrick_
-    rotN <- readIORef refGlobal >>= return . rotN_
-    bk1 <- readIORef refGlobal >>= return . bk1_
-    tet <- readIORef refGlobal >>= return . tetris1_
-    let bk1' = rotateN rotN bk1
-    let bk1'X = rotateN rotN (tet ^._4)
+    centerBrick <- readIORef refGlobal <&> centerBrick_
+    rotN <- readIORef refGlobal <&> rotN_
+    -- bk1 <- readIORef refGlobal >>= return . bk1_
+    -- tet <- readIORef refGlobal >>= return . tetris1_
+    tetX <- readIORef refGlobal <&> tetris1X_
+    -- let bk1' = rotateN rotN bk1
+    -- let bk1'X = rotateN rotN (tet ^._4)
+    let bk1'X = rotateN rotN (snd tetX)
 
     -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
     -- let ls = map fst lz
-    let ls = getShape centerBrick bk1'
+    -- let ls = getShape centerBrick bk1'
     let lsX = getShape centerBrick bk1'X
     
-    bmX <- readIORef refGlobal >>= return . boardMap1_
+    bmX <- readIORef refGlobal <&> boardMap1_
 
     mapM_
       ( \(a, b) -> do
           preservingMatrix $ do
-            centerBlock00 (a + mx, b + my) initRectGrid (tet ^._3)
+            -- centerBlock00 (a + mx, b + my) initRectGrid (tet ^._3)
+            centerBlock00 (a + mx, b + my) initRectGrid ((color_ . fst) tetX)
       )
       lsX
     pp "ok"
@@ -2066,10 +2073,10 @@ drawRectGridColor color sx sy e = do
     ( \ny ->
         mapM_
           ( \nx ->
-              let ex0 = x0 + (fi $ nx) * delx + wx
-                  ey0 = y0 - (fi $ ny) * dely - wy
-                  ex1 = x0 + (fi $ nx + 1) * delx - wx
-                  ey1 = y0 - (fi $ ny + 1) * dely + wy
+              let ex0 = x0 + fi nx * delx + wx
+                  ey0 = y0 - fi ny * dely - wy
+                  ex1 = x0 + (fi nx + 1) * delx - wx
+                  ey1 = y0 - (fi ny + 1) * dely + wy
                in drawRectColor color (v (ex0, ey0, 0), v (ex1, ey1, 0))
           )
           sx
@@ -2119,23 +2126,34 @@ showCurrBoardX bmap = do
       )
       lz
     pp "ok"
-    
+  
+showCurrBoardArr :: IOArray (Int, Int, Int) BlockAttr -> IO ()
+showCurrBoardArr arr = do
+  ls <- getAssocs arr
+  preservingMatrix $ do
+    mapM_
+      ( \((x, y, _), b) ->
+          preservingMatrix $ do
+            isFilled_ b ? centerBlock00 (x, y) initRectGrid (color_ b) $ pp "not filled"
+      ) ls
+  pp "ok"
+  
   
 currBrick :: IORef GlobalRef -> RectGrid -> IO ()
 currBrick refGlobal rr = do
   preservingMatrix $ do
-    mx <- readIORef refGlobal >>= return . moveX_
-    my <- readIORef refGlobal >>= return . moveY_
-    centerBrick <- readIORef refGlobal >>= return . centerBrick_
-    rotN <- readIORef refGlobal >>= return . rotN_
-    bk1 <- readIORef refGlobal >>= return . bk1_
+    mx <- readIORef refGlobal <&> moveX_
+    my <- readIORef refGlobal <&> moveY_
+    centerBrick <- readIORef refGlobal <&> centerBrick_
+    rotN <- readIORef refGlobal <&> rotN_
+    bk1 <- readIORef refGlobal <&> bk1_
     let bk1' = rotateN rotN bk1
     
     -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
     -- let ls = map fst lz
     let ls = getShape centerBrick bk1'
     
-    bm <- readIORef refGlobal >>= return . boardMap_
+    bm <- readIORef refGlobal <&> boardMap_
     mapM_
       ( \(a, b) -> do
           preservingMatrix $ do
@@ -2147,54 +2165,42 @@ currBrick refGlobal rr = do
 currBrickX :: IORef GlobalRef -> RectGrid -> IO ()
 currBrickX refGlobal rr = do
   preservingMatrix $ do
-    mx <- readIORef refGlobal >>= return . moveX_
-    my <- readIORef refGlobal >>= return . moveY_
-    centerBrick <- readIORef refGlobal >>= return . centerBrick_
-    rotN <- readIORef refGlobal >>= return . rotN_
-    bk1 <- readIORef refGlobal >>= return . bk1_
-    tet <- readIORef refGlobal >>= return . tetris1_
+    mx <- readIORef refGlobal <&> moveX_
+    my <- readIORef refGlobal <&> moveY_
+    centerBrick <- readIORef refGlobal <&> centerBrick_
+    rotN <- readIORef refGlobal <&> rotN_
+    bk1 <- readIORef refGlobal <&> bk1_
+    tet <- readIORef refGlobal <&> tetris1_
+    tetX <- readIORef refGlobal <&> tetris1X_
     let bk1' = rotateN rotN bk1
-    let bk1'X = rotateN rotN (tet ^._4)
+    -- let bk1'X = rotateN rotN (tet ^._4)
+    let bk1'X = rotateN rotN (snd tetX)
     
     -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
     -- let ls = map fst lz
     let ls = getShape centerBrick bk1'
     let lsX = getShape centerBrick bk1'X
     
-    bm <- readIORef refGlobal >>= return . boardMap_
-    bmX <- readIORef refGlobal >>= return . boardMap1_
+    bm <- readIORef refGlobal <&> boardMap_
+    bmX <- readIORef refGlobal <&> boardMap1_
     mapM_
       ( \(a, b) -> do
           preservingMatrix $ do
-            centerBlock00 (a + mx, b + my) rr (tet ^._3)
+            centerBlock00 (a + mx, b + my) rr ((color_ . fst) tetX)
       )
       lsX
     pp "ok"
   
 
-checkMove :: [(Int, Int)] -> DM.Map (Int, Int) ((Vertex3 GLfloat), Color3 GLdouble, Bool) -> RectGrid -> Bool
-checkMove [] _ _ = False
-checkMove cx sm rr =
-  not $
-    foldl (\a b -> a || b) False $
-      map
-        ( \x ->
-            let x0 = fst x
-                y0 = snd x
-             in (not (- nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny))
-                  ||
-                  -- in False ||
-                  let b1 = DM.member x sm
-                      b2 = DM.lookup x sm
-                   in case b2 of
-                        Just xx -> xx ^. _3 && b1
-                        Nothing -> False
-        )
-        cx
-  where
-    nx = div (xCount_ rr) 2
-    ny = div (yCount_ rr) 2
-  
+
+{-|
+   @
+   nx = 10
+   ny = 10
+   -10 <= x0 < 10
+   -10 <= y0 < 10
+   @
+-}
 checkMoveX :: [(Int, Int)] -> DM.Map (Int, Int) (Int, Int, Color3 GLdouble) -> RectGrid -> Bool
 checkMoveX [] _ _ = False
 checkMoveX cx sm rr =
@@ -2204,12 +2210,34 @@ checkMoveX cx sm rr =
         ( \x ->
             let x0 = fst x
                 y0 = snd x
-            in (not (- nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny)) || DM.member x sm
+            in not (- nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny ) || DM.member x sm
         )
         cx
   where
     nx = div (xCount_ rr) 2
     ny = div (yCount_ rr) 2
+  
+checkMoveArr :: [(Int, Int, Int)] -> [((Int, Int, Int) , BlockAttr)] -> RectGrid -> Bool
+checkMoveArr cx bls rr = isInside && not anyBlock
+  where
+    sm = DM.fromList $ filter (\(_, b) -> isFilled_ b) bls
+    -- anyBlock = any (== True) $ map (\x -> DM.member x sm) cx
+    -- anyBlock = any (== True) $ map (flip DM.member sm) cx
+    anyBlock = any (flip DM.member sm) cx
+    isInside = all (\(x, y, z) -> (-nx <= x && x < nx) && (-ny <= y && y < ny)) cx
+    nx = div (xCount_ rr) 2
+    ny = div (yCount_ rr) 2
+
+getBottom :: (Int, Int, Int) ->[((Int, Int, Int), BlockAttr)] -> [((Int, Int, Int), BlockAttr)]
+getBottom (x0, y0, z0) = filter (\((x, y, z), _) -> y == y0)
+
+initBlockAttr :: BlockAttr
+initBlockAttr = BlockAttr {
+   isFilled_ = False
+  ,typeId_ = 0
+  ,blockNum_ = 0
+  ,color_ = cyan
+                          }
   
 mainLoop ::
   G.Window ->
@@ -2218,13 +2246,14 @@ mainLoop ::
   IORef GlobalRef ->
   IORef FrameCount ->
   [[Vertex3 GLfloat]] ->
+  DAO.IOArray (Int, Int, Int) BlockAttr ->
   IO ()
-mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClose w) $ do
+mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowShouldClose w) $ do
   (width, height) <- G.getFramebufferSize w
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
   GL.clear [ColorBuffer, DepthBuffer]
 
-  G.setKeyCallback w (Just $ keyBoardCallBack2 refStep refGlobal) -- AronOpenGL
+  G.setKeyCallback w (Just $ keyBoardCallBack2 refStep refGlobal ioArray) -- AronOpenGL
   G.setMouseButtonCallback w (Just $ mouseCallback refGlobal) -- mouse event
   -- lightingInfo
   loadIdentity -- glLoadIdentity
@@ -2325,14 +2354,14 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
 
   curStr <- getStr refGlobal
   show3dStr curStr red 0.8
-  logFileG ["str_=" ++ (show curStr)]
+  logFileG ["str_=" ++ show curStr]
 
   vx <- getDrawRectX refGlobal -- (p0, p1) => (upLeft, bottomRight)
   cursorPos <- getCursor refGlobal
 
   (isPressed, (mx0, my0)) <- getMousePressed refGlobal
   let pos = (mx0, my0)
-  logFileG ["isPressed=" ++ (show isPressed) ++ " pos=" ++ (show pos)]
+  logFileG ["isPressed=" ++ show isPressed ++ " pos=" ++ show pos]
 
   -- TODO: add isPtInsideRect here
   tranVec <- getTranVecDrawRectX refGlobal
@@ -2343,15 +2372,15 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
     (width, height) <- G.getFramebufferSize w
     (winWidth, winHeight) <- G.getWindowSize w
 
-    (nx1, ny1) <- G.getCursorPos w >>= \(x, y) -> return $ (rf x, rf y) :: IO (GLfloat, GLfloat)
-    logFileG ["mx0=" ++ (show mx0) ++ " my0=" ++ (show my0) ++ " nx1=" ++ (show nx1) ++ " ny1=" ++ (show ny1)]
+    (nx1, ny1) <- G.getCursorPos w >>= \(x, y) -> return (rf x, rf y) :: IO (GLfloat, GLfloat)
+    logFileG ["mx0=" ++ show mx0 ++ " my0=" ++ show my0 ++ " nx1=" ++ show nx1 ++ " ny1=" ++ show ny1]
     (Vector3 tx ty tz) <- getTranVecDrawRectX refGlobal
-    logFileG ["getTranVecDrawRectX=" ++ (show (Vector3 tx ty tz))]
-    let (x', y') = (rf $ (nx1 - mx0) / (rf winWidth), rf $ (my0 - ny1) / (rf winHeight))
+    logFileG ["getTranVecDrawRectX=" ++ show (Vector3 tx ty tz)]
+    let (x', y') = (rf $ (nx1 - mx0) / rf winWidth, rf $ (my0 - ny1) / rf winHeight)
     -- readIORef refGlobal >>= \x -> writeIORef refGlobal $ setTranVecDrawRectX (Vector3 (x') (y') 0.0) x
     let vec = Vector3 x' y' 0.0
     -- readIORef refGlobal >>= \x -> writeIORef refGlobal $ incTranVecDrawRectX (+vec) x
-    modifyIORef refGlobal (\x -> x {tranDrawRectX_ = (tranDrawRectX_ x) + vec})
+    modifyIORef refGlobal (\x -> x {tranDrawRectX_ = tranDrawRectX_ x + vec})
     -- update current cursor position
     -- readIORef refGlobal >>= \x -> writeIORef refGlobal $ setMousePressed (isPressed, (nx1, ny1)) x
     modifyIORef refGlobal (\x -> x {mousePressed_ = (isPressed, (nx1, ny1))})
@@ -2359,8 +2388,8 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
     pp "ok"
 
   when True $ do
-    bmap <- readIORef refGlobal >>= return . boardMap_
-    centerBrick <- readIORef refGlobal >>= return . centerBrick_
+    bmap <- readIORef refGlobal <&> boardMap_
+    centerBrick <- readIORef refGlobal <&> centerBrick_
     bk1 <- readIORef refGlobal >>= \x -> return $ rotateN 1 $ bk1_ x
   
     -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1
@@ -2380,36 +2409,65 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
 
     -- pre movSphere
 
-    logFileG ["index=" ++ (show index)]
+    logFileG ["index=" ++ show index]
     -- my <- readIORef refGlobal >>= return . moveY_
     -- KEY: falling block, drop block
     when True $ do
       when isNext $ do
-        rr <- readIORef refGlobal >>= return . rectGrid_
-        bmap <- readIORef refGlobal >>= return . boardMap_
-        bmapX <- readIORef refGlobal >>= return . boardMap1_
-        mx <- readIORef refGlobal >>= return . moveX_
-        my <- readIORef refGlobal >>= return . moveY_
-        centerBrick <- readIORef refGlobal >>= return . centerBrick_
-        tet <- readIORef refGlobal >>= return . tetris1_
-        rotN <- readIORef refGlobal >>= return . rotN_
-        let lz1 = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick  $ rotateN rotN (tet ^._4)
-        let currBlock1 = map fst lz1 -- [(x, y)] => [(1, 2), (3, 4)]
+        rr <- readIORef refGlobal <&> rectGrid_
+        bmap <- readIORef refGlobal <&> boardMap_
+        bmapX <- readIORef refGlobal <&> boardMap1_
+        mx <- readIORef refGlobal <&> moveX_
+        my <- readIORef refGlobal <&> moveY_
+        centerBrick <- readIORef refGlobal <&> centerBrick_
+        tet <- readIORef refGlobal <&> tetris1_
+        tetX <- readIORef refGlobal <&> tetris1X_
+        rotN <- readIORef refGlobal <&> rotN_
+        ls <- getAssocs ioArray
+  
+        -- let lz1 = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick  $ rotateN rotN (tet ^._4)
+        let lz1X = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick  $ rotateN rotN (snd tetX)
+        -- let currBlock1 = map fst lz1 -- [(x, y)] => [(1, 2), (3, 4)]
+        let currTetris = map fst lz1X -- [(x, y)] => [(1, 2), (3, 4)]
        
-        let m = map (\(a, b) -> (a + mx, b + my - 1)) currBlock1
-        let currBrX = map (\(a, b) -> ((a + mx, b + my), (tet ^._1, tet ^._2, tet ^._3))) currBlock1
-        let bX = checkMoveX m bmapX rr
-
+        -- let m = map (\(a, b) -> (a + mx, b + my - 1)) currBlock1
+        let mX = map (\(a, b) -> (a + mx, b + my - 1, 0)) currTetris
+        
+        let lastBlock = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) currTetris
+        -- let bX = checkMoveX m bmapX rr
+        let isMovable = checkMoveArr mX ls rr
+        newBlock <- randomBlockX refGlobal
         modifyIORef
           refGlobal
           ( \s ->
               s
-                { moveY_ = bX ? my - 1 $ 0,
-                  moveX_ = bX ? (moveX_ s) $ 0,
-                  boardMap1_ = bX ? bmapX $ addBlockX bmapX currBrX
+                { moveY_ = isMovable ? my - 1 $ 0,
+                  moveX_ = isMovable ? moveX_ s $ 0,
+                  tetris1X_ = isMovable ? tetris1X_ s $ newBlock
                 }
           )
-        when (not bX) $ do
+  
+        if not isMovable then do
+          -- let br = BlockAttr {isFilled_ = True, typeId_ = 2, blockNum_ = 0, color_ = yellow}
+          -- mapM_ (\(t, b) -> DAO.writeArray ioArray t b) lastBlock
+          mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
+          let f x = isFilled_ x
+          removeBottomX f ioArray
+          
+          -- fun
+          -- if found full row
+          --    delete the bottom row
+          --    show new grid
+          --    move up grid down
+          --    show new grid'
+          --    fun 
+          
+          logFileG ["writeArray"]
+          logFileG $ map show ls
+          else pp "not write"
+
+          
+        when (not isMovable) $ do
           let delMap [] m = m
               delMap (x : cx) m = delMap cx $ DM.delete x m
 
@@ -2418,16 +2476,17 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
           -- xxx
           -- Delete the lowest y-axis value, [(2, -4), (2, -2)] => delete all rows with [(_, -4)]
           -- let lsBrick = qqsort (\(_, y0) (_, y1) -> y0 < y1) $ map fst lastBrick
+          {--
           let lsBrickX = qqsort (\(x0, y0) (x1, y1) -> y0 < y1) $ map fst currBrX
           if len lsBrickX > 0
             then do
-              bdmap <- readIORef refGlobal >>= return . boardMap1_
+              bdmap <- readIORef refGlobal <&> boardMap1_
               let rr = initRectGrid
               let nx = div (xCount_ rr) 2
               let ny = yCount_ rr
               let ls = map (\x -> (x, snd $ head lsBrickX)) [- nx, - nx + 1 .. (nx - 1)]
 
-              let fullRow = foldl (\a b -> a + b) 0 $ map (\t -> DM.member t bdmap ? 1 $ 0) ls
+              let fullRow = sum $ map (\t -> DM.member t bdmap ? 1 $ 0) ls
               fw "fullRow"
               print fullRow
               pre ls
@@ -2435,14 +2494,15 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
                 -- modifyIORef refGlobal (\s -> s {boardMap_ = let m = boardMap_ s in delMap ls m})
                 modifyIORef refGlobal (\s -> s {boardMap1_ = let m = boardMap1_ s in delMap ls m})
             else pp ""
+          --}
 
         -- newMap <- readIORef refGlobal >>= return . boardMap_
         -- newMap <- readIORef refGlobal >>= return . boardMap1_
-        pp "ok"
+          pp "ok"
     
   
     when True $ do
-      lv <- readIORef refGlobal >>= return . randomWalkInt_
+      lv <- readIORef refGlobal <&> randomWalkInt_
       let lt = map (\(a, b) -> Vertex3 a b 0.0) $ map (join (***) ((* 0.1) . fi)) lv
       -- logFileG $ map show lt
       logFileG ["randomWalkInt_"]
@@ -2471,7 +2531,7 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
           -- writeIORef refCount currRef
           resetRefFrame refCount
           pp "ok"
-          mm <- readIORef refGlobal >>= return . boardMap_
+          mm <- readIORef refGlobal <&> boardMap_
           logFileG $ map show $ DM.toList mm
           logFileG ["randomIntList xx"]
           logFileG $ map show cx
@@ -2479,32 +2539,36 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
     -- KEY: rotate brick, rotate block
     when True $ do
       let stepN = fi $ rotStep initRectGrid
-      count1 <- readIORef refGlobal >>= return . count1_
+      count1 <- readIORef refGlobal <&> count1_
       case count1 of
         v
           | v < stepN - 1 -> do
             preservingMatrix $ do
               rotateBlock refGlobal initRectGrid
-              modifyIORef refGlobal (\s -> s {count1_ = (count1_ s) + 1})
+              modifyIORef refGlobal \s -> s {count1_ = count1_ s + 1}
           | v == stepN - 1 -> do
             let rr = initRectGrid
-            moveX <- readIORef refGlobal >>= return . moveX_
-            moveY <- readIORef refGlobal >>= return . moveY_
-            bmap <- readIORef refGlobal >>= return . boardMap_
-            bmapX <- readIORef refGlobal >>= return . boardMap1_
-            centerBrick <- readIORef refGlobal >>= return . centerBrick_
+            moveX <- readIORef refGlobal <&> moveX_
+            moveY <- readIORef refGlobal <&> moveY_
+            bmap <- readIORef refGlobal <&> boardMap_
+            bmapX <- readIORef refGlobal <&> boardMap1_
+            centerBrick <- readIORef refGlobal <&> centerBrick_
 
-            rotN <- readIORef refGlobal >>= return . rotN_
-            bk1 <- readIORef refGlobal >>= return . bk1_
-            tet <- readIORef refGlobal >>= return . tetris1_
-            let bk1'X = rotateN rotN (tet ^._4)
+            rotN <- readIORef refGlobal <&> rotN_
+            bk1 <- readIORef refGlobal <&> bk1_
+            tet <- readIORef refGlobal <&> tetris1_
+            tetX <- readIORef refGlobal <&> tetris1X_
+            ls <- getAssocs ioArray
+            let bk1'X = rotateN rotN (snd tetX)
 
             -- /Users/aaa/myfile/bitbucket/tmp/xx_5248.x
             let currBrX = innerBrick (moveX, moveY) centerBrick bk1'X
-            let bX = checkMoveX currBrX bmapX rr
-            modifyIORef refGlobal (\s -> s {rotN_ = bX ? (let n = (rotN_ s) + 1 in mod n 4) $ rotN_ s})
+            let currBrXX = map (\(x, y) -> (x, y, 0)) currBrX
+            -- let bX = checkMoveX currBrX bmapX rr
+            let bX = checkMoveArr currBrXX ls rr
+            modifyIORef refGlobal \s -> s {rotN_ = bX ? (let n = rotN_ s + 1 in mod n 4) $ rotN_ s}
             rotateBlock refGlobal initRectGrid
-            modifyIORef refGlobal (\s -> s {count1_ = (count1_ s) + 1})
+            modifyIORef refGlobal \s -> s {count1_ = count1_ s + 1}
             pp "ok"
           | otherwise -> do
             modifyIORef refGlobal (\s -> s {count1_ = 1000000})
@@ -2512,14 +2576,11 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
 -- /Users/aaa/myfile/bitbucket/tmp/xx_5948.x
   
     -- KEY: show board, show grid, draw board
+    
     when True $ do
-      {--
-      bm <- readIORef refGlobal >>= return . boardMap_
-      showCurrBoard bm
-      --}
-      bmX <- readIORef refGlobal >>= return . boardMap1_
-      showCurrBoardX bmX
-
+      showCurrBoardArr ioArray
+    
+  
     -- KEY: current brick
     when True $ do
       -- currBrick refGlobal initRectGrid
@@ -2537,9 +2598,9 @@ mainLoop w refCam refStep refGlobal refCount lssVex = unless' (G.windowShouldClo
 
   G.swapBuffers w
   G.pollEvents
-  mainLoop w refCam refStep refGlobal refCount lssVex
+  mainLoop w refCam refStep refGlobal refCount lssVex ioArray
 
-{--
+
 main = do
   argList <- getArgs
   if len argList > 0
@@ -2549,8 +2610,8 @@ main = do
         _ -> do
           print $ "Wrong option => " ++ (head argList) ++ ", -h => Help"
     else mymain
---}
-  
+
+
 bk1 :: [[Int]]
 bk1 =
   [ [0, 0, 0, 0, 0],
@@ -2659,11 +2720,8 @@ main = do
 
 data MyX = MyX {name00_ :: String, age00_ :: Int} deriving (Show, Eq)
 
-partArray :: (MArray a e' m, MArray a e m, Ix i) => (e' -> e) -> a i e' -> m [e]
-partArray f a = do
-  ls <- mapArray f a >>= getElems
-  return ls
-       
+
+{--
 main :: IO ()
 main = do
     let x = MyX "x" 3
@@ -2772,4 +2830,228 @@ main = do
     -- Read and print the modified 2D array
     modifiedElems <- getElems arr
     putStrLn $ "Modified array: " ++ show modifiedElems
+--}
 
+--
+-- (z,       y, x)
+--  Layer 
+--          Col
+--               Row
+-- (l, c, r)
+-- 
+
+data D3 = D3{zVec_ :: Int,
+             yVec_ :: Int,
+             xVec_ :: Int} deriving (Show, Eq)
+
+revIndex :: (Int, Int) -> Int -> Maybe Int
+revIndex (a, b) x = DM.lookup x m
+  where
+    ls = [a .. b]
+    rs = reverse ls
+    m = DM.fromList $ zip ls rs
+
+{--
+
+    x  x
+--}
+walkBlock :: (Int, Int, Int) -> (Int -> Bool) -> IOArray (Int, Int, Int) Int -> IO [(Int, Int, Int)]
+walkBlock (a, b, c) f arr = do
+  bound <- DAO.getBounds arr
+  if DAO.inRange bound (a, b, c) then do
+    x <- DAO.readArray arr (a, b, c)
+    if f x then do
+      DAO.writeArray arr (a, b, c) (-1)
+      walkBlock (a + 1, b, c) f arr >>= \s1 ->
+        walkBlock (a - 1, b, c) f arr >>= \s2 ->
+        walkBlock (a, b + 1, c) f arr >>= \s3 ->
+        walkBlock (a, b - 1, c) f arr >>= \s4 ->
+        return (s1 ++ s2 ++ s3 ++ s4 ++ [(a, b, c)])
+    else do
+      return []
+  else do
+    return []
+  
+-- <&> = F a -> (a -> b) -> F b
+-- y0, y1: -1  0  1  2  3
+--               x  x   x
+funx :: (Int, Int) -> (Int, Int) -> (Int -> Bool) -> IOArray (Int, Int, Int) Int -> IO()
+funx (y0, y1) (yy0, yy1) f arr = do
+  when (y0 <= y1) $ do
+    let z0 = 0
+    ((a0, b0, c0), (a1, b1, c1)) <- getBounds arr
+
+    -- ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> z == 0 && y == y1 && (b1 e || b2 e || b3 e || b4 e))
+    ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> z == 0 && y == y1 && f e)
+    if len ls == c1 - c0 + 1 then do
+      fw "Full Row"
+      DAO.getAssocs arr >>= mapM_ (\((zDir, yDir, xDir), _) -> do
+            let ms = revIndex (yy0, yy1) yDir
+            let y' = case ms of
+                         Just s -> s
+                         Nothing -> error "ERROR: Invalid index"
+            when (zDir == z0) $ do
+              if y0 < y' && y' <= y1 then do
+                s <- DAO.readArray arr  (zDir, y' - 1, xDir)
+                DAO.writeArray arr      (zDir, y',     xDir) s
+              else do
+                when (y0 == y') $ do
+                  DAO.writeArray arr (zDir, y', xDir) 0
+        )
+      funx (yy0, yy1) (yy0, yy1) f arr
+      else do
+      funx (y0, y1 - 1) (yy0, yy1) f arr
+      pp "Not equal to len"
+    fw "funx print arr"
+    printMat3 arr
+
+removeBottom :: (Int, Int) -> (Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
+removeBottom (y0, y1) (yy0, yy1) f arr = do
+  when (y0 <= y1) $ do
+    let z0 = 0
+    bt@((a0, b0, c0), (a1, b1, c1)) <- getBounds arr
+    -- ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> z == 0 && y == y1 && (b1 e || b2 e || b3 e || b4 e))
+    ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((a, b, c), e) -> c == 0 && b == y1 && f e)
+    if len ls == a1 - a0 + 1 then do
+      fw "Full Row"
+      logFileG ["MyFullRow"]
+      logFileG [show bt]
+      logFileG $ map show ls
+      logFileG ["EndFullRow"]
+      logFileG ["myy1"]
+      logFileG [show y1]
+      DAO.getAssocs arr >>= mapM_ (\((zDir, yDir, xDir), _) -> do
+            let ms = revIndex (yy0, yy1) yDir
+            let y' = case ms of
+                         Just s -> s
+                         Nothing -> error "ERROR: Invalid index"
+            when (xDir == z0) $ do
+              logFileG ["CallMyMaybe0"]
+              logFileG ["yy0 y' yy1"]
+              logFileG $ map show [yy0, y', yy1]
+              logFileG ["y0, y1"]
+              logFileG $ map show [y0, y1]
+              logFileG ["zDir yDir xDir"]
+              logFileG $ map show [zDir, yDir, xDir]
+              -- -10                   9
+              if yy0 <= yDir && yDir < yy1 && y1 <= yDir then do
+                logFileG ["CallMyMaybe1"]
+                s <- DAO.readArray arr  (zDir, yDir + 1, xDir)
+                DAO.writeArray arr      (zDir, yDir,     xDir) s
+              else do
+                when (yy1 == yDir) $ do
+                  DAO.writeArray arr (zDir, yDir, xDir) initBlockAttr
+        )
+      -- Remove the bottom row
+      -- Display all the new position of blocks
+      showCurrBoardArr arr
+      removeBottom (yy0, yy1) (yy0, yy1) f arr
+      else do
+      removeBottom (y0, y1 - 1) (yy0, yy1) f arr
+      -- pp "Not equal to len"
+    -- fw "funx print arr"
+    -- printMat3 arr
+
+removeBottomX :: (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
+removeBottomX f arr = do
+  ((z0, y0, x0), (z1, y1, x1)) <- DAO.getBounds arr
+  removeBottom (y0, y1) (y0, y1) f arr
+
+{--
+  11122
+  ee12 
+  ex12 
+   x   
+
+--}
+
+{--
+main = do
+       when True $ do
+         let x0 = 0
+         let x1 = 2
+         let y0 = -1
+         let y1 = 3
+         let z0 = 0
+         let z1 = 4
+         arr <- DAO.newListArray ((x0, y0, z0) , (x1, y1, z1)) [1.. (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1)] :: IO (IOArray (Int, Int, Int) Int)
+         DAO.getAssocs arr >>= mapM_ (\((zDir, yDir, xDir), _) -> do
+                   let ms = revIndex (y0, y1) yDir
+                   let y' = case ms of
+                                Just s -> s
+                                Nothing -> error "ERROR: Invalid index"
+                   when (zDir == z0) $ do
+                     if y0 < y' && y' < y1 then do
+                       s <- DAO.readArray arr  (zDir, y' - 1, xDir)
+                       DAO.writeArray arr      (zDir, y', xDir) s
+                     else do
+                       when (y0 == y') $ do
+                         DAO.writeArray arr (zDir, y', xDir) 0
+               )
+         fw "writeArray"
+         a1 <- DAO.getAssocs arr
+         printMat3 arr
+         -- mapM_ (\x -> do printMat x; fw "";)  $ partList (y1 - y0 + 1) $ partList (z1 - z0 + 1) a1
+         pp "ok"
+       when True $ do
+         let (a, b) = (-1, 2)
+         let ls = map (revIndex (-1, 2)) [-1..2]
+         pre ls
+       when True $ do
+         fw "printMat3"
+         let a = 1; b = 2; c = 3
+         ls <- DAO.newListArray ((0, 0, 0), (a, b, c)) [1..((a + 1) * (b + 1)) * (c + 1)] :: IO(IOArray (Int, Int, Int) Int)
+         lt <- DAO.getAssocs ls
+         printMat3 ls
+       when True $ do
+         pp "funx"
+         let x0 = 0
+         let x1 = 2
+         let y0 = -1
+         let y1 = 3
+         let z0 = 0
+         let z1 = 4
+         ls <- DAO.newListArray ((x0, y0, z0), (x1, y1, z1)) [1..(x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1)] :: IO(IOArray (Int, Int, Int) Int)
+         let b1 e = 21 <= e && e <= 25
+         let b2 e = 16 <= e && e <= 20
+         let b3 e = 11 <= e && e <= 15
+         let b4 e = 6  <= e && e <= 10
+         let b5 e = 1  <= e && e <= 5
+         let f  e = 16 <= e && e <= 20
+         funx (y0, y1) (y0, y1) f ls
+         pp "kk"
+       when True $ do
+         fw "walkBlock"
+         let a = 1; b = 2; c = 0
+         arr <- DAO.newListArray ((0, 0, 0), (a, b, c)) [1..((a + 1) * (b + 1) * (c + 1))] :: IO(IOArray (Int, Int, Int) Int)
+         lt <- DAO.getAssocs arr
+         let f x = x == 1 || x == 2 || x == 4
+         ls <- walkBlock (0, 0, 0) f arr
+         printMat3 arr
+         fw "ls"
+         pre ls
+
+       when True $ do
+         pp "funx"
+         let x0 = 0
+         let x1 = 2
+         let y0 = -1
+         let y1 = 3
+         let z0 = 0
+         let z1 = 4
+         let xx = x1 - x0 + 1
+         let yy = y1 - y0 + 1
+         let zz = z1 - z0 + 1
+         arr <- DAO.newListArray ((x0, y0, z0), (x1, y1, z1)) $ replicate (xx * yy * zz) initBlockAttr  :: IO(IOArray (Int, Int, Int) BlockAttr)
+         -- arr <- DAO.newListArray ((x0, y0, z0), (x1, y1, z1)) $ replicate (xx * yy * zz) 0  :: IO(IOArray (Int, Int, Int) Int)
+         let b1 e = 21 <= e && e <= 25
+         let b2 e = 16 <= e && e <= 20
+         let b3 e = 11 <= e && e <= 15
+         let b4 e = 6  <= e && e <= 10
+         let b5 e = 1  <= e && e <= 5
+         let f s = isFilled_ s
+
+         removeBottom (y0, y1) (y0, y1) f arr
+         fw "removeBottom arr"
+         printMat3 arr
+--}
