@@ -2452,55 +2452,24 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
           -- mapM_ (\(t, b) -> DAO.writeArray ioArray t b) lastBlock
           mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
           let f x = isFilled_ x
+          -- KEY: remove bottom row
           removeBottomX f ioArray
+
+          DAO.getAssocs ioArray >>= mapM_ (\((z, y, x), _) -> do
+                                          ax <- DAO.readArray ioArray (z, y, x)
+                                          if isFilled_ ax then do
+                                            pp "kk"
+                                            else do
+                                            pp "ee"
+                                          pp "ok"
+            )
           
-          -- fun
-          -- if found full row
-          --    delete the bottom row
-          --    show new grid
-          --    move up grid down
-          --    show new grid'
-          --    fun 
-          
+
           logFileG ["writeArray"]
           logFileG $ map show ls
           else pp "not write"
-
-          
-        when (not isMovable) $ do
-          let delMap [] m = m
-              delMap (x : cx) m = delMap cx $ DM.delete x m
-
           -- /Users/aaa/myfile/bitbucket/tmp/xx_2621.x
 
-          -- xxx
-          -- Delete the lowest y-axis value, [(2, -4), (2, -2)] => delete all rows with [(_, -4)]
-          -- let lsBrick = qqsort (\(_, y0) (_, y1) -> y0 < y1) $ map fst lastBrick
-          {--
-          let lsBrickX = qqsort (\(x0, y0) (x1, y1) -> y0 < y1) $ map fst currBrX
-          if len lsBrickX > 0
-            then do
-              bdmap <- readIORef refGlobal <&> boardMap1_
-              let rr = initRectGrid
-              let nx = div (xCount_ rr) 2
-              let ny = yCount_ rr
-              let ls = map (\x -> (x, snd $ head lsBrickX)) [- nx, - nx + 1 .. (nx - 1)]
-
-              let fullRow = sum $ map (\t -> DM.member t bdmap ? 1 $ 0) ls
-              fw "fullRow"
-              print fullRow
-              pre ls
-              when (fullRow == 20) $ do
-                -- modifyIORef refGlobal (\s -> s {boardMap_ = let m = boardMap_ s in delMap ls m})
-                modifyIORef refGlobal (\s -> s {boardMap1_ = let m = boardMap1_ s in delMap ls m})
-            else pp ""
-          --}
-
-        -- newMap <- readIORef refGlobal >>= return . boardMap_
-        -- newMap <- readIORef refGlobal >>= return . boardMap1_
-          pp "ok"
-    
-  
     when True $ do
       lv <- readIORef refGlobal <&> randomWalkInt_
       let lt = map (\(a, b) -> Vertex3 a b 0.0) $ map (join (***) ((* 0.1) . fi)) lv
