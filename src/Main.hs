@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE TupleSections #-}
 
 -- {-# LANGUAGE CPP #-}
 -- {-# LANGUAGE CPP #-}
@@ -36,7 +37,38 @@ module Main where
 -- import Graphics.UI.GLUT
 -- import Graphics.UI.GLUT.Callbacks.Global
 import AronGraphic hiding (dist)
-import AronModule hiding (rw)
+import AronModule
+    ( printMat3,
+      resetRefFrame,
+      readRefFrame2,
+      printMat,
+      fi,
+      unique,
+      fw,
+      logFileG,
+      pre,
+      fl,
+      writeFileList,
+      randomIntList,
+      timeNowMilli,
+      ρ,
+      (?),
+      partList,
+      takeBetweenExc,
+      trim,
+      pp,
+      rf,
+      iterateList,
+      mergeList,
+      sqrtC',
+      im,
+      re,
+      len,
+      randomInt,
+      printBox,
+      en,
+      FrameCount(..),
+      C(C) )
 import AronOpenGL
 import Control.Arrow
 import Control.Concurrent
@@ -175,6 +207,9 @@ colorls =
       Color3 0.1 0.1 0.4
     ]
 
+{-|
+   KEY: random color, get color
+-}
 randomColor :: IO (Color3 GLdouble)
 randomColor = randomInt 0 (len ls - 1) >>= \x -> return $ ls !! x
   where
@@ -598,7 +633,7 @@ mymain = do
       -- writeIORef refGlobal $ setRandomPts globalRef2 randomPts
       modifyIORef refGlobal (\x -> x {randomPts_ = randomPts})
 
-      refFrame <- timeNowMilli >>= \x -> newIORef FrameCount {frameTime = x, frameCount = 1, frameIndex = 0}
+      refFrame <- timeNowMilli >>= \x -> newIORef FrameCount {frameTime = x, frameCount = 1, frameNewCount = 0, frameIndex = 0}
 
       let cx = circleNArc' (Vertex3 0.4 0 0) 0.4 40 (0, pi)
       let cy = curvePtK (const 0) (0, 0.8) 40
@@ -614,7 +649,7 @@ mymain = do
       let nx = div (xCount_ rr) 2
       let ny = div (yCount_ rr) 2
 
-      let blockAttr = BlockAttr{isFilled_ = False, typeId_ = 0, blockNum_ = 0, color_ = green}
+      let blockAttr = BlockAttr{isFilled_ = False, typeId_ = 0, tetrisNum_ = 0, color_ = green}
       ioArray <- DAO.newArray ((-nx, -ny, 0) , (nx - 1, ny - 1, 0)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
       -- ioArray <- DAO.newArray ((0, -ny, -nx) , (0, ny - 1, nx - 1)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
       {--
@@ -969,7 +1004,7 @@ mkTetris1 bt bid = (bt, bid, white, bk)
 
 randomBlockX :: IORef GlobalRef -> IO (BlockAttr, [[Int]])
 randomBlockX ref = do
-            let bk1 =
+            let tet1 =
                   [
                        [0, 0, 0, 0, 0],
                        [0, 0, 1, 0, 0],
@@ -977,7 +1012,7 @@ randomBlockX ref = do
                        [0, 0, 0, 0, 0],
                        [0, 0, 0, 0, 0]
                    ]
-            let bk2 =
+            let tet2 =
                   [
                        [0, 0, 0, 0, 0],
                        [0, 0, 0, 0, 0],
@@ -985,13 +1020,17 @@ randomBlockX ref = do
                        [0, 0, 0, 0, 0],
                        [0, 0, 0, 0, 0]
                    ]
+            tetrisCount <- readIORef ref <&> tetrisCount_
             let t1 = 1
             let t2 = 2
-            let br1 = BlockAttr{isFilled_ = True, typeId_ = t1, blockNum_ = 0, color_ = white}
-            let br2 = BlockAttr{isFilled_ = True, typeId_ = t2, blockNum_ = 0, color_ = cyan}
-            let ls = [(br1, bk1), (br2, bk2)]
+            let br1 = BlockAttr{isFilled_ = True, typeId_ = t1, tetrisNum_ = 0, color_ = white}
+            let ls = [(tet1, white, t1), (tet2, cyan, t2)]
             inx <- randomInt 0 (len ls - 1)
-            return $ ls !! inx
+            let br = ls !! inx
+            ranColor <- randomColor
+            let bb = (br1{typeId_ = br ^._3,  tetrisNum_ = tetrisCount + 1, color_ = ranColor }, br ^._1)
+            modifyIORef ref (\x -> x{tetrisCount_ = tetrisCount + 1})
+            return bb
   
 initGlobal :: GlobalRef
 initGlobal =
@@ -1038,8 +1077,9 @@ initGlobal =
       count1_ = 10000000,
       rotN_ = 0,
       blockCount_ = 1,
+      tetrisCount_ = 1,
       tetris1_ = mkTetris1 (blockCount_ initGlobal) 0,
-      tetris1X_ = (BlockAttr {isFilled_ = True, typeId_ = 1, blockNum_ = (blockCount_ initGlobal), color_ = blue}, bk1_ initGlobal) 
+      tetris1X_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisNum_ = (blockCount_ initGlobal), color_ = blue}, bk1_ initGlobal) 
     }
 
   
@@ -1708,10 +1748,10 @@ randomVexList v@(Vertex3 x y z) (c : cx) = case c of
 randomVexListInt :: (Int, Int) -> [Int] -> [(Int, Int)]
 randomVexListInt _ [] = []
 randomVexListInt v@(x, y) (c : cx) = case c of
-  1 -> x < mx ? (let u = (x + 1, y) in u : (randomVexListInt u cx)) $ randomVexListInt v cx
-  2 -> x > - mx ? (let u = (x - 1, y) in u : (randomVexListInt u cx)) $ randomVexListInt v cx
-  3 -> y < my ? (let u = (x, y + 1) in u : (randomVexListInt u cx)) $ randomVexListInt v cx
-  4 -> y > - my ? (let u = (x, y - 1) in u : (randomVexListInt u cx)) $ randomVexListInt v cx
+  1 -> x < mx ? (let u = (x + 1, y) in u : randomVexListInt u cx) $ randomVexListInt v cx
+  2 -> x > - mx ? (let u = (x - 1, y) in u : randomVexListInt u cx) $ randomVexListInt v cx
+  3 -> y < my ? (let u = (x, y + 1) in u : randomVexListInt u cx) $ randomVexListInt v cx
+  4 -> y > - my ? (let u = (x, y - 1) in u : randomVexListInt u cx) $ randomVexListInt v cx
   _ -> error "ERROR randomInt"
   where
     mx = 10
@@ -2134,7 +2174,9 @@ showCurrBoardArr arr = do
     mapM_
       ( \((x, y, _), b) ->
           preservingMatrix $ do
-            isFilled_ b ? centerBlock00 (x, y) initRectGrid (color_ b) $ pp "not filled"
+            when (isFilled_ b) $ do
+              centerBlock00 (x, y) initRectGrid (color_ b)
+            -- isFilled_ b ? centerBlock00 (x, y) initRectGrid (color_ b) $ pp "not filled"
       ) ls
   pp "ok"
   
@@ -2234,9 +2276,9 @@ getBottom (x0, y0, z0) = filter (\((x, y, z), _) -> y == y0)
 initBlockAttr :: BlockAttr
 initBlockAttr = BlockAttr {
    isFilled_ = False
-  ,typeId_ = 0
-  ,blockNum_ = 0
-  ,color_ = cyan
+  ,typeId_ = -1
+  ,tetrisNum_ = -1
+  ,color_ = red
                           }
   
 mainLoop ::
@@ -2399,8 +2441,6 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
     preservingMatrix $ do
       mapM_ (\(x, y) -> centerBlock00 (x, y) initRectGrid gray) ls
       pp "ok"
-
-  
   when True $ do
     (index, isNext, currRef) <- readRefFrame2 refCount 1000
     --                                                  |
@@ -2436,6 +2476,7 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
         let lastBlock = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) currTetris
         -- let bX = checkMoveX m bmapX rr
         let isMovable = checkMoveArr mX ls rr
+        -- KEY: new block
         newBlock <- randomBlockX refGlobal
         modifyIORef
           refGlobal
@@ -2455,14 +2496,18 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
           -- KEY: remove bottom row
           removeBottomX f ioArray
 
+          {--
           DAO.getAssocs ioArray >>= mapM_ (\((z, y, x), _) -> do
                                           ax <- DAO.readArray ioArray (z, y, x)
                                           if isFilled_ ax then do
+                                            let f x = typeId_ x == typeId_ ax
+                                            ls <- walkBlockX (z, y, z) f ioArray
                                             pp "kk"
                                             else do
                                             pp "ee"
                                           pp "ok"
             )
+          --}
           
 
           logFileG ["writeArray"]
@@ -2577,7 +2622,7 @@ main = do
       case head argList of
         "-h" -> helpme
         _ -> do
-          print $ "Wrong option => " ++ (head argList) ++ ", -h => Help"
+          print $ "Wrong option => " ++ head argList ++ ", -h => Help"
     else mymain
 
 
@@ -2840,7 +2885,49 @@ walkBlock (a, b, c) f arr = do
       return []
   else do
     return []
-  
+
+walkBlockX :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [(Int, Int, Int)]
+walkBlockX (a, b, c) f arr = do
+  bound <- DAO.getBounds arr
+  if DAO.inRange bound (a, b, c) then do
+    x <- DAO.readArray arr (a, b, c)
+    if f x then do
+      DAO.writeArray arr (a, b, c) initBlockAttr
+      walkBlockX (a + 1, b, c) f arr >>= \s1 ->
+        walkBlockX (a - 1, b, c) f arr >>= \s2 ->
+        walkBlockX (a, b + 1, c) f arr >>= \s3 ->
+        walkBlockX (a, b - 1, c) f arr >>= \s4 ->
+        return (s1 ++ s2 ++ s3 ++ s4 ++ [(a, b, c)])
+    else do
+      return []
+  else do
+    return []
+
+walkBlockXX :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [(Int, Int, Int)]
+walkBlockXX (a, b, c) f arr = do
+  ls <- walkfun (a, b, c) f arr
+  mapM_ (uncurry $ DAO.writeArray arr) ls
+  return $ map fst ls
+
+walkfun :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [((Int, Int, Int), BlockAttr)]
+walkfun (a, b, c) f arr = do
+  bound <- DAO.getBounds arr
+  if DAO.inRange bound (a, b, c) then do
+    x <- DAO.readArray arr (a, b, c)
+    if f x then do
+      DAO.writeArray arr (a, b, c) initBlockAttr
+      walkfun (a + 1, b, c) f arr >>= \s1 ->
+        walkfun (a - 1, b, c) f arr >>= \s2 ->
+        walkfun (a, b + 1, c) f arr >>= \s3 ->
+        walkfun (a, b - 1, c) f arr >>= \s4 ->
+        return (s1 ++ s2 ++ s3 ++ s4 ++ [((a, b, c), x)])
+    else do
+      return []
+  else do
+    return []
+
+
+
 -- <&> = F a -> (a -> b) -> F b
 -- y0, y1: -1  0  1  2  3
 --               x  x   x
@@ -2914,12 +3001,50 @@ removeBottom (y0, y1) (yy0, yy1) f arr = do
       -- Remove the bottom row
       -- Display all the new position of blocks
       showCurrBoardArr arr
+      threadDelay 2000000
+      -- XXX here
+      fallBlock arr
+      showCurrBoardArr arr
+      threadDelay 2000000
       removeBottom (yy0, yy1) (yy0, yy1) f arr
       else do
       removeBottom (y0, y1 - 1) (yy0, yy1) f arr
       -- pp "Not equal to len"
     -- fw "funx print arr"
     -- printMat3 arr
+
+
+fallBlock :: IOArray (Int, Int, Int) BlockAttr -> IO()
+fallBlock arr = do
+  let rr = initRectGrid
+  DAO.getAssocs arr >>= mapM_ (\((z, y, x), ax) -> do
+                                -- ax <- DAO.readArray arr (z, y, x)
+                                if isFilled_ ax then do
+                                  lsArr <- getAssocs arr
+                                  let f x = isFilled_ x && isFilled_ ax && tetrisNum_ x == tetrisNum_ ax
+                                  lt <- walkBlockXX (z, y, x) f arr
+                                  let lsArr' = filter (\(x,_) -> x `notElem` lt) lsArr
+                                  let ls = map (\(z0, y0, x0) -> (z0, y0 - 1, x0)) lt
+
+                                  -- refill the block because walkBlockX modifies it
+                                  -- mapM_ (uncurry $ DAO.writeArray arr) $ map (\x -> (,) x ax) lt
+                                  logFileG ["fallBlock"]
+                                  logFileG $ map show ls
+                                  let b = checkMoveArr ls lsArr' rr
+                                  when (len lt > 0 && b) $ do
+                                    logFileG ["movedown"]
+                                    let lv = map (,ax) ls
+                                    logFileG $ map show lv
+                                    -- fmap g . fmap f = fmap (g . f)
+                                    mapM_ (uncurry $ DAO.writeArray arr) $ map (,initBlockAttr) lt
+                                    mapM_ (uncurry $ DAO.writeArray arr) lv
+                                    logFileG ["endmovedown"]
+                                    showCurrBoardArr arr
+                                    threadDelay 2000000
+                                  else do
+                                  pp "ee"
+                                pp "ok"
+                               )
 
 removeBottomX :: (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
 removeBottomX f arr = do
