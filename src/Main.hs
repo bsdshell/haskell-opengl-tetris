@@ -2263,9 +2263,6 @@ checkMoveArr :: [(Int, Int, Int)] -> [((Int, Int, Int) , BlockAttr)] -> RectGrid
 checkMoveArr cx bls rr = isInside && not anyBlock
   where
     sm = DM.fromList $ filter (\(_, b) -> isFilled_ b) bls
-    -- anyBlock = any (== True) $ map (\x -> DM.member x sm) cx
-    -- anyBlock = any (== True) $ map (flip DM.member sm) cx
-    -- anyBlock = any (flip DM.member sm) cx
     anyBlock = any (`DM.member` sm) cx
     isInside = all (\(x, y, z) -> (-nx <= x && x < nx) && (-ny <= y && y < ny)) cx
     nx = div (xCount_ rr) 2
