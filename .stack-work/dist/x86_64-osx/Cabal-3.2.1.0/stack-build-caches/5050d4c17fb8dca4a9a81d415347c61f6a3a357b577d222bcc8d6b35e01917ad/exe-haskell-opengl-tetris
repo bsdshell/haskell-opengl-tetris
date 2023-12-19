@@ -1,18 +1,18 @@
-/Users/aaa/myfile/github/tetris/haskell-opengl-tetris.cabal:
+/Users/aaa/myfile/github/haskell-opengl-tetris/README.md:
+  hash: 7607cedf86ef9ed5985d17cf4f7be071ead8d59281b9a843e2aad32be51e04a0
+/Users/aaa/myfile/github/haskell-opengl-tetris/haskell-opengl-tetris.cabal:
   hash: 951d44c9236bf0c51e02bb3b1f680393346b1b5800eb45600337bff9395eb669
-/Users/aaa/myfile/github/tetris/README.md:
-  hash: b5cdf5750003217f7318dfea54348a3eb35e69d391670be97876fd4cca62feac
 /Users/aaa/myfile/bitbucket/haskellffi/AronCLibFFI.c:
   hash: 3cacc4a5e3b2e6d7d3b37bc9f621f0ef52182878857f18a0bb53e53578e8fdd5
-/Users/aaa/myfile/github/tetris/src/Main.hs:
-  hash: 29b629861c9299bdb6fc90bf3c2b625d2d3e2f4002efaca64c41abd3491ba70b
 /Users/aaa/.stack/programs/x86_64-osx/ghc-8.10.3/lib/ghc-8.10.3/include/ghcversion.h:
   hash: c48ad36f2f58fb4c6880f8883b41f1dc05207e41a06d05dde520edc9773ce4d1
-/Users/aaa/myfile/github/tetris/src/AronOpenGL.hs:
-  hash: bd1d11d7bc990d9d36540e38e67b292a7d1f7038193407cc2933fe58fb0b4f7f
-/Users/aaa/myfile/github/tetris/.stack-work/dist/x86_64-osx/Cabal-3.2.1.0/build/haskell-opengl-tetris/autogen/cabal_macros.h:
-  hash: 75a7c4fb35cdb9b6d6f9213a0366cc36b30e3c85b3f44ddc94cdf00df237cb4f
-/Users/aaa/myfile/github/tetris/src/AronGraphic.hs:
-  hash: 44a486e27e31d47039bf384043734cd77ba1da8979d0a6253fa8bcdcc3e1a691
-/Users/aaa/myfile/github/tetris/src/AronModule.hs:
-  hash: 78e994597f1edca9392d6ca9dc6061755a5a6a398d7f2584ea6ada2097d12f14
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/Main.hs:
+  hash: 8a49af80ffb068139d5b3358f585a6a7a080b5bb13275935eecdaa6cf239f817
+? /Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/dist/x86_64-osx/Cabal-3.2.1.0/build/haskell-opengl-tetris/autogen/cabal_macros.h
+: hash: 75a7c4fb35cdb9b6d6f9213a0366cc36b30e3c85b3f44ddc94cdf00df237cb4f
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronOpenGL.hs:
+  hash: bd2a1dd8d216494de6d0e0695311d3a39e2861655891da5d1707f7f993ff8e95
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronModule.hs:
+  hash: b06b887f402f94b0de55d21c6ac1af32f34a160a2009247d753ff4af891fd5c4
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronGraphic.hs:
+  hash: 0b4763cf40541be65781189ea7b826a9803568d2c550b92f35030a72af9b7063

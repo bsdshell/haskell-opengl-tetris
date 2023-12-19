@@ -2265,7 +2265,8 @@ checkMoveArr cx bls rr = isInside && not anyBlock
     sm = DM.fromList $ filter (\(_, b) -> isFilled_ b) bls
     -- anyBlock = any (== True) $ map (\x -> DM.member x sm) cx
     -- anyBlock = any (== True) $ map (flip DM.member sm) cx
-    anyBlock = any (flip DM.member sm) cx
+    -- anyBlock = any (flip DM.member sm) cx
+    anyBlock = any (`DM.member` sm) cx
     isInside = all (\(x, y, z) -> (-nx <= x && x < nx) && (-ny <= y && y < ny)) cx
     nx = div (xCount_ rr) 2
     ny = div (yCount_ rr) 2
@@ -2495,20 +2496,6 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
           let f x = isFilled_ x
           -- KEY: remove bottom row
           removeBottomX f ioArray
-
-          {--
-          DAO.getAssocs ioArray >>= mapM_ (\((z, y, x), _) -> do
-                                          ax <- DAO.readArray ioArray (z, y, x)
-                                          if isFilled_ ax then do
-                                            let f x = typeId_ x == typeId_ ax
-                                            ls <- walkBlockX (z, y, z) f ioArray
-                                            pp "kk"
-                                            else do
-                                            pp "ee"
-                                          pp "ok"
-            )
-          --}
-          
 
           logFileG ["writeArray"]
           logFileG $ map show ls
@@ -2865,66 +2852,31 @@ revIndex (a, b) x = DM.lookup x m
     rs = reverse ls
     m = DM.fromList $ zip ls rs
 
-{--
-
-    x  x
---}
-walkBlock :: (Int, Int, Int) -> (Int -> Bool) -> IOArray (Int, Int, Int) Int -> IO [(Int, Int, Int)]
-walkBlock (a, b, c) f arr = do
-  bound <- DAO.getBounds arr
-  if DAO.inRange bound (a, b, c) then do
-    x <- DAO.readArray arr (a, b, c)
-    if f x then do
-      DAO.writeArray arr (a, b, c) (-1)
-      walkBlock (a + 1, b, c) f arr >>= \s1 ->
-        walkBlock (a - 1, b, c) f arr >>= \s2 ->
-        walkBlock (a, b + 1, c) f arr >>= \s3 ->
-        walkBlock (a, b - 1, c) f arr >>= \s4 ->
-        return (s1 ++ s2 ++ s3 ++ s4 ++ [(a, b, c)])
-    else do
-      return []
-  else do
-    return []
-
-walkBlockX :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [(Int, Int, Int)]
-walkBlockX (a, b, c) f arr = do
-  bound <- DAO.getBounds arr
-  if DAO.inRange bound (a, b, c) then do
-    x <- DAO.readArray arr (a, b, c)
-    if f x then do
-      DAO.writeArray arr (a, b, c) initBlockAttr
-      walkBlockX (a + 1, b, c) f arr >>= \s1 ->
-        walkBlockX (a - 1, b, c) f arr >>= \s2 ->
-        walkBlockX (a, b + 1, c) f arr >>= \s3 ->
-        walkBlockX (a, b - 1, c) f arr >>= \s4 ->
-        return (s1 ++ s2 ++ s3 ++ s4 ++ [(a, b, c)])
-    else do
-      return []
-  else do
-    return []
-
+-- /Users/aaa/myfile/bitbucket/tmp/xx_5686.x
+-- /Users/aaa/myfile/bitbucket/tmp/xx_3123.x
+  
 walkBlockXX :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [(Int, Int, Int)]
 walkBlockXX (a, b, c) f arr = do
   ls <- walkfun (a, b, c) f arr
   mapM_ (uncurry $ DAO.writeArray arr) ls
   return $ map fst ls
-
-walkfun :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [((Int, Int, Int), BlockAttr)]
-walkfun (a, b, c) f arr = do
-  bound <- DAO.getBounds arr
-  if DAO.inRange bound (a, b, c) then do
-    x <- DAO.readArray arr (a, b, c)
-    if f x then do
-      DAO.writeArray arr (a, b, c) initBlockAttr
-      walkfun (a + 1, b, c) f arr >>= \s1 ->
-        walkfun (a - 1, b, c) f arr >>= \s2 ->
-        walkfun (a, b + 1, c) f arr >>= \s3 ->
-        walkfun (a, b - 1, c) f arr >>= \s4 ->
-        return (s1 ++ s2 ++ s3 ++ s4 ++ [((a, b, c), x)])
-    else do
-      return []
-  else do
-    return []
+  where
+   walkfun :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [((Int, Int, Int), BlockAttr)]
+   walkfun (a, b, c) f arr = do
+     bound <- DAO.getBounds arr
+     if DAO.inRange bound (a, b, c) then do
+       x <- DAO.readArray arr (a, b, c)
+       if f x then do
+         DAO.writeArray arr (a, b, c) initBlockAttr
+         walkfun (a + 1, b, c) f arr >>= \s1 ->
+           walkfun (a - 1, b, c) f arr >>= \s2 ->
+           walkfun (a, b + 1, c) f arr >>= \s3 ->
+           walkfun (a, b - 1, c) f arr >>= \s4 ->
+           return (s1 ++ s2 ++ s3 ++ s4 ++ [((a, b, c), x)])
+       else do
+         return []
+     else do
+       return []
 
 
 
@@ -3000,12 +2952,12 @@ removeBottom (y0, y1) (yy0, yy1) f arr = do
         )
       -- Remove the bottom row
       -- Display all the new position of blocks
-      showCurrBoardArr arr
-      threadDelay 2000000
+      -- showCurrBoardArr arr
+      -- threadDelay 2000000
       -- XXX here
       fallBlock arr
       showCurrBoardArr arr
-      threadDelay 2000000
+      -- threadDelay 200000
       removeBottom (yy0, yy1) (yy0, yy1) f arr
       else do
       removeBottom (y0, y1 - 1) (yy0, yy1) f arr
@@ -3026,8 +2978,6 @@ fallBlock arr = do
                                   let lsArr' = filter (\(x,_) -> x `notElem` lt) lsArr
                                   let ls = map (\(z0, y0, x0) -> (z0, y0 - 1, x0)) lt
 
-                                  -- refill the block because walkBlockX modifies it
-                                  -- mapM_ (uncurry $ DAO.writeArray arr) $ map (\x -> (,) x ax) lt
                                   logFileG ["fallBlock"]
                                   logFileG $ map show ls
                                   let b = checkMoveArr ls lsArr' rr
@@ -3035,12 +2985,12 @@ fallBlock arr = do
                                     logFileG ["movedown"]
                                     let lv = map (,ax) ls
                                     logFileG $ map show lv
-                                    -- fmap g . fmap f = fmap (g . f)
+                                  
                                     mapM_ (uncurry $ DAO.writeArray arr) $ map (,initBlockAttr) lt
                                     mapM_ (uncurry $ DAO.writeArray arr) lv
                                     logFileG ["endmovedown"]
-                                    showCurrBoardArr arr
-                                    threadDelay 2000000
+                                    -- showCurrBoardArr arr
+                                    -- threadDelay 2000000
                                   else do
                                   pp "ee"
                                 pp "ok"
@@ -3115,12 +3065,12 @@ main = do
          funx (y0, y1) (y0, y1) f ls
          pp "kk"
        when True $ do
-         fw "walkBlock"
+         fw "walkBlockXX"
          let a = 1; b = 2; c = 0
          arr <- DAO.newListArray ((0, 0, 0), (a, b, c)) [1..((a + 1) * (b + 1) * (c + 1))] :: IO(IOArray (Int, Int, Int) Int)
          lt <- DAO.getAssocs arr
          let f x = x == 1 || x == 2 || x == 4
-         ls <- walkBlock (0, 0, 0) f arr
+         ls <- walkBlockXX (0, 0, 0) f arr
          printMat3 arr
          fw "ls"
          pre ls
