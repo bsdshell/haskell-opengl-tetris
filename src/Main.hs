@@ -2246,13 +2246,11 @@ currBrickX refGlobal rr = do
 checkMoveX :: [(Int, Int)] -> DM.Map (Int, Int) (Int, Int, Color3 GLdouble) -> RectGrid -> Bool
 checkMoveX [] _ _ = False
 checkMoveX cx sm rr =
-  not $
-    foldl (\a b -> a || b) False $
-      map
+      all 
         ( \x ->
             let x0 = fst x
                 y0 = snd x
-            in not (- nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny ) || DM.member x sm
+            in -nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny  &&  (not $ x `DM.member` sm)
         )
         cx
   where
