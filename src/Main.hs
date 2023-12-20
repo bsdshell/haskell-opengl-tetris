@@ -1259,6 +1259,7 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
               let lzX = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'X
               let lsX = map fst lzX
               -- block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
+              {--
               modifyIORef
                 refGlobalRef
                 ( \s ->
@@ -1271,6 +1272,7 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
                            in b ? my + 1 $ my
                       }
                 )
+              --}
 
               print "kk"
             | k == G.Key'D -> do
@@ -2179,31 +2181,7 @@ showCurrBoardArr arr = do
             -- isFilled_ b ? centerBlock00 (x, y) initRectGrid (color_ b) $ pp "not filled"
       ) ls
   pp "ok"
-  
-  
-currBrick :: IORef GlobalRef -> RectGrid -> IO ()
-currBrick refGlobal rr = do
-  preservingMatrix $ do
-    mx <- readIORef refGlobal <&> moveX_
-    my <- readIORef refGlobal <&> moveY_
-    centerBrick <- readIORef refGlobal <&> centerBrick_
-    rotN <- readIORef refGlobal <&> rotN_
-    bk1 <- readIORef refGlobal <&> bk1_
-    let bk1' = rotateN rotN bk1
-    
-    -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
-    -- let ls = map fst lz
-    let ls = getShape centerBrick bk1'
-    
-    bm <- readIORef refGlobal <&> boardMap_
-    mapM_
-      ( \(a, b) -> do
-          preservingMatrix $ do
-            centerBlock00 (a + mx, b + my) rr gray1
-      )
-      ls
-    pp "ok"
-  
+
 currBrickX :: IORef GlobalRef -> RectGrid -> IO ()
 currBrickX refGlobal rr = do
   preservingMatrix $ do
@@ -2223,8 +2201,6 @@ currBrickX refGlobal rr = do
     let ls = getShape centerBrick bk1'
     let lsX = getShape centerBrick bk1'X
     
-    bm <- readIORef refGlobal <&> boardMap_
-    bmX <- readIORef refGlobal <&> boardMap1_
     mapM_
       ( \(a, b) -> do
           preservingMatrix $ do
@@ -2286,7 +2262,7 @@ mainLoop ::
   [[Vertex3 GLfloat]] ->
   DAO.IOArray (Int, Int, Int) BlockAttr ->
   IO ()
-mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowShouldClose w) $ do
+mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray = unless' (G.windowShouldClose w) $ do
   (width, height) <- G.getFramebufferSize w
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
   GL.clear [ColorBuffer, DepthBuffer]
@@ -2438,7 +2414,7 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
       mapM_ (\(x, y) -> centerBlock00 (x, y) initRectGrid gray) ls
       pp "ok"
   when True $ do
-    (index, isNext, currRef) <- readRefFrame2 refCount 1000
+    (index, isNext, currFrame) <- readRefFrame2 refGlobalFrame 1000
     --                                                  |
     --                                                  + -> speed, larger = slower
     movSphere <- getDrawPts refGlobal
@@ -2461,8 +2437,7 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
         rotN <- readIORef refGlobal <&> rotN_
         ls <- getAssocs ioArray
   
-        -- let lz1 = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick  $ rotateN rotN (tet ^._4)
-        let lz1X = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick  $ rotateN rotN (snd tetX)
+        let lz1X = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick  $ rotateN rotN (snd tetX)
         -- let currBlock1 = map fst lz1 -- [(x, y)] => [(1, 2), (3, 4)]
         let currTetris = map fst lz1X -- [(x, y)] => [(1, 2), (3, 4)]
        
@@ -2496,41 +2471,11 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
           logFileG $ map show ls
           else pp "not write"
           -- /Users/aaa/myfile/bitbucket/tmp/xx_2621.x
-
-    when True $ do
-      lv <- readIORef refGlobal <&> randomWalkInt_
-      let lt = map (\(a, b) -> Vertex3 a b 0.0) $ map (join (***) ((* 0.1) . fi)) lv
-      -- logFileG $ map show lt
-      logFileG ["randomWalkInt_"]
-      logFileG $ map show lv
-
+        when (frameIndex currFrame < 100) $ do
+          writeIORef refGlobalFrame currFrame
+          resetRefFrame refGlobalFrame
       -- /Users/aaa/myfile/bitbucket/tmp/xx_3937.x
-
-      if index < len lt
-        then do
-          preservingMatrix $ do
-            let x0 = lt !! index :: (Vertex3 GLfloat)
-            -- affine geometry: vertex - vertex => vector
-            let v = x0 -: Vertex3 0 0 0
-            translate v
-
-            -- drawSurfaceFromList movSphere
-            rc <- randomColor
-            -- moveSqureColorX rc 0.03
-            writeIORef refCount currRef
-            -- modifyIORef refGlobal (\x -> x{boardMap_ = DM.insert (lv !! index) (x0, rc, True) (boardMap_ x)})
-            pp "abc"
-        else do
-          let vz = lv !! (index - 1)
-          cx <- randomIntList 10 (1, 4)
-          modifyIORef refGlobal (\x -> x {randomWalkInt_ = randomVexListInt vz cx})
-          -- writeIORef refCount currRef
-          resetRefFrame refCount
-          pp "ok"
-          mm <- readIORef refGlobal <&> boardMap_
-          logFileG $ map show $ DM.toList mm
-          logFileG ["randomIntList xx"]
-          logFileG $ map show cx
+      -- /Users/aaa/myfile/bitbucket/tmp/xx_943.x
   
     -- KEY: rotate brick, rotate block
     when True $ do
@@ -2575,13 +2520,7 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
     
     when True $ do
       showCurrBoardArr ioArray
-    
   
-    -- KEY: current brick
-    when True $ do
-      -- currBrick refGlobal initRectGrid
-      currBrickX refGlobal initRectGrid
-
   -- C-; BACKUP, insertContent /Users/aaa/myfile/bitbucket/tmp/xx_6507.x
 
   -- xxx
@@ -2594,7 +2533,7 @@ mainLoop w refCam refStep refGlobal refCount lssVex ioArray = unless' (G.windowS
 
   G.swapBuffers w
   G.pollEvents
-  mainLoop w refCam refStep refGlobal refCount lssVex ioArray
+  mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray
 
 
 main = do
@@ -2951,7 +2890,7 @@ removeBottom (y0, y1) (yy0, yy1) f arr = do
       -- threadDelay 2000000
       -- XXX here
       fallBlock arr
-      showCurrBoardArr arr
+      -- showCurrBoardArr arr
       -- threadDelay 200000
       removeBottom (yy0, yy1) (yy0, yy1) f arr
       else do
