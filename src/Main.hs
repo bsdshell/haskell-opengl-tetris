@@ -2071,7 +2071,7 @@ rotateBlock refGlobal r = do
     let del = 90 / fi (rotStep r)
     let deln = del * fi count1
     translate vm
-    rotate deln $ (Vector3 0 0 1 :: Vector3 GLdouble)
+    rotate deln (Vector3 0 0 1 :: Vector3 GLdouble)
     translate $ negate vm
 
     centerBrick <- readIORef refGlobal <&> centerBrick_
@@ -2212,6 +2212,7 @@ currBrickX refGlobal rr = do
   
 
 
+
 {-|
    @
    nx = 10
@@ -2293,6 +2294,46 @@ flipIsNext arr ix = do
   an <- DAO.readArray arr ix
   currTime <- timeNowMilli <&> fi
   writeAnimaState arr ix an{animaTime_ = currTime}
+  
+rotateTetries :: IORef GlobalRef -> RectGrid -> IOArray (Int, Int, Int) BlockAttr -> IO()
+rotateTetries refGlobal rr ioArray = do
+  let stepN = fi $ rotStep initRectGrid
+  count1 <- readIORef refGlobal <&> count1_
+  case count1 of
+    v
+      | v < stepN - 1 -> do
+        preservingMatrix $ do
+          rotateBlock refGlobal rr
+          modifyIORef refGlobal \s -> s {count1_ = count1_ s + 1}
+      | v == stepN - 1 -> do
+        let rr = initRectGrid
+        moveX <- readIORef refGlobal <&> moveX_
+        moveY <- readIORef refGlobal <&> moveY_
+        bmap <- readIORef refGlobal <&> boardMap_
+        bmapX <- readIORef refGlobal <&> boardMap1_
+        centerBrick <- readIORef refGlobal <&> centerBrick_
+
+        rotN <- readIORef refGlobal <&> rotN_
+        bk1 <- readIORef refGlobal <&> bk1_
+        tet <- readIORef refGlobal <&> tetris1_
+        tetX <- readIORef refGlobal <&> tetris1X_
+        ls <- getAssocs ioArray
+        let bk1'X = rotateN rotN (snd tetX)
+
+        -- /Users/aaa/myfile/bitbucket/tmp/xx_5248.x
+        let currBrX = innerBrick (moveX, moveY) centerBrick bk1'X
+        let currBrXX = map (\(x, y) -> (x, y, 0)) currBrX
+        -- let bX = checkMoveX currBrX bmapX rr
+        let bX = checkMoveArr currBrXX ls rr
+        modifyIORef refGlobal \s -> s {rotN_ = bX ? (let n = rotN_ s + 1 in mod n 4) $ rotN_ s}
+        rotateBlock refGlobal initRectGrid
+        modifyIORef refGlobal \s -> s {count1_ = count1_ s + 1}
+        pp "ok"
+      | otherwise -> do
+        modifyIORef refGlobal (\s -> s {count1_ = 1000000})
+
+
+  
 
 mainLoop ::
   G.Window ->
@@ -2412,21 +2453,6 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
   show3dStr curStr red 0.8
   logFileG ["str_=" ++ show curStr]
 
-
-  {--
-  when True $ do
-    bmap <- readIORef refGlobal <&> boardMap_
-    centerBrick <- readIORef refGlobal <&> centerBrick_
-    bk1 <- readIORef refGlobal >>= \x -> return $ rotateN 1 $ bk1_ x
-  
-    -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1
-    -- let ls = map fst lz
-    let ls = getShape centerBrick bk1
-    
-    preservingMatrix $ do
-      mapM_ (\(x, y) -> centerBlock00 (x, y) initRectGrid gray) ls
-      pp "ok"
-  --}
   when True $ do
     (index, isNext, currFrame) <- readRefFrame2 refGlobalFrame 1000
     --                                                  |
@@ -2488,25 +2514,13 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
           logFileG $ map show ls
           else pp "not write"
   
-        -- curr <- timeNowMilli <&> fi
-        -- writeAnimaState animaStateArr 0 AnimaState{animaTime_ = curr, animaIndex_ = animaIndex_ animaState, animaInterval_ = 1000}
         flipIsNext animaStateArr anima0
-  
-          -- /Users/aaa/myfile/bitbucket/tmp/xx_2621.x
-        when (frameIndex currFrame < 100) $ do
-          writeIORef refGlobalFrame currFrame
-          resetRefFrame refGlobalFrame
-
-
-  
-        -- let an = AnimaState{animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 1000}
-      -- writeAnimaState animaStateArr 0 animaState
       pp "kk"
-      -- /Users/aaa/myfile/bitbucket/tmp/xx_3937.x
-      -- /Users/aaa/myfile/bitbucket/tmp/xx_943.x
   
     -- KEY: rotate brick, rotate block
     when True $ do
+      rotateTetries refGlobal initRectGrid ioArray
+      {--
       let stepN = fi $ rotStep initRectGrid
       count1 <- readIORef refGlobal <&> count1_
       case count1 of
@@ -2541,7 +2555,7 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
             pp "ok"
           | otherwise -> do
             modifyIORef refGlobal (\s -> s {count1_ = 1000000})
-
+       --}
 -- /Users/aaa/myfile/bitbucket/tmp/xx_5948.x
 
     -- show current tetris
