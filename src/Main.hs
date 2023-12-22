@@ -651,6 +651,7 @@ mymain = do
 
       let blockAttr = BlockAttr{isFilled_ = False, typeId_ = 0, tetrisNum_ = 0, color_ = green}
       ioArray <- DAO.newArray ((-nx, -ny, 0) , (nx - 1, ny - 1, 0)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
+      animaStateArr <- initAnimaState
       -- ioArray <- DAO.newArray ((0, -ny, -nx) , (0, ny - 1, nx - 1)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
       {--
       ioArray <- let x0 = -nx
@@ -664,7 +665,7 @@ mymain = do
                      zz = z1 - z0 + 1
                  in DAO.newListArray ((0, -ny, -nx) , (0, ny - 1, nx - 1)) $ replicate (xx * yy * zz) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
       --}
-      mainLoop window ref refStep refGlobal refFrame cx' ioArray
+      mainLoop window ref refStep refGlobal refFrame animaStateArr cx' ioArray
       G.destroyWindow window
       G.terminate
       exitSuccess
@@ -2226,7 +2227,7 @@ checkMoveX cx sm rr =
         ( \x ->
             let x0 = fst x
                 y0 = snd x
-            in -nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny  &&  (not $ x `DM.member` sm)
+            in -nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny  &&  not (x `DM.member` sm)
         )
         cx
   where
@@ -2252,17 +2253,58 @@ initBlockAttr = BlockAttr {
   ,tetrisNum_ = -1
   ,color_ = red
                           }
+
   
+data AnimaState = AnimaState {
+  animaTime_ :: Int,
+  animaIndex_ :: Int,
+  animaInterval_ :: Int
+                             } deriving (Show, Eq)
+
+initAnimaState :: IO(IOArray Int AnimaState)
+initAnimaState = do
+  currTime <- timeNowMilli <&> fi
+  let an = AnimaState{animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 1000}
+  let anx = AnimaState{animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 4000}
+  -- DAO.newArray (0, 5) an
+  let ls = [an, anx, an, an, an, an]
+  DAO.newListArray (0, 5) ls
+
+readAnimaState :: IOArray Int AnimaState -> Int -> IO (Bool, AnimaState)
+readAnimaState arr ix = do
+  currTime <- timeNowMilli <&> fi
+  an <- DAO.readArray arr ix
+  oldTime <- DAO.readArray arr ix <&> animaTime_
+  interval <- DAO.readArray arr ix <&> animaInterval_
+  oldIndex <- DAO.readArray arr ix <&> animaIndex_
+  let newIndex = oldIndex + 1
+  let isNext = currTime - oldTime >= interval
+  if isNext then do
+    return (isNext, an{animaTime_ = currTime, animaIndex_ = newIndex})
+    else do
+    return (isNext, an)
+
+writeAnimaState :: IOArray Int AnimaState -> Int -> AnimaState -> IO()
+writeAnimaState arr ix an = do
+  DAO.writeArray arr ix an
+
+flipIsNext :: IOArray Int AnimaState -> Int -> IO()
+flipIsNext arr ix = do
+  an <- DAO.readArray arr ix
+  currTime <- timeNowMilli <&> fi
+  writeAnimaState arr ix an{animaTime_ = currTime}
+
 mainLoop ::
   G.Window ->
   IORef Cam ->
   IORef Step ->
   IORef GlobalRef ->
   IORef FrameCount ->
+  IOArray Int AnimaState -> 
   [[Vertex3 GLfloat]] ->
   DAO.IOArray (Int, Int, Int) BlockAttr ->
   IO ()
-mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray = unless' (G.windowShouldClose w) $ do
+mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray = unless' (G.windowShouldClose w) $ do
   (width, height) <- G.getFramebufferSize w
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
   GL.clear [ColorBuffer, DepthBuffer]
@@ -2370,37 +2412,8 @@ mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray = unless' (G.w
   show3dStr curStr red 0.8
   logFileG ["str_=" ++ show curStr]
 
-  vx <- getDrawRectX refGlobal -- (p0, p1) => (upLeft, bottomRight)
-  cursorPos <- getCursor refGlobal
 
-  (isPressed, (mx0, my0)) <- getMousePressed refGlobal
-  let pos = (mx0, my0)
-  logFileG ["isPressed=" ++ show isPressed ++ " pos=" ++ show pos]
-
-  -- TODO: add isPtInsideRect here
-  tranVec <- getTranVecDrawRectX refGlobal
-  (p0, p1) <- getDrawRectX refGlobal
-  -- isInside <- isPtInsideRect w (p0 +: (d2f tvec'), p1 +: (d2f tvec')) (x, y)
-  isInTran <- isPtInsideRectTran w (p0, p1) tranVec
-  when (isPressed && isInTran) $ do
-    (width, height) <- G.getFramebufferSize w
-    (winWidth, winHeight) <- G.getWindowSize w
-
-    (nx1, ny1) <- G.getCursorPos w >>= \(x, y) -> return (rf x, rf y) :: IO (GLfloat, GLfloat)
-    logFileG ["mx0=" ++ show mx0 ++ " my0=" ++ show my0 ++ " nx1=" ++ show nx1 ++ " ny1=" ++ show ny1]
-    (Vector3 tx ty tz) <- getTranVecDrawRectX refGlobal
-    logFileG ["getTranVecDrawRectX=" ++ show (Vector3 tx ty tz)]
-    let (x', y') = (rf $ (nx1 - mx0) / rf winWidth, rf $ (my0 - ny1) / rf winHeight)
-    -- readIORef refGlobal >>= \x -> writeIORef refGlobal $ setTranVecDrawRectX (Vector3 (x') (y') 0.0) x
-    let vec = Vector3 x' y' 0.0
-    -- readIORef refGlobal >>= \x -> writeIORef refGlobal $ incTranVecDrawRectX (+vec) x
-    modifyIORef refGlobal (\x -> x {tranDrawRectX_ = tranDrawRectX_ x + vec})
-    -- update current cursor position
-    -- readIORef refGlobal >>= \x -> writeIORef refGlobal $ setMousePressed (isPressed, (nx1, ny1)) x
-    modifyIORef refGlobal (\x -> x {mousePressed_ = (isPressed, (nx1, ny1))})
-
-    pp "ok"
-
+  {--
   when True $ do
     bmap <- readIORef refGlobal <&> boardMap_
     centerBrick <- readIORef refGlobal <&> centerBrick_
@@ -2413,19 +2426,23 @@ mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray = unless' (G.w
     preservingMatrix $ do
       mapM_ (\(x, y) -> centerBlock00 (x, y) initRectGrid gray) ls
       pp "ok"
+  --}
   when True $ do
     (index, isNext, currFrame) <- readRefFrame2 refGlobalFrame 1000
     --                                                  |
     --                                                  + -> speed, larger = slower
     movSphere <- getDrawPts refGlobal
-
+  
+    let anima0 = 0
+    (isNext0, animaState) <- readAnimaState animaStateArr anima0
     -- pre movSphere
 
-    logFileG ["index=" ++ show index]
+    -- logFileG ["index=" ++ show index]
+    logFileG ["isNextX=" ++ show isNext0 ++ " animaIndex_=" ++ show (animaIndex_ animaState)]
     -- my <- readIORef refGlobal >>= return . moveY_
     -- KEY: falling block, drop block
     when True $ do
-      when isNext $ do
+      when isNext0 $ do
         rr <- readIORef refGlobal <&> rectGrid_
         bmap <- readIORef refGlobal <&> boardMap_
         bmapX <- readIORef refGlobal <&> boardMap1_
@@ -2463,17 +2480,28 @@ mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray = unless' (G.w
           -- let br = BlockAttr {isFilled_ = True, typeId_ = 2, blockNum_ = 0, color_ = yellow}
           -- mapM_ (\(t, b) -> DAO.writeArray ioArray t b) lastBlock
           mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
-          let f x = isFilled_ x
+          
           -- KEY: remove bottom row
-          removeBottomX f ioArray
+          let f x = isFilled_ x in removeBottomX f ioArray
 
           logFileG ["writeArray"]
           logFileG $ map show ls
           else pp "not write"
+  
+        -- curr <- timeNowMilli <&> fi
+        -- writeAnimaState animaStateArr 0 AnimaState{animaTime_ = curr, animaIndex_ = animaIndex_ animaState, animaInterval_ = 1000}
+        flipIsNext animaStateArr anima0
+  
           -- /Users/aaa/myfile/bitbucket/tmp/xx_2621.x
         when (frameIndex currFrame < 100) $ do
           writeIORef refGlobalFrame currFrame
           resetRefFrame refGlobalFrame
+
+
+  
+        -- let an = AnimaState{animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 1000}
+      -- writeAnimaState animaStateArr 0 animaState
+      pp "kk"
       -- /Users/aaa/myfile/bitbucket/tmp/xx_3937.x
       -- /Users/aaa/myfile/bitbucket/tmp/xx_943.x
   
@@ -2515,12 +2543,15 @@ mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray = unless' (G.w
             modifyIORef refGlobal (\s -> s {count1_ = 1000000})
 
 -- /Users/aaa/myfile/bitbucket/tmp/xx_5948.x
-  
+
+    -- show current tetris
+    when True $ do
+      currBrickX refGlobal initRectGrid
     -- KEY: show board, show grid, draw board
-    
     when True $ do
       showCurrBoardArr ioArray
-  
+
+      -- showCurrBoardArr ioArray
   -- C-; BACKUP, insertContent /Users/aaa/myfile/bitbucket/tmp/xx_6507.x
 
   -- xxx
@@ -2531,9 +2562,12 @@ mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray = unless' (G.w
 
   -- END_triangulation
 
+  -- G.swapBuffers w
+    
   G.swapBuffers w
+  
   G.pollEvents
-  mainLoop w refCam refStep refGlobal refGlobalFrame lssVex ioArray
+  mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray
 
 
 main = do
