@@ -1057,7 +1057,7 @@ initGlobal =
           ((4 - 2, 0 + 8), gray)
         ],
       rectGrid_ = initRectGrid,
-      centerBrick_ = map (\y -> map (\x -> (x - 2, y - 2)) [0 .. (len $ head $ bk1_ initGlobal) - 1]) $ reverse [0 .. (len $ bk1_ initGlobal) - 1],
+      centerBrick_ = map (\y -> map (\x -> (x - 2, y - 2)) [0 .. len (head $ bk1_ initGlobal) - 1]) $ reverse [0 .. len (bk1_ initGlobal) - 1],
       bk1_ =
         [ [0, 0, 0, 0, 0],
           [0, 0, 1, 0, 0],
@@ -1080,7 +1080,8 @@ initGlobal =
       blockCount_ = 1,
       tetrisCount_ = 1,
       tetris1_ = mkTetris1 (blockCount_ initGlobal) 0,
-      tetris1X_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisNum_ = (blockCount_ initGlobal), color_ = blue}, bk1_ initGlobal) 
+      tetris1X_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisNum_ = (blockCount_ initGlobal), color_ = blue}, bk1_ initGlobal),
+      isPaused_ = False
     }
 
   
@@ -1179,6 +1180,12 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
               modifyIORef refGlobalRef (\s -> s {rot_ = True})
               fw "Rotate Block"
               pp "rotate me"
+            | k == G.Key'P -> do
+              modifyIORef refGlobalRef (\s -> s {isPaused_ = not $ isPaused_ s})
+              isPaused <- readIORef refGlobalRef <&> isPaused_
+              pauseTetris  isPaused refGlobalRef initRectGrid ioArray
+              pp "Pause"
+
             | k == G.Key'A -> do
               moveX <- readIORef refGlobalRef <&> moveX_
               moveY <- readIORef refGlobalRef <&> moveY_
@@ -1782,15 +1789,12 @@ randomVexListX ix@(x0, y0) v@(x, y) (c : cx) = case c of
 
 
 getShape:: [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
-getShape centerBrick bk = map fst $ join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk
-  
-getShapeX:: [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
-getShapeX centerBrick bk = map fst $ join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk
+getShape centerBrick bk = map fst $ join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick bk
   
 innerBrick :: (Int, Int) -> [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
 innerBrick (moveX, moveY) centerBrick bk1 = currBr
   where
-    f x = map fst $ join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick x
+    f x = map fst $ join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (,) centerBrick x
     r0 = bk1
     ((x0, x1), (y0, y1)) =
       let r1 = rotateN 1 r0
@@ -2191,7 +2195,6 @@ currBrickX refGlobal rr = do
     centerBrick <- readIORef refGlobal <&> centerBrick_
     rotN <- readIORef refGlobal <&> rotN_
     bk1 <- readIORef refGlobal <&> bk1_
-    tet <- readIORef refGlobal <&> tetris1_
     tetX <- readIORef refGlobal <&> tetris1X_
     let bk1' = rotateN rotN bk1
     -- let bk1'X = rotateN rotN (tet ^._4)
@@ -2294,6 +2297,31 @@ flipIsNext arr ix = do
   an <- DAO.readArray arr ix
   currTime <- timeNowMilli <&> fi
   writeAnimaState arr ix an{animaTime_ = currTime}
+
+pauseTetris :: Bool -> IORef GlobalRef -> RectGrid -> IOArray (Int, Int, Int) BlockAttr -> IO()
+pauseTetris isPaused refGlobal rr ioArray = do
+  moveX <- readIORef refGlobal <&> moveX_
+  moveY <- readIORef refGlobal <&> moveY_
+  centerBrick <- readIORef refGlobal <&> centerBrick_
+  rotN <- readIORef refGlobal <&> rotN_
+  bk1 <- readIORef refGlobal <&> bk1_
+  tet <- readIORef refGlobal <&> tetris1_
+  tetX <- readIORef refGlobal <&> tetris1X_
+  ls <- getAssocs ioArray
+  
+  let lt = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick  $ rotateN rotN (snd tetX)
+  let currTetris = map fst lt -- [(x, y)] => [(1, 2), (3, 4)]
+  let mX = map (\(a, b) -> (a + moveX, b + moveY - 1, 0)) currTetris
+
+  let lastBlock = map (\(a, b) -> ((a + moveX, b + moveY, 0), fst tetX)) currTetris
+  let lastBlock' = map (\(a, b) -> ((a + moveX, b + moveY, 0), let s = fst tetX in s{isFilled_ = False})) currTetris
+  logFileG ["lsxx"]
+  logFileG $ map show lastBlock
+  if isPaused then do
+    mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
+  else do
+    mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock'
+
   
 rotateTetries :: IORef GlobalRef -> RectGrid -> IOArray (Int, Int, Int) BlockAttr -> IO()
 rotateTetries refGlobal rr ioArray = do
@@ -2452,16 +2480,13 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
   curStr <- getStr refGlobal
   show3dStr curStr red 0.8
   logFileG ["str_=" ++ show curStr]
-
-  when True $ do
+  isPaused <- readIORef refGlobal <&> isPaused_
+  unless isPaused $ do
     (index, isNext, currFrame) <- readRefFrame2 refGlobalFrame 1000
     --                                                  |
     --                                                  + -> speed, larger = slower
-    movSphere <- getDrawPts refGlobal
-  
     let anima0 = 0
     (isNext0, animaState) <- readAnimaState animaStateArr anima0
-    -- pre movSphere
 
     -- logFileG ["index=" ++ show index]
     logFileG ["isNextX=" ++ show isNext0 ++ " animaIndex_=" ++ show (animaIndex_ animaState)]
@@ -2508,80 +2533,42 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
           mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
           
           -- KEY: remove bottom row
-          let f x = isFilled_ x in removeBottomX f ioArray
+          let f x = isFilled_ x in removeBottomX w f ioArray
 
           logFileG ["writeArray"]
           logFileG $ map show ls
           else pp "not write"
   
         flipIsNext animaStateArr anima0
-      pp "kk"
-  
-    -- KEY: rotate brick, rotate block
+
     when True $ do
+      -- KEY: rotate brick, rotate tetris
       rotateTetries refGlobal initRectGrid ioArray
-      {--
-      let stepN = fi $ rotStep initRectGrid
-      count1 <- readIORef refGlobal <&> count1_
-      case count1 of
-        v
-          | v < stepN - 1 -> do
-            preservingMatrix $ do
-              rotateBlock refGlobal initRectGrid
-              modifyIORef refGlobal \s -> s {count1_ = count1_ s + 1}
-          | v == stepN - 1 -> do
-            let rr = initRectGrid
-            moveX <- readIORef refGlobal <&> moveX_
-            moveY <- readIORef refGlobal <&> moveY_
-            bmap <- readIORef refGlobal <&> boardMap_
-            bmapX <- readIORef refGlobal <&> boardMap1_
-            centerBrick <- readIORef refGlobal <&> centerBrick_
-
-            rotN <- readIORef refGlobal <&> rotN_
-            bk1 <- readIORef refGlobal <&> bk1_
-            tet <- readIORef refGlobal <&> tetris1_
-            tetX <- readIORef refGlobal <&> tetris1X_
-            ls <- getAssocs ioArray
-            let bk1'X = rotateN rotN (snd tetX)
-
-            -- /Users/aaa/myfile/bitbucket/tmp/xx_5248.x
-            let currBrX = innerBrick (moveX, moveY) centerBrick bk1'X
-            let currBrXX = map (\(x, y) -> (x, y, 0)) currBrX
-            -- let bX = checkMoveX currBrX bmapX rr
-            let bX = checkMoveArr currBrXX ls rr
-            modifyIORef refGlobal \s -> s {rotN_ = bX ? (let n = rotN_ s + 1 in mod n 4) $ rotN_ s}
-            rotateBlock refGlobal initRectGrid
-            modifyIORef refGlobal \s -> s {count1_ = count1_ s + 1}
-            pp "ok"
-          | otherwise -> do
-            modifyIORef refGlobal (\s -> s {count1_ = 1000000})
-       --}
--- /Users/aaa/myfile/bitbucket/tmp/xx_5948.x
-
-    -- show current tetris
-    when True $ do
+      -- show current tetris
       currBrickX refGlobal initRectGrid
-    -- KEY: show board, show grid, draw board
-    when True $ do
-      showCurrBoardArr ioArray
-
+      -- KEY: show board, show grid, draw board
       -- showCurrBoardArr ioArray
-  -- C-; BACKUP, insertContent /Users/aaa/myfile/bitbucket/tmp/xx_6507.x
 
+  drawFinal w ioArray initRectGrid
   -- xxx
   -- draw 20 x 20 grid
-  when True $ do
-    -- drawRectGrid [0..19] [0..19] 0.01
-    drawRectGridX initRectGrid
+  -- drawFinal w initRectGrid
+  -- KEY: draw  grid
+  -- drawRectGridX initRectGrid
 
   -- END_triangulation
 
   -- G.swapBuffers w
     
-  G.swapBuffers w
-  
-  G.pollEvents
+  -- G.pollEvents
   mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray
+
+drawFinal:: G.Window -> IOArray (Int, Int, Int) BlockAttr -> RectGrid -> IO()
+drawFinal w arr rr = do
+  showCurrBoardArr arr
+  drawRectGridX rr
+  G.swapBuffers w
+  G.pollEvents 
 
 
 main = do
@@ -2895,14 +2882,22 @@ funx (y0, y1) (yy0, yy1) f arr = do
     fw "funx print arr"
     printMat3 arr
 
-removeBottom :: (Int, Int) -> (Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
-removeBottom (y0, y1) (yy0, yy1) f arr = do
+removeBottom :: G.Window -> (Int, Int) -> (Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
+removeBottom w (y0, y1) (yy0, yy1) f arr = do
   when (y0 <= y1) $ do
+    let fstLayer = 0
     let z0 = 0
     bt@((a0, b0, c0), (a1, b1, c1)) <- getBounds arr
-    -- ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> z == 0 && y == y1 && (b1 e || b2 e || b3 e || b4 e))
-    ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((a, b, c), e) -> c == 0 && b == y1 && f e)
-    if len ls == a1 - a0 + 1 then do
+    let gridWidth = a1 - a0 + 1
+    ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> x == fstLayer && y == y1 && f e)
+    if len ls == gridWidth then do
+      let lt = map (\(t, e) -> (t, e{color_ = white})) ls
+      mapM_ (\(t, e) -> do
+                  DAO.writeArray arr t e
+                  -- drawFinal w arr initRectGrid
+              ) lt
+      -- drawFinal w arr initRectGrid
+
       fw "Full Row"
       logFileG ["MyFullRow"]
       logFileG [show bt]
@@ -2915,7 +2910,8 @@ removeBottom (y0, y1) (yy0, yy1) f arr = do
             let y' = case ms of
                          Just s -> s
                          Nothing -> error "ERROR: Invalid index"
-            when (xDir == z0) $ do
+            -- KEY: two dimensions for now
+            when (xDir == fstLayer) $ do
               logFileG ["CallMyMaybe0"]
               logFileG ["yy0 y' yy1"]
               logFileG $ map show [yy0, y', yy1]
@@ -2926,30 +2922,35 @@ removeBottom (y0, y1) (yy0, yy1) f arr = do
               -- -10                   9
               if yy0 <= yDir && yDir < yy1 && y1 <= yDir then do
                 logFileG ["CallMyMaybe1"]
+                -- KEY: move one row down
                 s <- DAO.readArray arr  (zDir, yDir + 1, xDir)
                 DAO.writeArray arr      (zDir, yDir,     xDir) s
               else do
                 when (yy1 == yDir) $ do
                   DAO.writeArray arr (zDir, yDir, xDir) initBlockAttr
+              drawFinal w arr initRectGrid
         )
       -- Remove the bottom row
-      -- Display all the new position of blocks
-      -- showCurrBoardArr arr
-      -- threadDelay 2000000
       -- XXX here
-      fallBlock arr
+      fallBlock w arr
+      -- drawFinal w arr initRectGrid
       -- showCurrBoardArr arr
-      -- threadDelay 200000
-      removeBottom (yy0, yy1) (yy0, yy1) f arr
+      removeBottom w (yy0, yy1) (yy0, yy1) f arr
+      -- drawFinal w arr initRectGrid
       else do
-      removeBottom (y0, y1 - 1) (yy0, yy1) f arr
+      removeBottom w (y0, y1 - 1) (yy0, yy1) f arr
+
       -- pp "Not equal to len"
     -- fw "funx print arr"
     -- printMat3 arr
 
-
-fallBlock :: IOArray (Int, Int, Int) BlockAttr -> IO()
-fallBlock arr = do
+removeBottomX :: G.Window -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
+removeBottomX w f arr = do
+  ((z0, y0, x0), (z1, y1, x1)) <- DAO.getBounds arr
+  removeBottom w (y0, y1) (y0, y1) f arr
+  
+fallBlock :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> IO()
+fallBlock w arr = do
   let rr = initRectGrid
   DAO.getAssocs arr >>= mapM_ (\((z, y, x), ax) -> do
                                 -- ax <- DAO.readArray arr (z, y, x)
@@ -2970,7 +2971,9 @@ fallBlock arr = do
                                   
                                     mapM_ (uncurry $ DAO.writeArray arr) $ map (,initBlockAttr) lt
                                     mapM_ (uncurry $ DAO.writeArray arr) lv
+                                    drawFinal w arr initRectGrid
                                     logFileG ["endmovedown"]
+                                    fallBlock w arr
                                     -- showCurrBoardArr arr
                                     -- threadDelay 2000000
                                   else do
@@ -2978,11 +2981,8 @@ fallBlock arr = do
                                 pp "ok"
                                )
 
-removeBottomX :: (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
-removeBottomX f arr = do
-  ((z0, y0, x0), (z1, y1, x1)) <- DAO.getBounds arr
-  removeBottom (y0, y1) (y0, y1) f arr
-
+  
+  
 {--
   11122
   ee12 
