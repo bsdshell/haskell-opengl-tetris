@@ -1790,6 +1790,10 @@ randomVexListX ix@(x0, y0) v@(x, y) (c : cx) = case c of
 
 getShape:: [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
 getShape centerBrick bk = map fst $ join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick bk
+
+  
+getShape3 :: [[[(Int, Int, Int)]]] -> [[[Int]]] -> [(Int, Int, Int)]
+getShape3 centerBrick bk = map fst $ join . join $ (map . map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith . zipWith) (,) centerBrick bk
   
 innerBrick :: (Int, Int) -> [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
 innerBrick (moveX, moveY) centerBrick bk1 = currBr
@@ -2570,7 +2574,7 @@ drawFinal w arr rr = do
   G.swapBuffers w
   G.pollEvents 
 
-
+{--
 main = do
   argList <- getArgs
   if len argList > 0
@@ -2580,7 +2584,7 @@ main = do
         _ -> do
           print $ "Wrong option => " ++ head argList ++ ", -h => Help"
     else mymain
-
+--}
 
 bk1 :: [[Int]]
 bk1 =
@@ -2953,7 +2957,6 @@ fallBlock :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> IO()
 fallBlock w arr = do
   let rr = initRectGrid
   DAO.getAssocs arr >>= mapM_ (\((z, y, x), ax) -> do
-                                -- ax <- DAO.readArray arr (z, y, x)
                                 if isFilled_ ax then do
                                   lsArr <- getAssocs arr
                                   let f x = isFilled_ x && isFilled_ ax && tetrisNum_ x == tetrisNum_ ax
@@ -3081,3 +3084,21 @@ main = do
          fw "removeBottom arr"
          printMat3 arr
 --}
+  
+main = do
+       let bk1 =[
+                [ [0, 0, 0, 0, 0],
+                  [0, 0, 1, 0, 0],
+                  [0, 1, 1, 1, 0],
+                  [0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0]
+                ]
+              ]
+       when True $ do
+         let centerBrick = map (\z -> map (\y -> map (\x -> (x - 2, y - 2, z)) [0 .. len (head . head $ bk1) - 1]) $ reverse [0 .. len (head . head $ bk1) - 1]) [0 .. len (head . head $ bk1) - 1]
+
+         let ss = getShape3 centerBrick bk1
+         pre ss
+         fw "centerBrick"
+         mapM_ (\x -> do printMat x; fw "") centerBrick
+         pp "ok"
