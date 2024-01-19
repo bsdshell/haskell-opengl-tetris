@@ -36,39 +36,68 @@ module Main where
 
 -- import Graphics.UI.GLUT
 -- import Graphics.UI.GLUT.Callbacks.Global
-import AronGraphic hiding (dist)
+import AronGraphic
+  ( blue,
+    cmpVex,
+    convexHull,
+    cyan,
+    drawDot,
+    drawPrimitiveVex,
+    drawQuadsColor,
+    drawRect,
+    drawRectColor,
+    drawSegmentNoEnd,
+    drawSegmentWithEndPt,
+    drawSurfaceFromList,
+    geneParamSurface,
+    gray,
+    green,
+    magenta,
+    red,
+    renderCoordinates,
+    scaleFont,
+    show3dStr,
+    strToVector3,
+    strToVertex3,
+    white,
+    yellow,
+    (+:),
+    (-:),
+  )
 import AronModule
-    ( printMat3,
-      resetRefFrame,
-      readRefFrame2,
-      printMat,
-      fi,
-      unique,
-      fw,
-      logFileG,
-      pre,
-      fl,
-      writeFileList,
-      randomIntList,
-      timeNowMilli,
-      ρ,
-      (?),
-      partList,
-      takeBetweenExc,
-      trim,
-      pp,
-      rf,
-      iterateList,
-      mergeList,
-      sqrtC',
-      im,
-      re,
-      len,
-      randomInt,
-      printBox,
-      en,
-      FrameCount(..),
-      C(C) )
+  ( C (C),
+    FrameCount (..),
+    en,
+    fi,
+    fl,
+    fw,
+    im,
+    iterateList,
+    len,
+    logFileG,
+    mergeList,
+    partList,
+    pp,
+    pre,
+    printBox,
+    printMat,
+    printMat3,
+    randomInt,
+    randomIntList,
+    re,
+    readRefFrame2,
+    resetRefFrame,
+    rf,
+    sqrtC',
+    takeBetweenExc,
+    timeNowMilli,
+    trim,
+    unique,
+    writeFileList,
+    readFileList,
+    ρ,
+    (?),
+  )
 import AronOpenGL
 import Control.Arrow
 import Control.Concurrent
@@ -76,6 +105,10 @@ import Control.Lens hiding (pre, re)
 import Control.Monad
 import Control.Monad (unless, when)
 import qualified Control.Monad.State as CMS
+-- import AronDevLib
+
+import Data.Array.IO
+import qualified Data.Array.IO as DAO
 import Data.Complex
 import Data.IORef
 import Data.Int
@@ -87,8 +120,6 @@ import qualified Data.Set as S
 import Data.StateVar
 import Data.Typeable
 import Data.Typeable (typeOf)
--- import AronDevLib
-
 import qualified Data.Vector as VU
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
@@ -99,6 +130,15 @@ import Foreign.Storable
 import GHC.Float.RealFracMethods
 import Graphics.Rendering.OpenGL
 import Graphics.Rendering.OpenGL as GL
+  ( GLdouble,
+    MatrixComponent (scale),
+    clear,
+    cullFace,
+    depthFunc,
+    lookAt,
+    matrix,
+    multMatrix,
+  )
 import Graphics.Rendering.OpenGL.GL.CoordTrans
 import Graphics.Rendering.OpenGL.GLU.Matrix as GM
 import qualified Graphics.UI.GLFW as G
@@ -109,10 +149,6 @@ import System.Environment
 import System.Exit
 import System.IO
 import qualified Text.Printf as PR
-  
-import qualified Data.Array.IO as DAO
-import Data.Array.IO
-  
 
 -- |
 --
@@ -137,6 +173,9 @@ import Data.Array.IO
 --   data Step = Step{xx::Double, yy::Double, zz::Double, ww::Double} deriving(Show)
 --   initCam = Cam{alpha=0.0, beta=0.0, gramma=0.0, dist = 0.0}
 --   initStep = Step{xx=0.0, yy=0.0, zz=0.0, ww = 0.01}
+--
+--   SEE: Check the following code why the cube does not draw properly
+--   NOTE: /Users/aaa/myfile/bitbucket/opengl/KeyBoardRotate/cube.c
 --   @
 tmpfile = "/tmp/tmpfile.txt"
 
@@ -207,11 +246,11 @@ colorls =
       Color3 0.1 0.1 0.4
     ]
 
-{-|
-   KEY: random color, get color
--}
+-- |
+--   KEY: random color, get color
 randomColor :: IO (Color3 GLdouble)
-randomColor = randomInt 0 (len ls - 1) >>= \x -> return $ ls !! x
+-- randomColor = randomInt 0 (len ls - 1) >>= \x -> return $ ls !! x
+randomColor = randomInt 0 (len lt - 1) >>= \x -> return $ lt !! x
   where
     lt =
       [ green,
@@ -341,7 +380,7 @@ drawHistogram2 cx = do
         preservingMatrix $ do
           translate (Vector3 off (h / 2) 0 :: Vector3 GLdouble)
           -- drawRect2d w (rf h)
-          drawRectFill2d white (w, (rf h))
+          drawRectFill2dX white (w, (rf h))
 
         -- translate (Vector3 off (-0.3) 0 :: Vector3 GLdouble)
         preservingMatrix $ do
@@ -407,6 +446,7 @@ moveToZ f (w, h) z = do
     translate (Vector3 0 0 z :: Vector3 GLdouble)
     f (w, h)
 
+{--
 renderText :: String -> IO ()
 renderText str = do
   preservingMatrix $ do
@@ -414,6 +454,7 @@ renderText str = do
     -- translate (Vector3 0 (-0.1) 0 ::Vector3 GLdouble)
     GL.scale (1 / scaleFont :: GL.GLdouble) (1 / scaleFont) 1
     GLUT.renderString GLUT.Roman str
+--}
 
 -- KEY: string width, string height, font width, font height
 -- strWidth <- GLUT.stringWidth GLUT.Roman str
@@ -613,28 +654,19 @@ mymain = do
     maybe' mw (G.terminate >> exitFailure) $ \window -> do
       G.makeContextCurrent mw
 
-      ref <- newIORef initCam
+      -- ref <- newIORef initCam
+      refCamRot <- newIORef initCameraRot
       refStep <- newIORef initStep
       refGlobal <- newIORef initGlobal
       globalRef <- readIORef refGlobal
       writeIORef refGlobal globalRef
-
-      -- pre cylinderPt
-      -- cylinder
-      -- writeIORef refGlobal $ setDrawPts globalRef cylinderPt
-      -- sphere
-      -- randomPts <- randomVertex (10*3)
       randomPts <- convexPts
-
       -- writeIORef refGlobal $ setDrawPts   globalRef spherePtsX
       modifyIORef refGlobal (\x -> x {drawPts_ = spherePtsX})
-
       globalRef2 <- readIORef refGlobal
       -- writeIORef refGlobal $ setRandomPts globalRef2 randomPts
       modifyIORef refGlobal (\x -> x {randomPts_ = randomPts})
-
       refFrame <- timeNowMilli >>= \x -> newIORef FrameCount {frameTime = x, frameCount = 1, frameNewCount = 0, frameIndex = 0}
-
       let cx = circleNArc' (Vertex3 0.4 0 0) 0.4 40 (0, pi)
       let cy = curvePtK (const 0) (0, 0.8) 40
       let cx' = [cx, cy]
@@ -649,27 +681,16 @@ mymain = do
       let nx = div (xCount_ rr) 2
       let ny = div (yCount_ rr) 2
 
-      let blockAttr = BlockAttr{isFilled_ = False, typeId_ = 0, tetrisNum_ = 0, color_ = green}
-      ioArray <- DAO.newArray ((-nx, -ny, 0) , (nx - 1, ny - 1, 0)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
+      let blockAttr = BlockAttr {isFilled_ = False, typeId_ = 0, tetrisNum_ = 0, color_ = green}
+      ioArray <- DAO.newArray ((- nx, - ny, 0), (nx - 1, ny - 1, 0)) blockAttr :: IO (IOArray (Int, Int, Int) BlockAttr)
       animaStateArr <- initAnimaState
-      -- ioArray <- DAO.newArray ((0, -ny, -nx) , (0, ny - 1, nx - 1)) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
-      {--
-      ioArray <- let x0 = -nx
-                     x1 =  nx - 1
-                     y0 = -ny
-                     y1 =  ny - 1
-                     z0 =  0
-                     z1 =  0
-                     xx = x1 - x0 + 1
-                     yy = y1 - y0 + 1
-                     zz = z1 - z0 + 1
-                 in DAO.newListArray ((0, -ny, -nx) , (0, ny - 1, nx - 1)) $ replicate (xx * yy * zz) blockAttr :: IO(IOArray (Int, Int, Int) BlockAttr)
-      --}
-      mainLoop window ref refStep refGlobal refFrame animaStateArr cx' ioArray
+
+      -- mymain xxx
+      mainLoopSimple window refCamRot refGlobal refFrame animaStateArr cx' ioArray
       G.destroyWindow window
       G.terminate
       exitSuccess
-  
+
 -- |
 --    KEY: convert 'String' to 'Vertex3' 'GLfloat'
 --
@@ -937,6 +958,7 @@ xor True False = True
 xor False True = True
 xor False False = False
 
+{--
 -- |
 --   x  y  z
 --   0  1  0
@@ -968,7 +990,9 @@ flipAxis axisOld axisNew
     x' = xa axisNew
     y' = ya axisNew
     z' = za axisNew
+--}
 
+{--
 xAxis :: XYZAxis
 xAxis = XYZAxis {xa = True, ya = False, za = False}
 
@@ -977,6 +1001,7 @@ yAxis = XYZAxis {xa = False, ya = True, za = False}
 
 zAxis :: XYZAxis
 zAxis = XYZAxis {xa = False, ya = False, za = True}
+--}
 
 initXYZAxis :: XYZAxis
 initXYZAxis = XYZAxis {xa = False, ya = False, za = False}
@@ -1005,34 +1030,40 @@ mkTetris1 bt bid = (bt, bid, white, bk)
 
 randomBlockX :: IORef GlobalRef -> IO (BlockAttr, [[Int]])
 randomBlockX ref = do
-            let tet1 =
-                  [
-                       [0, 0, 0, 0, 0],
-                       [0, 0, 1, 0, 0],
-                       [0, 1, 1, 1, 0],
-                       [0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0]
-                   ]
-            let tet2 =
-                  [
-                       [0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0],
-                       [1, 1, 1, 1, 1],
-                       [0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0]
-                   ]
-            tetrisCount <- readIORef ref <&> tetrisCount_
-            let t1 = 1
-            let t2 = 2
-            let br1 = BlockAttr{isFilled_ = True, typeId_ = t1, tetrisNum_ = 0, color_ = white}
-            let ls = [(tet1, white, t1), (tet2, cyan, t2)]
-            inx <- randomInt 0 (len ls - 1)
-            let br = ls !! inx
-            ranColor <- randomColor
-            let bb = (br1{typeId_ = br ^._3,  tetrisNum_ = tetrisCount + 1, color_ = ranColor }, br ^._1)
-            modifyIORef ref (\x -> x{tetrisCount_ = tetrisCount + 1})
-            return bb
-  
+  let tet1 =
+        [ [0, 0, 0, 0, 0],
+          [0, 0, 1, 0, 0],
+          [0, 1, 1, 1, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+        ]
+  let tet2 =
+        [ [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [1, 1, 1, 1, 1],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+        ]
+  tetrisCount <- readIORef ref <&> tetrisCount_
+  let t1 = 1
+  let t2 = 2
+  let br1 = BlockAttr {isFilled_ = True, typeId_ = t1, tetrisNum_ = 0, color_ = white}
+  let ls = [(tet1, white, t1), (tet2, cyan, t2)]
+  inx <- randomInt 0 (len ls - 1)
+  let br = ls !! inx
+  ranColor <- randomColor
+  let bb = (br1 {typeId_ = br ^. _3, tetrisNum_ = tetrisCount + 1, color_ = ranColor}, br ^. _1)
+  modifyIORef ref (\x -> x {tetrisCount_ = tetrisCount + 1})
+  return bb
+
+printCameraRot :: IORef CameraRot -> IO()
+printCameraRot ioCameraRot = do
+  readIORef ioCameraRot >>= print
+
+printGlobalRef :: IORef GlobalRef -> IO()
+printGlobalRef ioGlobalRef= do
+  readIORef ioGlobalRef >>= print
+
 initGlobal :: GlobalRef
 initGlobal =
   GlobalRef
@@ -1084,7 +1115,6 @@ initGlobal =
       isPaused_ = False
     }
 
-  
 {--
 
 ```
@@ -1109,14 +1139,12 @@ let r = MyRec = {a_ = 3, b_ = a_ + 4}
   ((-2,-2),0) ((-1,-2),0) ((0,-2),0) ((1,-2),0) ((2,-2),0)
 --}
 
--- |
---    KEY:
---    NOTE: USED
-keyBoardCallBack2 :: IORef Step -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
-keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modKeys = do
+keyBoardCallBackNew :: IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
+keyBoardCallBackNew refCamRot refGlobalRef ioArray window key scanCode keyState modKeys = do
   pp "keyBoardCallBack in $b/haskelllib/AronOpenGL.hs"
   putStrLn $ "inside =>" ++ show keyState ++ " " ++ show key
   globalRef <- readIORef refGlobalRef
+  cam <- readIORef refCamRot
   let axisOld = xyzAxis_ globalRef
   let fovOld = fovDegree_ globalRef
   logFileG ["fovOld=" ++ show fovOld]
@@ -1128,37 +1156,105 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
         -- write Step{...} to ref
         case key of
           k
-            | k == G.Key'Right -> writeIORef refStep Step {xx = _STEP, yy = 0.0, zz = 0.0, ww = 0.0}
-            | k == G.Key'Left -> writeIORef refStep Step {xx = -_STEP, yy = 0.0, zz = 0.0, ww = 0.0}
-            | k == G.Key'Up -> writeIORef refStep Step {xx = 0.0, yy = _STEP, zz = 0.0, ww = 0.0}
-            | k == G.Key'Down -> writeIORef refStep Step {xx = 0.0, yy = -_STEP, zz = 0.0, ww = 0.0}
-            | k == G.Key'9 -> writeIORef refStep Step {xx = 0.0, yy = 0.0, zz = _STEP, ww = 0.0}
-            | k == G.Key'0 -> writeIORef refStep Step {xx = 0.0, yy = 0.0, zz = - _STEP, ww = 0.0}
-            | k == G.Key'8 -> writeIORef refStep Step {xx = 0.0, yy = 0.0, zz = 0.0, ww = _STEP}
-            | k == G.Key'7 -> writeIORef refStep Step {xx = 0.0, yy = 0.0, zz = 0.0, ww = - _STEP}
-            | k == G.Key'X -> modifyIORef refGlobalRef (\x -> x {xyzAxis_ = flipAxis (xyzAxis_ x) xAxis})
+
+            | k == G.Key'Right -> do
+                currXYZ <- readIORef refCamRot <&> currXYZ_
+                case currXYZ of
+                   v | v == 1 -> do
+                         modifyIORef refCamRot (\s -> let s' = s{alpha_  = alpha_ s  + _STEP} in s'{xyzRotDeg_ = alpha_ s'})
+                     | v == 2 -> do
+                         modifyIORef refCamRot (\s -> let s' = s{beta_ = beta_ s + _STEP} in s'{xyzRotDeg_ = beta_ s'})
+                     | v == 3 -> do
+                         modifyIORef refCamRot (\s -> let s' = s{gramma_ = gramma_ s + _STEP} in s'{xyzRotDeg_ = gramma_ s'})
+                     | otherwise -> error "Invalid currXYZ_ value, Key Right"
+  
+            | k == G.Key'Left -> do
+                currXYZ <- readIORef refCamRot <&> currXYZ_
+                case currXYZ of
+                   v | v == 1 -> do
+                         modifyIORef refCamRot (\s -> let s' = s{alpha_  = alpha_ s  - _STEP} in s'{xyzRotDeg_ = alpha_ s'})
+                     | v == 2 -> do
+                         modifyIORef refCamRot (\s -> let s' = s{beta_  = beta_ s  - _STEP} in s'{xyzRotDeg_ = beta_ s'})
+                     | v == 3 -> do
+                         modifyIORef refCamRot (\s -> let s' = s{gramma_  = gramma_ s  - _STEP} in s'{xyzRotDeg_ = gramma_ s'})
+                     | otherwise -> error "Invalid currXYZ_ value, Key Left"
+  
+            --  | k == G.Key'Left -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = - _STEP, yy = 0, zz = 0}})
+            | k == G.Key'Up -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = _STEP, zz = 0}})
+            | k == G.Key'Down -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = - _STEP, zz = 0}})
+            | k == G.Key'9 -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = 0, zz = _STEP}})
+            | k == G.Key'0 -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = 0, zz = - _STEP}})
+            | k == G.Key'8 -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = 0, zz = 0, ww = _STEP}})
+            | k == G.Key'7 -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = 0, zz = 0, ww = - _STEP}})
+            --  | k == G.Key'Left -> modifyIORef refStep (\s -> s{xx = - _STEP, yy = 0, zz = 0})
+            --  | k == G.Key'Up   -> modifyIORef refStep (\s -> s{xx = 0, yy = _STEP, zz = 0})
+            --  | k == G.Key'Down -> modifyIORef refStep (\s -> s{xx = 0, yy = - _STEP, zz = 0})
+
+            --  | k == G.Key'9 -> modifyIORef refStep (\s -> s{xx = 0, yy = 0, zz = _STEP})
+            --  | k == G.Key'0 -> modifyIORef refStep (\s -> s{xx = 0, yy = 0, zz = - _STEP})
+
+            --  | k == G.Key'8 -> modifyIORef refStep (\s -> s{ww = _STEP})
+            --  | k == G.Key'7 -> modifyIORef refStep (\s -> s{ww = - _STEP})
+
+            --  | k == G.Key'X -> modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) xAxis})
+            | k == G.Key'X -> do
+                modifyIORef refCamRot (\s -> let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 1.0 0}})
+                -- modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) xAxis})
             --                                  ↑
             --                                  + -> Update Coord to YZ-plane
 
-            | k == G.Key'Y -> modifyIORef refGlobalRef (\x -> x {xyzAxis_ = flipAxis (xyzAxis_ x) yAxis})
+            --  | k == G.Key'Y -> modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) yAxis})
+            | k == G.Key'A -> do
+                vec <- readIORef refCamRot <&> vecRotX_
+                modifyIORef refCamRot (\s -> s{xyzRotVec_ = vec, currXYZ_ = 1})
+            | k == G.Key'B -> do
+                vec <- readIORef refCamRot <&> vecRotY_
+                modifyIORef refCamRot (\s -> s{xyzRotVec_ = vec, currXYZ_ = 2})
+            | k == G.Key'C -> do
+                vec <- readIORef refCamRot <&> vecRotZ_
+                modifyIORef refCamRot (\s -> s{xyzRotVec_ = vec, currXYZ_ = 3})
+  
+            | k == G.Key'Y ->
+                modifyIORef refCamRot (\s -> let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 1.0 0, up_ = Vector3 1.0 0 0}})
+            | k == G.Key'T ->
+                modifyIORef refCamRot (\s -> let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 (-1.0) 0, up_ = Vector3 1.0 0 0}})
+
             --                                  ↑
             --                                  + -> Update Coord to XZ-plane
 
-            | k == G.Key'Z -> modifyIORef refGlobalRef (\x -> x {xyzAxis_ = flipAxis (xyzAxis_ x) zAxis})
+            | k == G.Key'Z -> do
+                modifyIORef refCamRot (\s -> let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 0 1.0}})
+  
+            | k == G.Key'E -> do
+                modifyIORef refCamRot (\s -> let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 0 (-1.0)}})
+                -- modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) zAxis})
             --                                  ↑
             --                                  + -> Update Coord to XY-plane
 
             -- zoom out
-            | k == G.Key'O -> modifyIORef refGlobalRef (\x -> x {fovDegree_ = fovDegree_ x + 5.0})
+            --  | k == G.Key'O -> modifyIORef refGlobalRef (\s -> s {fovDegree_ = fovDegree_ s + 5.0})
+            | k == G.Key'O -> do
+                modifyIORef refCamRot (\s -> let p = persp_ s in s{persp_ = p{fov_ = fov_ p + 5.0}})
+            --                                  ↑
+            --                                  + -> Update Coord to XY-plane
+                logFileG ["CameraRot_O"]
+                readIORef refCamRot >>= \x -> logFileG [show x]
+            -- zoom in
+            | k == G.Key'I -> do
+                modifyIORef refCamRot (\s -> let p = persp_ s in s{persp_ = p{fov_ = fov_ p - 5.0}})
+            --                                  ↑
+            --                                  + -> Update Coord to XY-plane
+                logFileG ["CameraRot_I"]
+                readIORef refCamRot >>= \x -> logFileG [show x]
+
+            -- TODO: In orthogonal projective status,
+            | k == G.Key'Space -> modifyIORef refCamRot (\s -> s {delta_ = initStep})
+            --  | k == G.Key'O -> modifyIORef refCamRot (\s -> s {fovDeg_ = fovDeg_ s + 5.0})
             --                                  ↑
             --                                  + -> Update Coord to XY-plane
             -- zoom in
-            | k == G.Key'I -> modifyIORef refGlobalRef (\x -> x {fovDegree_ = fovDegree_ x - 5.0})
-            --                                  ↑
-            --                                  + -> Update Coord to XY-plane
-
-            -- TODO: In orthogonal projective status,
-            | k == G.Key'Space -> writeIORef refStep initStep
+            | k == G.Key'I -> modifyIORef refCamRot (\s -> s {fovDeg_ = fovDeg_ s - 5.0})
+            --  | k == G.Key'Space -> writeIORef refStep initStep
             {--
             | k == G.Key'R -> do
                               bmap <- readIORef refGlobalRef >>= return . boardMap_
@@ -1172,7 +1268,7 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
                                                        )
                               print block1
             --}
-  
+
             | k == G.Key'W -> do
               nowTime <- timeNowMilli
               modifyIORef refGlobalRef (\s -> s {count1_ = 0})
@@ -1183,9 +1279,8 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
             | k == G.Key'P -> do
               modifyIORef refGlobalRef (\s -> s {isPaused_ = not $ isPaused_ s})
               isPaused <- readIORef refGlobalRef <&> isPaused_
-              pauseTetris  isPaused refGlobalRef initRectGrid ioArray
+              pauseTetris isPaused refGlobalRef initRectGrid ioArray
               pp "Pause"
-
             | k == G.Key'A -> do
               moveX <- readIORef refGlobalRef <&> moveX_
               moveY <- readIORef refGlobalRef <&> moveY_
@@ -1259,32 +1354,17 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
               bk1 <- readIORef refGlobalRef <&> bk1_
               tet <- readIORef refGlobalRef <&> tetris1_
               let bk1' = rotateN rotN bk1
-              let bk1'X = rotateN rotN (tet ^._4)
+              let bk1'X = rotateN rotN (tet ^. _4)
 
               -- let mk = (join . join) $ (map . map) fst $ (map . filter) (\(_, n) -> n == 1) $ (map . zip) centerBrick bk1
               let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
               let ls = map fst lz
               let lzX = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'X
               let lsX = map fst lzX
-              -- block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
-              {--
-              modifyIORef
-                refGlobalRef
-                ( \s ->
-                    s
-                      { moveY_ =
-                          let mx = moveX_ s
-                              my = moveY_ s
-                              m = map (\(a, b) -> (a + mx, b + my + 1)) lsX
-                              b = checkMoveX m bmapX rr
-                           in b ? my + 1 $ my
-                      }
-                )
-              --}
 
               print "kk"
             | k == G.Key'D -> do
-              mx <- readIORef refGlobalRef <&>  moveX_
+              mx <- readIORef refGlobalRef <&> moveX_
               my <- readIORef refGlobalRef <&> moveY_
               centerBrick <- readIORef refGlobalRef <&> centerBrick_
               tetX <- readIORef refGlobalRef <&> tetris1X_
@@ -1299,15 +1379,14 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
               -- let ls = getShape centerBrick $ rotateN rotN (tet ^._4)
               let ls = getShape centerBrick $ rotateN rotN (snd tetX)
 
-              
               let mX = map (\(a, b) -> (a + mx, b + my - 1, 0)) ls
-              
+
               let b = checkMoveArr mX lsArr rr
-              
+
               when (not b) $ do
                 let ls3 = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) ls
                 mapM_ (uncurry $ DAO.writeArray ioArray) ls3
-  
+
               newBlock <- randomBlockX refGlobalRef
               modifyIORef
                 refGlobalRef
@@ -1320,7 +1399,7 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
                         tetris1X_ = b ? tetris1X_ s $ newBlock
                       }
                 )
-  
+
               print "kk"
             | otherwise -> pp $ "Unknown Key Press" ++ show key
       | ks == G.KeyState'Released -> do
@@ -1336,6 +1415,217 @@ keyBoardCallBack2 refStep refGlobalRef ioArray window key scanCode keyState modK
     (key == G.Key'Escape && keyState == G.KeyState'Pressed)
     (G.setWindowShouldClose window True)
 
+-- |
+--    KEY:
+--    NOTE: USED
+keyBoardCallBackX :: IORef Step -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
+keyBoardCallBackX refStep refGlobalRef ioArray window key scanCode keyState modKeys = do
+  pp "keyBoardCallBack in $b/haskelllib/AronOpenGL.hs"
+  putStrLn $ "inside =>" ++ show keyState ++ " " ++ show key
+  globalRef <- readIORef refGlobalRef
+  let axisOld = xyzAxis_ globalRef
+  let fovOld = fovDegree_ globalRef
+  logFileG ["fovOld=" ++ show fovOld]
+  rr <- readIORef refGlobalRef <&> rectGrid_
+  case keyState of
+    ks
+      | ks `elem` [G.KeyState'Pressed, G.KeyState'Repeating] -> do
+        -- G.KeyState'Pressed -> do
+        -- write Step{...} to ref
+        case key of
+          k
+            | k == G.Key'Right -> modifyIORef refStep (\s -> s {xx = _STEP, yy = 0, zz = 0})
+            | k == G.Key'Left -> modifyIORef refStep (\s -> s {xx = - _STEP, yy = 0, zz = 0})
+            | k == G.Key'Up -> modifyIORef refStep (\s -> s {xx = 0, yy = _STEP, zz = 0})
+            | k == G.Key'Down -> modifyIORef refStep (\s -> s {xx = 0, yy = - _STEP, zz = 0})
+            | k == G.Key'9 -> modifyIORef refStep (\s -> s {xx = 0, yy = 0, zz = _STEP})
+            | k == G.Key'0 -> modifyIORef refStep (\s -> s {xx = 0, yy = 0, zz = - _STEP})
+            | k == G.Key'8 -> modifyIORef refStep (\s -> s {ww = _STEP})
+            | k == G.Key'7 -> modifyIORef refStep (\s -> s {ww = - _STEP})
+            | k == G.Key'X -> modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) xAxis})
+            --                                  ↑
+            --                                  + -> Update Coord to YZ-plane
+
+            | k == G.Key'Y -> modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) yAxis})
+            --                                  ↑
+            --                                  + -> Update Coord to XZ-plane
+
+            | k == G.Key'Z -> modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) zAxis})
+            --                                  ↑
+            --                                  + -> Update Coord to XY-plane
+
+            -- zoom out
+            | k == G.Key'O -> modifyIORef refGlobalRef (\s -> s {fovDegree_ = fovDegree_ s + 5.0})
+            --                                  ↑
+            --                                  + -> Update Coord to XY-plane
+            -- zoom in
+            | k == G.Key'I -> modifyIORef refGlobalRef (\s -> s {fovDegree_ = fovDegree_ s - 5.0})
+            --                                  ↑
+            --                                  + -> Update Coord to XY-plane
+
+            -- TODO: In orthogonal projective status,
+            | k == G.Key'Space -> writeIORef refStep initStep
+            {--
+            | k == G.Key'R -> do
+                              bmap <- readIORef refGlobalRef >>= return . boardMap_
+                              block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
+                              modifyIORef refGlobalRef (\s -> s{moveX_ =  let mx = moveX_ s
+                                                                              my = moveY_ s
+                                                                              m = map (\(a, b) -> (a + mx + 1, b + my)) block1
+                                                                              b = checkMove m bmap rr
+                                                                          in  b ? mx + 1 $ mx
+                                                               }
+                                                       )
+                              print block1
+            --}
+
+            | k == G.Key'W -> do
+              nowTime <- timeNowMilli
+              modifyIORef refGlobalRef (\s -> s {count1_ = 0})
+              modifyIORef refGlobalRef (\s -> s {time1_ = nowTime})
+              modifyIORef refGlobalRef (\s -> s {rot_ = True})
+              fw "Rotate Block"
+              pp "rotate me"
+            | k == G.Key'P -> do
+              modifyIORef refGlobalRef (\s -> s {isPaused_ = not $ isPaused_ s})
+              isPaused <- readIORef refGlobalRef <&> isPaused_
+              pauseTetris isPaused refGlobalRef initRectGrid ioArray
+              pp "Pause"
+            | k == G.Key'A -> do
+              moveX <- readIORef refGlobalRef <&> moveX_
+              moveY <- readIORef refGlobalRef <&> moveY_
+              bmap <- readIORef refGlobalRef <&> boardMap_
+              bmapX <- readIORef refGlobalRef <&> boardMap1_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              rotN <- readIORef refGlobalRef <&> rotN_
+              bk1 <- readIORef refGlobalRef <&> bk1_
+              tet <- readIORef refGlobalRef <&> tetris1_
+              tetX <- readIORef refGlobalRef <&> tetris1X_
+              array <- getAssocs ioArray
+              -- let bk1' = rotateN 1 bk1
+              let bk1' = rotateN 1 (snd tetX)
+              -- let bk1'X = rotateN 0 (tet ^._4)
+              let bk1'X = rotateN 0 (snd tetX)
+
+              -- /Users/aaa/myfile/bitbucket/tmp/xx_5248.x
+              let currBr = innerBrick (moveX, moveY) centerBrick bk1'
+              let currBrX = innerBrick (moveX, moveY) centerBrick bk1'X
+              let currBrXX = map (\(x, y) -> (x, y, 0)) currBrX
+              let -- b = checkMove currBr bmap rr
+              -- let bX = checkMoveX currBrX bmapX rr
+              let bX = checkMoveArr currBrXX array rr
+              -- modifyIORef refGlobalRef (\s -> s{bk1_ = b ? bk1' $ bk1})
+              -- modifyIORef refGlobalRef (\s -> s {count1_ = b ? 0 $ count1_ s})
+              modifyIORef refGlobalRef (\s -> s {count1_ = bX ? 0 $ count1_ s})
+              -- modifyIORef refGlobalRef (\s -> s{rotN_ = bX ? (let n = (rotN_ s) + 1 in mod n 4 )$ rotN_ s})
+              pp "rotateN 1"
+            | k == G.Key'L || k == G.Key'R -> do
+              bmap <- readIORef refGlobalRef <&> boardMap_
+              bmapX <- readIORef refGlobalRef <&> boardMap1_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              rotN <- readIORef refGlobalRef <&> rotN_
+              -- bk1 <- readIORef refGlobalRef >>= return . bk1_
+              tet <- readIORef refGlobalRef <&> tetris1_
+              tetX <- readIORef refGlobalRef <&> tetris1X_
+              let bk1' = rotateN rotN bk1
+              -- let bk1'X = rotateN rotN (tet ^._4)
+              let bk1'X = rotateN rotN (snd tetX)
+              lsArr <- getAssocs ioArray
+              -- let mk = (join . join) $ (map . map) fst $ (map . filter) (\(_, n) -> n == 1) $ (map . zip) centerBrick bk1
+              -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
+              -- let ls = map fst lz
+              -- let ls = getShape centerBrick bk1'
+              let lsX = getShape centerBrick bk1'X
+              logFileG ["lsX"]
+              logFileG $ map show lsX
+              logFileG ["lsArr"]
+              logFileG $ map show lsArr
+              -- block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
+              modifyIORef
+                refGlobalRef
+                ( \s ->
+                    s
+                      { moveX_ =
+                          let mx = moveX_ s
+                              my = moveY_ s
+                              one = k == G.Key'L ? -1 $ 1
+                              mX = map (\(a, b) -> (a + mx + one, b + my, 0)) lsX
+                              b = checkMoveArr mX lsArr rr
+                           in b ? mx + one $ mx
+                      }
+                )
+
+              print "kk"
+            | k == G.Key'U -> do
+              bmap <- readIORef refGlobalRef <&> boardMap_
+              bmapX <- readIORef refGlobalRef <&> boardMap1_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              rotN <- readIORef refGlobalRef <&> rotN_
+              bk1 <- readIORef refGlobalRef <&> bk1_
+              tet <- readIORef refGlobalRef <&> tetris1_
+              let bk1' = rotateN rotN bk1
+              let bk1'X = rotateN rotN (tet ^. _4)
+
+              -- let mk = (join . join) $ (map . map) fst $ (map . filter) (\(_, n) -> n == 1) $ (map . zip) centerBrick bk1
+              let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
+              let ls = map fst lz
+              let lzX = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'X
+              let lsX = map fst lzX
+
+              print "kk"
+            | k == G.Key'D -> do
+              mx <- readIORef refGlobalRef <&> moveX_
+              my <- readIORef refGlobalRef <&> moveY_
+              centerBrick <- readIORef refGlobalRef <&> centerBrick_
+              tetX <- readIORef refGlobalRef <&> tetris1X_
+              rotN <- readIORef refGlobalRef <&> rotN_
+              bk1 <- readIORef refGlobalRef <&> bk1_
+              lsArr <- getAssocs ioArray
+              -- let bk1' = rotateN rotN bk1
+
+              -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
+              -- let ls = map fst lz
+              -- let ls = getShape centerBrick bk1'
+              -- let ls = getShape centerBrick $ rotateN rotN (tet ^._4)
+              let ls = getShape centerBrick $ rotateN rotN (snd tetX)
+
+              let mX = map (\(a, b) -> (a + mx, b + my - 1, 0)) ls
+
+              let b = checkMoveArr mX lsArr rr
+
+              when (not b) $ do
+                let ls3 = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) ls
+                mapM_ (uncurry $ DAO.writeArray ioArray) ls3
+
+              newBlock <- randomBlockX refGlobalRef
+              modifyIORef
+                refGlobalRef
+                ( \s ->
+                    s
+                      { moveX_ = b ? moveX_ s $ 0,
+                        moveY_ = b ? my - 1 $ 0,
+                        count1_ = b ? count1_ s $ 10000000,
+                        rotN_ = b ? rotN_ s $ 0,
+                        tetris1X_ = b ? tetris1X_ s $ newBlock
+                      }
+                )
+
+              print "kk"
+            | otherwise -> pp $ "Unknown Key Press" ++ show key
+      | ks == G.KeyState'Released -> do
+        -- G.KeyState'Released -> do
+        if key == G.Key'Right then pp "Release Key => Right" else pp "Press No Right"
+        if key == G.Key'Left then pp "Release Key => left" else pp "Press No Right"
+        if key == G.Key'Up then pp "Release Key => up" else pp "Release No Up"
+        if key == G.Key'Down then pp "Release Key => Down" else pp "Release No Down"
+      -- if key == G.Key'R  then modifyIORef refGlobalRef (\x -> x{moveX_ = 0}) else pp "Release No Down"
+      -- if key == G.Key'L  then modifyIORef refGlobalRef (\x -> x{moveY_ = 0}) else pp "Release No Down"
+      | otherwise -> pp "Unknow keyState"
+  when
+    (key == G.Key'Escape && keyState == G.KeyState'Pressed)
+    (G.setWindowShouldClose window True)
+
+{--
 -- |
 --
 --                    | upLeftY
@@ -1380,6 +1670,7 @@ drawRectX w (p0@(Vertex3 x0 y0 z0), p1@(Vertex3 x1 y1 z1)) c@(x, y) = do
       drawSeg color (Vertex3 x0 y0 z0, Vertex3 x0 y1 z0) --  left vertical
       drawSeg color (Vertex3 x1 y0 z0, Vertex3 x1 y1 z1) --  right vertical
       drawSeg color (Vertex3 x0 y1 z0, Vertex3 x1 y1 z1) --  bottom horizontal
+--}
 
 vecdTovecf :: Vector3 GLdouble -> Vector3 GLfloat
 vecdTovecf (Vector3 x y z) = Vector3 x' y' z'
@@ -1517,7 +1808,7 @@ getFOVDegree ioGlobalRef = readIORef ioGlobalRef <&> fovDegree_
 -- |
 --    KEY: getter for str_
 getStr :: IORef GlobalRef -> IO String
-getStr ioGlobalRef = readIORef ioGlobalRef <&>str_
+getStr ioGlobalRef = readIORef ioGlobalRef <&> str_
 
 -- |
 --    KEY: getter for xyzAxis_
@@ -1540,7 +1831,7 @@ getCursorPosf w = G.getCursorPos w >>= \(x, y) -> return (rf x, rf y) :: IO (GLf
 -- |
 --    KEY:
 getMousePressed :: IORef GlobalRef -> IO (Bool, (GLfloat, GLfloat))
-getMousePressed ioGlobalRef = readIORef ioGlobalRef <&>  mousePressed_
+getMousePressed ioGlobalRef = readIORef ioGlobalRef <&> mousePressed_
 
 -- |
 --    KEY:
@@ -1563,15 +1854,15 @@ getTranVecDrawRectX ioGlobalRef = readIORef ioGlobalRef <&> tranDrawRectX_
 --
 --    t1 released
 --       (x1, y1)
-mouseCallback :: IORef GlobalRef -> G.MouseButtonCallback
-mouseCallback globalRef window but butState mk = do
+mouseCallbackX :: IORef GlobalRef -> G.MouseButtonCallback
+mouseCallbackX globalRef window but butState mk = do
   case butState of
     G.MouseButtonState'Pressed -> do
       case but of
         v
           | v == G.MouseButton'1 -> do
             (fbw, fbh) <- G.getFramebufferSize window
-            pos <- G.getCursorPos window >>= \(x, y) -> return  (rf x, rf y) :: IO (GLfloat, GLfloat)
+            pos <- G.getCursorPos window >>= \(x, y) -> return (rf x, rf y) :: IO (GLfloat, GLfloat)
             ws <- G.getWindowSize window
             let str = PR.printf "cx=%.2f cy=%.2f wx=%d wy=%d bx=%d by=%d" (fst pos) (snd pos) (fst ws) (snd ws) fbw fbh :: String
 
@@ -1715,8 +2006,8 @@ drawConvexHull :: [Vertex3 GLfloat] -> IO ()
 drawConvexHull pts = do
   let n = len pts
   let ls = convexHull n pts
-  mapM_ (\x -> drawDot x) pts
-  mapM_ (\x -> drawSegmentWithEndPt red x) ls
+  mapM_ drawDot pts
+  mapM_ (drawSegmentWithEndPt red) ls
 
 -- listTupeToList::[(Vertex3 GLfloat, Vertex3 GLfloat)] -> [[Vertex3 GLfloat]]
 -- listTupeToList cx = map (\x -> ((fromJust . head) cx, (fromJust . last) cx) ) cx
@@ -1737,7 +2028,6 @@ moveNext (Vertex3 x y z) = do
     3 -> if y < b then let v = Vertex3 x (y + 0.1) z in return v else moveNext (Vertex3 x y z)
     4 -> if y > - b then let v = Vertex3 x (y - 0.1) z in return v else moveNext (Vertex3 x y z)
     _ -> error "ERROR randomInt"
-  
 
 {--
              1
@@ -1745,7 +2035,6 @@ moveNext (Vertex3 x y z) = do
             -1
 
 --}
-
 randomVexList :: Vertex3 GLfloat -> [Int] -> [Vertex3 GLfloat]
 randomVexList _ [] = []
 randomVexList v@(Vertex3 x y z) (c : cx) = case c of
@@ -1787,14 +2076,12 @@ randomVexListX ix@(x0, y0) v@(x, y) (c : cx) = case c of
   4 -> y > - y0 ? (let u = (x, y - 1) in u : randomVexListX ix u cx) $ randomVexListX ix v cx
   _ -> error "ERROR randomInt"
 
-
-getShape:: [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
+getShape :: [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
 getShape centerBrick bk = map fst $ join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick bk
 
-  
 getShape3 :: [[[(Int, Int, Int)]]] -> [[[Int]]] -> [(Int, Int, Int)]
 getShape3 centerBrick bk = map fst $ join . join $ (map . map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith . zipWith) (,) centerBrick bk
-  
+
 innerBrick :: (Int, Int) -> [[(Int, Int)]] -> [[Int]] -> [(Int, Int)]
 innerBrick (moveX, moveY) centerBrick bk1 = currBr
   where
@@ -1818,74 +2105,16 @@ innerBrick (moveX, moveY) centerBrick bk1 = currBr
     cb1 = (map . filter) (\(_, y) -> y0 <= y && y <= y1) cb0
     currBr = join $ (map . map) (\(x, y) -> (x + moveX, y + moveY)) cb1
 
-drawFirstRect :: IO ()
-drawFirstRect = do
-  let wx = 0.02; wy = 0.02
-  let v (x, y, z) = Vertex3 x y z
-  -- top left corner
-  let x0 = -1.0; y0 = 1.0
-  -- bottom right corner
-  let x1 = 1.0; y1 = -1.0
-  let vx0 = v (x0, y0, 0)
-  let vx1 = v (x1, y1, 0)
-  let delx = abs $ (x1 - x0) / 20
-  let dely = abs $ (y1 - y0) / 20
-  let cx = delx / 2
-  let cy = dely / 2
-  mapM_
-    ( \ny ->
-        mapM_
-          ( \nx ->
-              let ex0 = x0 + nx * delx + wx
-                  ey0 = y0 - ny * dely - wy
-                  ex1 = x0 + (nx + 1) * delx - wx
-                  ey1 = y0 - (ny + 1) * dely + wy
-               in drawRectColor yellow (v (ex0, ey0, 0), v (ex1, ey1, 0))
-          )
-          [0]
-    )
-    [0]
-
-drawFirstRectColor :: Color3 GLdouble -> IO ()
-drawFirstRectColor color = do
-  let wx = 0.02; wy = 0.02
-  let v (x, y, z) = Vertex3 x y z
-  -- top left corner
-  let x0 = -1.0; y0 = 1.0
-  -- bottom right corner
-  let x1 = 1.0; y1 = -1.0
-  let vx0 = v (x0, y0, 0)
-  let vx1 = v (x1, y1, 0)
-  let delx = abs $ (x1 - x0) / 20
-  let dely = abs $ (y1 - y0) / 20
-  let cx = delx / 2
-  let cy = dely / 2
-  mapM_
-    ( \ny ->
-        mapM_
-          ( \nx ->
-              let ex0 = x0 + nx * delx + wx
-                  ey0 = y0 - ny * dely - wy
-                  ex1 = x0 + (nx + 1) * delx - wx
-                  ey1 = y0 - (ny + 1) * dely + wy
-               in drawRectColor color (v (ex0, ey0, 0), v (ex1, ey1, 0))
-          )
-          [0]
-    )
-    [0]
-
-
-{-|
-
-               minY_
-                |
-        minX_ - +  - -> maxX_
-                |
-               maxY_
-
-        |<-    xCount_    ->|
-                20
--}
+-- |
+--
+--               minY_
+--                |
+--        minX_ - +  - -> maxX_
+--                |
+--               maxY_
+--
+--        |<-    xCount_    ->|
+--                20
 initRectGrid :: RectGrid
 initRectGrid =
   RectGrid
@@ -1938,13 +2167,13 @@ drawBlock (nx, ny) r = do
   let x1 = maxY_ r; y1 = minY_ r
   let vx0 = v (x0, y0, 0)
   let vx1 = v (x1, y1, 0)
-  let bWidth = (x1 - x0) / (fi $ xCount_ r)
-  let bHeight = (y0 - y1) / (fi $ yCount_ r)
+  let bWidth = (x1 - x0) / fi (xCount_ r)
+  let bHeight = (y0 - y1) / fi (yCount_ r)
   -- drawRect (vx0, vx1)
-  let ex0 = x0 + (fi $ nx) * bWidth + wx
-      ey0 = y0 - (fi $ ny) * bHeight - wy
-      ex1 = x0 + (fi $ nx + 1) * bWidth - wx
-      ey1 = y0 - (fi $ ny + 1) * bHeight + wy
+  let ex0 = x0 + fi nx * bWidth + wx
+      ey0 = y0 - fi ny * bHeight - wy
+      ex1 = x0 + (fi nx + 1) * bWidth - wx
+      ey1 = y0 - (fi ny + 1) * bHeight + wy
    in drawRectColor green (v (ex0, ey0, 0), v (ex1, ey1, 0))
 
 -- |
@@ -1974,7 +2203,361 @@ centerBlockMove c@(nx, ny) sx (cx, cy) color = do
       let vv = vf -: ov
       translate vv
       -- drawRectGridColor color [0] [0] 0.02
-      drawRectFill2d color (0.1, 0.1)
+      drawRectFill2dX color (0.1, 0.1)
+
+-- |
+--    === KEY: fill rectangle
+--
+--    @
+--             ↑
+--             |
+--        v0   ⟶   v1
+--
+--        ↑           |
+--        |    +      ↓  -> y
+--
+--       v3    <—-    v2
+--    @
+drawRectFill2dX :: Color3 GLdouble -> (GLfloat, GLfloat) -> IO ()
+drawRectFill2dX c (w, h) = do
+  drawQuadsColor c [vx0, vx1, vx2, vx3]
+  drawQuadsColor (f c) [vx0', vx1', vx2', vx3']
+  drawSegmentNoEnd (f c) (vx0, vx0')
+  drawSegmentNoEnd (f c) (vx1, vx1')
+  drawSegmentNoEnd (f c) (vx2, vx2')
+  drawSegmentNoEnd (f c) (vx3, vx3')
+  where
+    x0 = w / 2
+    y0 = h / 2
+    vx0 = Vertex3 (- x0) y0 0
+    vx1 = Vertex3 x0 y0 0
+    vx2 = Vertex3 x0 (- y0) 0
+    vx3 = Vertex3 (- x0) (- y0) 0
+    dep = -0.02
+    vx0' = Vertex3 (- x0) y0 dep
+    vx1' = Vertex3 x0 y0 dep
+    vx2' = Vertex3 x0 (- y0) dep
+    vx3' = Vertex3 (- x0) (- y0) dep
+    f (Color3 a b c) = Color3 (a * 0.5) (b * 0.5) (c * 0.5)
+
+-- |
+--
+--   The cube is from following URL
+--   http://localhost/html/indexUnderstandOpenGL.html
+drawCube :: IO ()
+drawCube = do
+  -- drawPrimitive' TriangleStrip green [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12]
+  preservingMatrix $ do
+    renderPrimitive Quads $
+      mapM_
+        ( \v -> do
+            color green
+            vertex v
+        )
+        ls_top
+    renderPrimitive Quads $
+      mapM_
+        ( \v -> do
+            color magenta
+            vertex v
+        )
+        ls_bot
+    renderPrimitive Quads $
+      mapM_
+        ( \v -> do
+            color cyan
+            vertex v
+        )
+        ls_front
+
+    renderPrimitive Quads $
+      mapM_
+        ( \v -> do
+            color blue
+            vertex v
+        )
+        ls_back
+
+    renderPrimitive Quads $
+      mapM_
+        ( \v -> do
+            color yellow
+            vertex v
+        )
+        ls_left
+
+    renderPrimitive Quads $
+      mapM_
+        ( \v -> do
+            color gray
+            vertex v
+        )
+        ls_right
+  where
+    f (Color3 a b c) = Color3 (a * 0.5) (b * 0.5) (c * 0.5)
+    ls =
+      [ (green, v0),
+        (red, v1),
+        (cyan, v2),
+        (yellow, v3),
+        (blue, v4),
+        (white, v5),
+        (gray, v6),
+        (yellow, v7),
+        (green, v8),
+        (cyan, v9),
+        (red, v10),
+        (cyan, v11),
+        (magenta, v12)
+      ]
+    a = 0.4 :: GLfloat
+
+    v0 = Vertex3 0 0 0
+    v1 = Vertex3 a 0 0
+    v2 = Vertex3 0 a 0
+    v3 = Vertex3 a a 0
+
+    v4 = Vertex3 0 a (- a)
+    v5 = Vertex3 a a (- a)
+    v6 = Vertex3 0 0 (- a)
+    v7 = Vertex3 a 0 (- a)
+
+    v8 = Vertex3 a a 0
+    v9 = Vertex3 a 0 0
+    v10 = Vertex3 0 0 (- a)
+    v11 = Vertex3 0 0 0
+
+    v12 = Vertex3 0 a (- a)
+    v13 = Vertex3 0 a 0
+
+    lt =
+      [ (green, x0),
+        (red, x1),
+        (cyan, x2),
+        (yellow, x3),
+        (blue, x4),
+        (white, x5),
+        (gray, x6),
+        (yellow, x7)
+      ]
+    lt' =
+      [ (green, x2),
+        (red, x4),
+        (cyan, x0),
+        (yellow, x6),
+        (blue, x1),
+        (white, x7),
+        (gray, x3),
+        (yellow, x5)
+      ]
+    x0 = Vertex3 0 0 0
+    x1 = Vertex3 a 0 0
+    x2 = Vertex3 0 0 (- a)
+    x3 = Vertex3 a 0 (- a)
+
+    x4 = Vertex3 0 (- a) (- a)
+    x5 = Vertex3 a (- a) (- a)
+    x6 = Vertex3 0 (- a) 0
+    x7 = Vertex3 a (- a) 0
+
+    b = 0.3 :: GLfloat
+    p0 = Vertex3 b b (- b)
+    p1 = Vertex3 (- b) b (- b)
+    p2 = Vertex3 (- b) b b
+    p3 = Vertex3 b b b
+
+    q0 = Vertex3 b (- b) (- b)
+    q1 = Vertex3 (- b) (- b) (- b)
+    q2 = Vertex3 (- b) (- b) b
+    q3 = Vertex3 b (- b) b
+
+    ls_top = [p0, p1, p2, p3]
+    ls_bot = [q0, q1, q2, q3]
+    ls_front = [p3, p2, q2, q3]
+    ls_back = [p0, p1, q1, q0]
+    ls_left = [p1, p2, q2, q1]
+    ls_right = [p0, p3, q3, q0]
+
+{--
+               p1       p0
+
+          p2        p3
+
+               q1     q0
+
+         q2       q3
+
+--}
+
+{--
+
+normalx :: [Normal3 GLfloat]
+normalx = [
+           (Normal3 (-1.0) 0.0 0.0),
+           (Normal3 0.0 1.0 0.0),
+           (Normal3 1.0 0.0 0.0),
+           (Normal3 0.0 (-1.0) 0.0),
+           (Normal3 0.0 0.0 1.0),
+           (Normal3 0.0 0.0 (-1.0))
+          ]
+
+faces :: [[Vertex3 GLfloat]]
+faces = [[(v 0), (v 1), (v 2), (v 3)],
+         [(v 3), (v 2), (v 6), (v 7)],
+         [(v 7), (v 6), (v 5), (v 4)],
+         [(v 4), (v 5), (v 1), (v 0)],
+         [(v 5), (v 6), (v 2), (v 1)],
+         [(v 7), (v 4), (v 0), (v 3)]]
+
+facesx :: [[Vertex3 GLfloat]]
+facesx :: [
+           [v0, v1, v2, v3],
+           [v3, v2, v6, v7],
+           [v7, v6, v5, v4],
+           [v4, v5, v1, v0],
+           [v5, v6, v2, v1],
+           [v7, v4, v0, v3]
+          ]
+
+a = 1 :: GLfloat
+v0 = Vertex3 (-a) (-a) a
+v1 = Vertex3 (-a) (-a) (-a)
+v2 = Vertex3 (-a) a    (-a)
+v3 = Vertex3 (-a) a    a
+v4 = Vertex3 a (-a)    a
+v5 = Vertex3 a (-a) (-a)
+v6 = Vertex3 a a    (-a)
+v7 = Vertex3 a a    a
+
+v :: Int -> Vertex3 GLfloat
+v x = Vertex3 v0 v1 v2
+    where v0
+              | x == 0 || x == 1 || x == 2 || x == 3 = -1
+              | x == 4 || x == 5 || x == 6 || x == 7 = 1
+          v1
+              | x == 0 || x == 1 || x == 4 || x == 5 = -1
+              | x == 2 || x == 3 || x == 6 || x == 7 = 1
+          v2
+              | x == 0 || x == 3 || x == 4 || x == 7 = 1
+              | x == 1 || x == 2 || x == 5 || x == 6 = -1
+
+--}
+
+{--
+let a = 0.5f
+  cube[ 0 ].Position = new Vector3( a, a, a );
+  cube[ 1 ].Position = new Vector3( -a, a, a );
+  cube[ 2 ].Position = new Vector3( a, -a, a );
+  cube[ 3 ].Position = new Vector3( -a, -a, a );
+  cube[ 4 ].Position = new Vector3( a, a, -a );
+  cube[ 5 ].Position = new Vector3( -a, a, -a );
+  cube[ 6 ].Position = new Vector3( -a, -a, -a );
+  cube[ 7 ].Position = new Vector3( a, -a, -a );
+--}
+
+-- |
+--
+--   The cube is from following URL
+--   http://localhost/html/indexUnderstandOpenGL.html
+--
+--   @
+--   GLfloat vertices[]  = {
+--        .5f, .5f, .5f,  -.5f, .5f, .5f,  -.5f,-.5f, .5f,  .5f,-.5f, .5f, // v0,v1,v2,v3 (front)
+--        .5f, .5f, .5f,   .5f,-.5f, .5f,   .5f,-.5f,-.5f,  .5f, .5f,-.5f, // v0,v3,v4,v5 (right)
+--        .5f, .5f, .5f,   .5f, .5f,-.5f,  -.5f, .5f,-.5f, -.5f, .5f, .5f, // v0,v5,v6,v1 (top)
+--       -.5f, .5f, .5f,  -.5f, .5f,-.5f,  -.5f,-.5f,-.5f, -.5f,-.5f, .5f, // v1,v6,v7,v2 (left)
+--       -.5f,-.5f,-.5f,   .5f,-.5f,-.5f,   .5f,-.5f, .5f, -.5f,-.5f, .5f, // v7,v4,v3,v2 (bottom)
+--        .5f,-.5f,-.5f,  -.5f,-.5f,-.5f,  -.5f, .5f,-.5f,  .5f, .5f,-.5f  // v4,v7,v6,v5 (back)
+--   };
+--   @
+drawCube2 :: IO ()
+drawCube2 = do
+  renderPrimitive Triangles $
+    mapM_
+      ( \(c, v) -> do
+          color c
+          vertex v
+      )
+      ls
+  where
+    a = 0.1 :: GLfloat
+    v00 = Vertex3 a a a
+    v01 = Vertex3 (- a) a a
+    v02 = Vertex3 (- a) (- a) a
+    v03 = Vertex3 a (- a) a
+
+    v10 = Vertex3 a a a
+    v11 = Vertex3 a (- a) a
+    v12 = Vertex3 a (- a) (- a)
+    v13 = Vertex3 a a (- a)
+
+    v20 = Vertex3 a a a
+    v21 = Vertex3 a a (- a)
+    v22 = Vertex3 (- a) a (- a)
+    v23 = Vertex3 (- a) a a
+
+    v30 = Vertex3 (- a) a a
+    v31 = Vertex3 (- a) a (- a)
+    v32 = Vertex3 (- a) (- a) (- a)
+    v33 = Vertex3 (- a) (- a) a
+
+    v40 = Vertex3 (- a) (- a) (- a)
+    v41 = Vertex3 a (- a) (- a)
+    v42 = Vertex3 a (- a) a
+    v43 = Vertex3 (- a) (- a) a
+
+    v50 = Vertex3 a (- a) (- a)
+    v51 = Vertex3 (- a) (- a) (- a)
+    v52 = Vertex3 (- a) a (- a)
+    v53 = Vertex3 a a (- a)
+    ls =
+      [ (green, v00),
+        (green, v01),
+        (green, v02),
+        (green, v03),
+        (cyan, v10),
+        (cyan, v11),
+        (cyan, v12),
+        (cyan, v13),
+        (yellow, v20),
+        (yellow, v21),
+        (yellow, v22),
+        (yellow, v23),
+        (magenta, v30),
+        (magenta, v31),
+        (magenta, v32),
+        (magenta, v33),
+        (blue, v40),
+        (blue, v41),
+        (blue, v42),
+        (blue, v43),
+        (gray, v50),
+        (gray, v51),
+        (gray, v52),
+        (gray, v53)
+      ]
+
+{--
+ static const GLfloat box[] = {
+        0, 0, 0,
+        1, 0, 0,
+        0, 1, 0,
+        1, 1, 0,
+
+        0, 1, -1,
+        1, 1, -1,
+        0, 0, -1,
+        1, 0, -1,
+
+        1, 1, 0,
+        1, 0, 0,
+        0, 0, -1,
+        0, 0, 0,
+
+        0, 1, -1,
+        0, 1, 0,
+    };
+--}
 
 -- |
 --   Center Brick,
@@ -2008,8 +2591,11 @@ centerBlock00 (nx, ny) r color = do
       let ov = Vertex3 0 0 0 :: (Vertex3 GLfloat)
       let vv = vf -: ov
       translate vv
-      drawRectFill2d color (width, height)
+      drawRectFill2dX color (width, height)
 
+-- drawCube
+
+{--
 -- |
 --        x
 --        |
@@ -2028,7 +2614,8 @@ centerBlock color = do
     let vv = vf -: ov
     translate vv
     -- drawRectGridColor color [0] [0] 0.02
-    drawRectFill2d color (0.1, 0.1)
+    drawRectFill2dX color (0.1, 0.1)
+--}
 
 drawRectGrid :: [Int] -> [Int] -> GLfloat -> IO ()
 drawRectGrid sx sy e = do
@@ -2095,7 +2682,7 @@ rotateBlock refGlobal r = do
     -- let ls = map fst lz
     -- let ls = getShape centerBrick bk1'
     let lsX = getShape centerBrick bk1'X
-    
+
     bmX <- readIORef refGlobal <&> boardMap1_
 
     mapM_
@@ -2138,20 +2725,10 @@ drawRectGridColor color sx sy e = do
 addBlock :: DM.Map (Int, Int) ((Vertex3 GLfloat), Color3 GLdouble, Bool) -> [((Int, Int), Color3 GLdouble)] -> DM.Map (Int, Int) ((Vertex3 GLfloat), Color3 GLdouble, Bool)
 addBlock dm [] = dm
 addBlock dm (s : cx) = DM.insert (fst s) (Vertex3 0 0 0, snd s, True) $ addBlock dm cx
-  
+
 addBlockX :: DM.Map (Int, Int) (Int, Int, Color3 GLdouble) -> [((Int, Int), (Int, Int, Color3 GLdouble))] -> DM.Map (Int, Int) (Int, Int, Color3 GLdouble)
 addBlockX dm [] = dm
 addBlockX dm (s : cx) = DM.insert (fst s) (snd s) $ addBlockX dm cx
-
-moveSqure :: IO ()
-moveSqure = do
-  preservingMatrix $ do
-    let vf = Vertex3 (-1.0) 1.0 0.0 :: (Vertex3 GLfloat)
-    let vv = Vertex3 0.0 0.0 0.0 -: vf
-    translate vv
-    let nr = initRectGrid {xCount_ = 1, yCount_ = 1, xEdge_ = 0.02, yEdge_ = 0.02}
-    -- drawRectGrid [0] [0] 0.02
-    drawRectGridX nr
 
 -- DM.Map (Int, Int) ((Vertex3 GLfloat), Color3 GLdouble, Bool)
 showCurrBoard :: DM.Map (Int, Int) ((Vertex3 GLfloat), Color3 GLdouble, Bool) -> IO ()
@@ -2165,7 +2742,7 @@ showCurrBoard bmap = do
       )
       lz
     pp "ok"
-  
+
 showCurrBoardX :: DM.Map (Int, Int) (Int, Int, Color3 GLdouble) -> IO ()
 showCurrBoardX bmap = do
   preservingMatrix $ do
@@ -2177,7 +2754,7 @@ showCurrBoardX bmap = do
       )
       lz
     pp "ok"
-  
+
 showCurrBoardArr :: IOArray (Int, Int, Int) BlockAttr -> IO ()
 showCurrBoardArr arr = do
   ls <- getAssocs arr
@@ -2187,8 +2764,9 @@ showCurrBoardArr arr = do
           preservingMatrix $ do
             when (isFilled_ b) $ do
               centerBlock00 (x, y) initRectGrid (color_ b)
-            -- isFilled_ b ? centerBlock00 (x, y) initRectGrid (color_ b) $ pp "not filled"
-      ) ls
+              -- isFilled_ b ? centerBlock00 (x, y) initRectGrid (color_ b) $ pp "not filled"
+      )
+      ls
   pp "ok"
 
 currBrickX :: IORef GlobalRef -> RectGrid -> IO ()
@@ -2203,12 +2781,12 @@ currBrickX refGlobal rr = do
     let bk1' = rotateN rotN bk1
     -- let bk1'X = rotateN rotN (tet ^._4)
     let bk1'X = rotateN rotN (snd tetX)
-    
+
     -- let lz = join $ (map . filter) (\(_, n) -> n == 1) $ (zipWith . zipWith) (\x y -> (x, y)) centerBrick bk1'
     -- let ls = map fst lz
     let ls = getShape centerBrick bk1'
     let lsX = getShape centerBrick bk1'X
-    
+
     mapM_
       ( \(a, b) -> do
           preservingMatrix $ do
@@ -2216,93 +2794,94 @@ currBrickX refGlobal rr = do
       )
       lsX
     pp "ok"
-  
 
-
-
-{-|
-   @
-   nx = 10
-   ny = 10
-   -10 <= x0 < 10
-   -10 <= y0 < 10
-   @
--}
+-- |
+--   @
+--   nx = 10
+--   ny = 10
+--   -10 <= x0 < 10
+--   -10 <= y0 < 10
+--   @
 checkMoveX :: [(Int, Int)] -> DM.Map (Int, Int) (Int, Int, Color3 GLdouble) -> RectGrid -> Bool
 checkMoveX [] _ _ = False
 checkMoveX cx sm rr =
-      all 
-        ( \x ->
-            let x0 = fst x
-                y0 = snd x
-            in -nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny  &&  not (x `DM.member` sm)
-        )
-        cx
+  all
+    ( \x ->
+        let x0 = fst x
+            y0 = snd x
+         in - nx <= x0 && x0 < nx && - ny <= y0 && y0 < ny && not (x `DM.member` sm)
+    )
+    cx
   where
     nx = div (xCount_ rr) 2
     ny = div (yCount_ rr) 2
-  
-checkMoveArr :: [(Int, Int, Int)] -> [((Int, Int, Int) , BlockAttr)] -> RectGrid -> Bool
+
+checkMoveArr :: [(Int, Int, Int)] -> [((Int, Int, Int), BlockAttr)] -> RectGrid -> Bool
 checkMoveArr cx bls rr = isInside && not anyBlock
   where
     sm = DM.fromList $ filter (\(_, b) -> isFilled_ b) bls
     anyBlock = any (`DM.member` sm) cx
-    isInside = all (\(x, y, z) -> (-nx <= x && x < nx) && (-ny <= y && y < ny)) cx
+    isInside = all (\(x, y, z) -> (- nx <= x && x < nx) && (- ny <= y && y < ny)) cx
     nx = div (xCount_ rr) 2
     ny = div (yCount_ rr) 2
 
-getBottom :: (Int, Int, Int) ->[((Int, Int, Int), BlockAttr)] -> [((Int, Int, Int), BlockAttr)]
+getBottom :: (Int, Int, Int) -> [((Int, Int, Int), BlockAttr)] -> [((Int, Int, Int), BlockAttr)]
 getBottom (x0, y0, z0) = filter (\((x, y, z), _) -> y == y0)
 
 initBlockAttr :: BlockAttr
-initBlockAttr = BlockAttr {
-   isFilled_ = False
-  ,typeId_ = -1
-  ,tetrisNum_ = -1
-  ,color_ = red
-                          }
+initBlockAttr =
+  BlockAttr
+    { isFilled_ = False,
+      typeId_ = -1,
+      tetrisNum_ = -1,
+      color_ = red
+    }
 
-  
-data AnimaState = AnimaState {
-  animaTime_ :: Int,
-  animaIndex_ :: Int,
-  animaInterval_ :: Int
-                             } deriving (Show, Eq)
+data AnimaState = AnimaState
+  { animaTime_ :: Int,
+    animaIndex_ :: Int,
+    animaInterval_ :: Int,
+    animaSlot_ :: Int
+  }
+  deriving (Show, Eq)
 
-initAnimaState :: IO(IOArray Int AnimaState)
+initAnimaState :: IO (IOArray Int AnimaState)
 initAnimaState = do
   currTime <- timeNowMilli <&> fi
-  let an = AnimaState{animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 1000}
-  let anx = AnimaState{animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 4000}
+  let an = AnimaState {animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 1000, animaSlot_ = 0}
+  let anx = AnimaState {animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 4000, animaSlot_ = 0}
   -- DAO.newArray (0, 5) an
   let ls = [an, anx, an, an, an, an]
   DAO.newListArray (0, 5) ls
 
-readAnimaState :: IOArray Int AnimaState -> Int -> IO (Bool, AnimaState)
-readAnimaState arr ix = do
+readAnimaState :: IOArray Int AnimaState -> Int -> Int -> IO (Bool, Int, AnimaState)
+readAnimaState arr ix interval = do
   currTime <- timeNowMilli <&> fi
   an <- DAO.readArray arr ix
+  DAO.writeArray arr ix an {animaInterval_ = interval}
   oldTime <- DAO.readArray arr ix <&> animaTime_
   interval <- DAO.readArray arr ix <&> animaInterval_
   oldIndex <- DAO.readArray arr ix <&> animaIndex_
   let newIndex = oldIndex + 1
   let isNext = currTime - oldTime >= interval
-  if isNext then do
-    return (isNext, an{animaTime_ = currTime, animaIndex_ = newIndex})
+  if isNext
+    then do
+      return (isNext, newIndex, an {animaTime_ = currTime, animaIndex_ = newIndex, animaSlot_ = ix})
     else do
-    return (isNext, an)
+      return (isNext, oldIndex, an {animaSlot_ = ix})
 
-writeAnimaState :: IOArray Int AnimaState -> Int -> AnimaState -> IO()
-writeAnimaState arr ix an = do
+writeAnimaState :: IOArray Int AnimaState -> AnimaState -> IO ()
+writeAnimaState arr an = do
+  let ix = animaSlot_ an
   DAO.writeArray arr ix an
 
-flipIsNext :: IOArray Int AnimaState -> Int -> IO()
+flipIsNext :: IOArray Int AnimaState -> Int -> IO ()
 flipIsNext arr ix = do
   an <- DAO.readArray arr ix
   currTime <- timeNowMilli <&> fi
-  writeAnimaState arr ix an{animaTime_ = currTime}
+  writeAnimaState arr an {animaTime_ = currTime}
 
-pauseTetris :: Bool -> IORef GlobalRef -> RectGrid -> IOArray (Int, Int, Int) BlockAttr -> IO()
+pauseTetris :: Bool -> IORef GlobalRef -> RectGrid -> IOArray (Int, Int, Int) BlockAttr -> IO ()
 pauseTetris isPaused refGlobal rr ioArray = do
   moveX <- readIORef refGlobal <&> moveX_
   moveY <- readIORef refGlobal <&> moveY_
@@ -2312,22 +2891,22 @@ pauseTetris isPaused refGlobal rr ioArray = do
   tet <- readIORef refGlobal <&> tetris1_
   tetX <- readIORef refGlobal <&> tetris1X_
   ls <- getAssocs ioArray
-  
-  let lt = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick  $ rotateN rotN (snd tetX)
+
+  let lt = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick $ rotateN rotN (snd tetX)
   let currTetris = map fst lt -- [(x, y)] => [(1, 2), (3, 4)]
   let mX = map (\(a, b) -> (a + moveX, b + moveY - 1, 0)) currTetris
 
   let lastBlock = map (\(a, b) -> ((a + moveX, b + moveY, 0), fst tetX)) currTetris
-  let lastBlock' = map (\(a, b) -> ((a + moveX, b + moveY, 0), let s = fst tetX in s{isFilled_ = False})) currTetris
+  let lastBlock' = map (\(a, b) -> ((a + moveX, b + moveY, 0), let s = fst tetX in s {isFilled_ = False})) currTetris
   logFileG ["lsxx"]
   logFileG $ map show lastBlock
-  if isPaused then do
-    mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
-  else do
-    mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock'
+  if isPaused
+    then do
+      mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
+    else do
+      mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock'
 
-  
-rotateTetries :: IORef GlobalRef -> RectGrid -> IOArray (Int, Int, Int) BlockAttr -> IO()
+rotateTetries :: IORef GlobalRef -> RectGrid -> IOArray (Int, Int, Int) BlockAttr -> IO ()
 rotateTetries refGlobal rr ioArray = do
   let stepN = fi $ rotStep initRectGrid
   count1 <- readIORef refGlobal <&> count1_
@@ -2364,26 +2943,121 @@ rotateTetries refGlobal rr ioArray = do
       | otherwise -> do
         modifyIORef refGlobal (\s -> s {count1_ = 1000000})
 
+{-|
 
+   URL: http://localhost/html/indexUnderstandOpenGL.html
+   @
+
+   @
+-}
+perspectiveModeView :: IORef CameraRot -> IO()
+perspectiveModeView  refCamRot =  do
+  fov <- readIORef refCamRot <&> persp_ <&> fov_
+  aspect <- readIORef refCamRot <&> persp_ <&> aspect_
+  zn <- readIORef refCamRot <&> persp_ <&> zn_
+  zf <- readIORef refCamRot <&> persp_ <&> zf_
+  eye <- readIORef refCamRot <&> modelview_ <&> eye_
+  at <- readIORef refCamRot <&> modelview_ <&> at_
+  up <- readIORef refCamRot <&> modelview_ <&> up_
+  matrixMode $= Projection
+  loadIdentity
+  perspective fov aspect zn zf
+
+  matrixMode $= Modelview 0
+  loadIdentity
+  GL.lookAt eye at up
+  -- GL.lookAt (Vertex3 0 0 1.0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
   
-
-mainLoop ::
+mainLoopSimple ::
   G.Window ->
-  IORef Cam ->
-  IORef Step ->
+  IORef CameraRot ->
+  -- IORef Step ->
   IORef GlobalRef ->
   IORef FrameCount ->
-  IOArray Int AnimaState -> 
+  IOArray Int AnimaState ->
   [[Vertex3 GLfloat]] ->
   DAO.IOArray (Int, Int, Int) BlockAttr ->
   IO ()
-mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray = unless' (G.windowShouldClose w) $ do
+mainLoopSimple w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unless' (G.windowShouldClose w) $ do
   (width, height) <- G.getFramebufferSize w
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
-  GL.clear [ColorBuffer, DepthBuffer]
 
-  G.setKeyCallback w (Just $ keyBoardCallBack2 refStep refGlobal ioArray) -- AronOpenGL
-  G.setMouseButtonCallback w (Just $ mouseCallback refGlobal) -- mouse event
+
+  GL.clear [ColorBuffer, DepthBuffer]
+  GL.depthFunc $= Just Lequal
+
+  -- G.setKeyCallback w (Just $ keyBoardCallBackNew refStep refGlobal ioArray) -- AronOpenGL
+  G.setKeyCallback w (Just $ keyBoardCallBackNew refCamRot refGlobal ioArray) -- AronOpenGL
+  G.setMouseButtonCallback w (Just $ mouseCallbackX refGlobal) -- mouse event
+  loadIdentity
+  
+  matrixMode $= Projection
+  loadIdentity
+  let zf = 0.5
+  perspective 90 1.0 zf (zf + 4.0)
+
+  matrixMode $= Modelview 0
+  loadIdentity
+  ls <- readFileList "/tmp/input.x"
+  let x1 = head ls
+  pre x1
+  let s1 = read x1 :: [GLdouble]
+  let vex = Vertex3 (head s1) (s1 !! 1) (last s1) :: Vertex3 GLdouble
+  GL.lookAt vex (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+
+  -- rotateWorld refCamRot (fromIntegral width) (fromIntegral height)
+
+  -- AronOpenGL.hs
+  -- delta refStep to modify Cam{xx, yy, zz} in degree
+  -- keyboardRot => rotate around {x-axis, y-axis, y-axis} in some degrees
+  -- keyboardRot refCam refStep (fromIntegral width) (fromIntegral height)
+  -- renderCoordinates
+  when True $ do
+    let anima1 = 4
+    let intervalx = 1000 -- larger number is slower
+    (isNext, index, animaState) <- readAnimaState animaStateArr anima1 intervalx
+    -- saveImageOpenGL w fn
+    let deg = 10 * fi index :: GLdouble
+    rotate  deg (Vector3 1 0 0) -- rotate y-axis beta  degree/radian
+    writeAnimaState animaStateArr animaState
+  when True $ do
+    let anima1 = 3
+    let intervalx = 1000 -- larger number is slower
+    (isNext, index, animaState) <- readAnimaState animaStateArr anima1 intervalx
+    -- saveImageOpenGL w fn
+    let deg = 5 * fi index :: GLdouble
+    rotate  deg (Vector3 0 1 0) -- rotate y-axis beta  degree/radian
+    writeAnimaState animaStateArr animaState
+
+    
+
+  renderCoordinates
+  -- view matrix: http://xfido.com/html/indexUnderstandOpenGL.html
+  -- matrixMode $= Modelview 0
+  drawCubeQuad 0.3
+  drawFinal w ioArray initRectGrid
+  mainLoopSimple w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
+  
+mainLoop ::
+  G.Window ->
+  IORef CameraRot ->
+  -- IORef Step ->
+  IORef GlobalRef ->
+  IORef FrameCount ->
+  IOArray Int AnimaState ->
+  [[Vertex3 GLfloat]] ->
+  DAO.IOArray (Int, Int, Int) BlockAttr ->
+  IO ()
+mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unless' (G.windowShouldClose w) $ do
+  (width, height) <- G.getFramebufferSize w
+  viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
+
+  GL.clear [ColorBuffer, DepthBuffer]
+  GL.depthFunc $= Just Lequal
+
+  -- G.setKeyCallback w (Just $ keyBoardCallBackNew refStep refGlobal ioArray) -- AronOpenGL
+  G.setKeyCallback w (Just $ keyBoardCallBackNew refCamRot refGlobal ioArray) -- AronOpenGL
+  G.setMouseButtonCallback w (Just $ mouseCallbackX refGlobal) -- mouse event
   -- lightingInfo
   loadIdentity -- glLoadIdentity
   -- view matrix: http://xfido.com/html/indexUnderstandOpenGL.html
@@ -2430,17 +3104,23 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
   -- modelview matrix stack
   -- matrixMode $= Modelview 0
 
-  step <- readIORef refStep
+  -- step <- readIORef refStep
   xyzAxis <- getXYZAxis refGlobal
   fovNew <- getFOVDegree refGlobal
+  fovDeg <- readIORef refCamRot <&> fovDeg_
+  fov <- readIORef refCamRot  <&> persp_ <&> fov_
   case xyzAxis of
     --                                 +---> YZ-plane
     --                                 ↓
     var
-      | xa var -> GL.lookAt (Vertex3 1.0 0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+      | xa var -> do
+          -- GL.lookAt (Vertex3 1.0 0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+          pp "xa"
       --                               +---> XZ-plane
       --                               ↓
-      | ya var -> GL.lookAt (Vertex3 0 1.0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 1 0 0 :: Vector3 GLdouble)
+      | ya var ->
+          -- GL.lookAt (Vertex3 0 1.0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 1 0 0 :: Vector3 GLdouble)
+          pp "ya"
       --                                 +---> XY-plane
       --                                 ↓
       | za var -> do
@@ -2450,29 +3130,60 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
         -- are mapped to the lower left and upper right corners of the window, respectively, assuming that the eye is located at (0, 0, 0). -far specifies the location of the far clipping
         -- plane. Both near and far must be positive. The corresponding matrix is
 
+        {--
         let zf = 0.5
         -- perspective (field of view) width/height zNear zFar
         -- perspective 90 1.0 zf (zf + 4.0)
         -- perspective 126.934 1.0 zf (zf + 4.0)
         -- zoom in, zoom out
+        matrixMode $= Projection
+        loadIdentity
         perspective fovNew 1.0 zf (zf + 4.0)
-        -- GL.lookAt (Vertex3 0 4 1.0::Vertex3 GLdouble) (Vertex3 0 4 0::Vertex3 GLdouble) (Vector3 0 1 0::Vector3 GLdouble)
+
+        matrixMode $= Modelview 0
+        loadIdentity
         GL.lookAt (Vertex3 0 0 1.0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+        --}
+        pp "za"
       | otherwise -> do
-        GM.lookAt (Vertex3 0.2 0.2 0.2 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
-        keyboardRot refCam refStep (fromIntegral width) (fromIntegral height)
+        -- GM.lookAt (Vertex3 0.2 0.2 0.2 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+        -- keyboardRot refCam refStep (fromIntegral width) (fromIntegral height)
+        -- rotateWorld refCamRot (fromIntegral width) (fromIntegral height)
 
         preservingMatrix $ do
+          {--
+           data MatrixMode =
+                Modelview GLsizei  -- ^ The modelview matrix stack of the specified vertex unit.
+              | Projection         -- ^ The projection matrix stack.
+              | Texture            -- ^ The texture matrix stack.
+              | Color              -- ^ The color matrix stack.
+              | MatrixPalette      -- ^ The matrix palette stack.
+              deriving ( Eq, Ord, Show )
+          --}
           loadIdentity
           fw "loadIdentity"
           ls <- getModelviewMatrix
           let lss = partList 4 ls
           printMat lss
-          GM.lookAt (Vertex3 0 2 3 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+          -- GM.lookAt (Vertex3 0 2 3 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
           fw "getModelviewMatrix"
           lr <- getModelviewMatrix
           let lt = partList 4 lr
           printMat lt
+
+  eye <- readIORef refCamRot <&> modelview_ <&> eye_
+  matrixMode $= Projection
+  loadIdentity
+  let zf = 0.5
+  perspective fov 1.0 zf (zf + 4.0)
+
+  matrixMode $= Modelview 0
+  loadIdentity
+  GL.lookAt eye (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+  logFileG ["eye00"]
+  logFileG [show eye]
+
+  rotateWorld refCamRot (fromIntegral width) (fromIntegral height)
 
   -- AronOpenGL.hs
   -- delta refStep to modify Cam{xx, yy, zz} in degree
@@ -2489,8 +3200,8 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
     (index, isNext, currFrame) <- readRefFrame2 refGlobalFrame 1000
     --                                                  |
     --                                                  + -> speed, larger = slower
-    let anima0 = 0
-    (isNext0, animaState) <- readAnimaState animaStateArr anima0
+    let slotNum0 = 0
+    (isNext0, index, animaState) <- readAnimaState animaStateArr slotNum0 1000
 
     -- logFileG ["index=" ++ show index]
     logFileG ["isNextX=" ++ show isNext0 ++ " animaIndex_=" ++ show (animaIndex_ animaState)]
@@ -2504,18 +3215,18 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
         mx <- readIORef refGlobal <&> moveX_
         my <- readIORef refGlobal <&> moveY_
         centerBrick <- readIORef refGlobal <&> centerBrick_
-        tet <- readIORef refGlobal <&> tetris1_
+        -- tet <- readIORef refGlobal <&> tetris1_
         tetX <- readIORef refGlobal <&> tetris1X_
         rotN <- readIORef refGlobal <&> rotN_
         ls <- getAssocs ioArray
-  
-        let lz1X = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick  $ rotateN rotN (snd tetX)
+
+        let lz1X = join $ (map . filter) (\(_, n) -> n > 0) $ (zipWith . zipWith) (,) centerBrick $ rotateN rotN (snd tetX)
         -- let currBlock1 = map fst lz1 -- [(x, y)] => [(1, 2), (3, 4)]
         let currTetris = map fst lz1X -- [(x, y)] => [(1, 2), (3, 4)]
-       
+
         -- let m = map (\(a, b) -> (a + mx, b + my - 1)) currBlock1
         let mX = map (\(a, b) -> (a + mx, b + my - 1, 0)) currTetris
-        
+
         let lastBlock = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) currTetris
         -- let bX = checkMoveX m bmapX rr
         let isMovable = checkMoveArr mX ls rr
@@ -2530,30 +3241,41 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
                   tetris1X_ = isMovable ? tetris1X_ s $ newBlock
                 }
           )
-  
-        if not isMovable then do
-          -- let br = BlockAttr {isFilled_ = True, typeId_ = 2, blockNum_ = 0, color_ = yellow}
-          -- mapM_ (\(t, b) -> DAO.writeArray ioArray t b) lastBlock
-          mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
-          
-          -- KEY: remove bottom row
-          let f x = isFilled_ x in removeBottomX w f ioArray
 
-          logFileG ["writeArray"]
-          logFileG $ map show ls
+        if not isMovable
+          then do
+            -- let br = BlockAttr {isFilled_ = True, typeId_ = 2, blockNum_ = 0, color_ = yellow}
+            -- mapM_ (\(t, b) -> DAO.writeArray ioArray t b) lastBlock
+            mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
+
+            -- KEY: remove bottom row
+            let f x = isFilled_ x in removeBottomX w f ioArray
+
+            logFileG ["writeArray"]
+            logFileG $ map show ls
           else pp "not write"
-  
-        flipIsNext animaStateArr anima0
+
+        flipIsNext animaStateArr slotNum0
 
     when True $ do
       -- KEY: rotate brick, rotate tetris
       rotateTetries refGlobal initRectGrid ioArray
       -- show current tetris
       currBrickX refGlobal initRectGrid
-      -- KEY: show board, show grid, draw board
-      -- showCurrBoardArr ioArray
+  -- KEY: show board, show grid, draw board
+  -- showCurrBoardArr ioArray
 
+  drawCubeQuad 0.3
   drawFinal w ioArray initRectGrid
+
+  let anima1 = 1
+  let intervalx = 0 -- larger number is slower
+  (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 intervalx
+  let fn = "/tmp/img_" ++ show (index1 + 1000) ++ ".png"
+  -- saveImageOpenGL w fn
+  writeAnimaState animaStateArr animaState1 {animaIndex_ = index1}
+
+  -- saveImageOpenGL w "/tmp/img0.png"
   -- xxx
   -- draw 20 x 20 grid
   -- drawFinal w initRectGrid
@@ -2563,18 +3285,132 @@ mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray 
   -- END_triangulation
 
   -- G.swapBuffers w
-    
-  -- G.pollEvents
-  mainLoop w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray
 
-drawFinal:: G.Window -> IOArray (Int, Int, Int) BlockAttr -> RectGrid -> IO()
+  -- G.pollEvents
+  mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
+
+mainLoopTest ::
+  G.Window ->
+  IORef Cam ->
+  IORef Step ->
+  IORef GlobalRef ->
+  IORef FrameCount ->
+  IOArray Int AnimaState ->
+  [[Vertex3 GLfloat]] ->
+  DAO.IOArray (Int, Int, Int) BlockAttr ->
+  IO ()
+mainLoopTest w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray = unless' (G.windowShouldClose w) $ do
+  (width, height) <- G.getFramebufferSize w
+  viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
+
+  GL.clear [ColorBuffer, DepthBuffer]
+  -- Enable income pixel depth test
+  -- GL.depthFunc $= Just Less
+  -- GL.depthFunc $= Just Lequal
+  GL.depthFunc $= Just Lequal
+  -- GL.cullFace  $= Just Back
+  -- GL.depthFunc $= Just Less
+
+  G.setKeyCallback w (Just $ keyBoardCallBackX refStep refGlobal ioArray) -- AronOpenGL
+  G.setMouseButtonCallback w (Just $ mouseCallback refGlobal) -- mouse event
+  -- lightingInfo
+  loadIdentity -- glLoadIdentity
+  step <- readIORef refStep
+  xyzAxis <- getXYZAxis refGlobal
+  fovNew <- getFOVDegree refGlobal
+  case xyzAxis of
+    --                                 +---> YZ-plane
+    --                                 ↓
+    var
+      | xa var -> GL.lookAt (Vertex3 1.0 0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+      --                               +---> XZ-plane
+      --                               ↓
+      | ya var -> GL.lookAt (Vertex3 0 1.0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 1 0 0 :: Vector3 GLdouble)
+      --                                 +---> XY-plane
+      --                                 ↓
+      | za var -> do
+        let zf = 0.5
+        perspective fovNew 1.0 zf (zf + 4.0)
+        GL.lookAt (Vertex3 0 0 1.0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+        logFileG ["zAxis33"]
+      | otherwise -> do
+        GM.lookAt (Vertex3 0.2 0.2 0.2 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+        keyboardRot refCam refStep (fromIntegral width) (fromIntegral height)
+
+        preservingMatrix $ do
+          loadIdentity
+          fw "loadIdentity"
+          ls <- getModelviewMatrix
+          let lss = partList 4 ls
+          printMat lss
+          GM.lookAt (Vertex3 0 2 3 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+          fw "getModelviewMatrix"
+          lr <- getModelviewMatrix
+          let lt = partList 4 lr
+          printMat lt
+
+  renderCoordinates
+
+  let anima0 = 0
+  let interval = 100 -- larger number is slower
+  (isNext0, index, animaState) <- readAnimaState animaStateArr anima0 interval
+  logFileG ["index00=" ++ show index]
+  logFileG ["isNext00=" ++ show isNext0]
+
+  preservingMatrix $ do
+    let del = 360 / 100.0
+    case index of
+      v
+        | v < 100 -> do
+          rotate (del * fi index) (Vector3 1 0 0 :: Vector3 GLdouble)
+          drawCubeQuad 0.3
+          writeAnimaState animaStateArr animaState
+        | v >= 100 && v < 200 -> do
+          rotate (del * fi index) (Vector3 0 1 0 :: Vector3 GLdouble)
+          drawCubeQuad 0.3
+          writeAnimaState animaStateArr animaState
+        | v >= 200 && v < 300 -> do
+          rotate (del * fi index) (Vector3 0 0 1 :: Vector3 GLdouble)
+          drawCubeQuad 0.3
+          writeAnimaState animaStateArr animaState
+        | v >= 300 -> do
+          drawCubeQuad 0.3
+          writeAnimaState animaStateArr animaState {animaIndex_ = 0}
+        | otherwise -> do
+          drawCubeQuad 0.3
+          writeAnimaState animaStateArr animaState
+  -- drawCube2
+  -- drawCube
+  -- writeAnimaState animaStateArr animaState
+
+  drawFinal w ioArray initRectGrid
+
+  let anima1 = 1
+  let intervalx = 0 -- larger number is slower
+  (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 intervalx
+  let fn = "/tmp/img_" ++ show (index1 + 1000) ++ ".png"
+  saveImageOpenGL w fn
+  writeAnimaState animaStateArr animaState1 {animaIndex_ = index1}
+  -- xxx
+  -- draw 20 x 20 grid
+  -- drawFinal w initRectGrid
+  -- KEY: draw  grid
+  -- drawRectGridX initRectGrid
+
+  -- END_triangulation
+
+  -- G.swapBuffers w
+
+  -- G.pollEvents
+  mainLoopTest w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioArray
+
+drawFinal :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> RectGrid -> IO ()
 drawFinal w arr rr = do
   showCurrBoardArr arr
   drawRectGridX rr
   G.swapBuffers w
-  G.pollEvents 
+  G.pollEvents
 
-{--
 main = do
   argList <- getArgs
   if len argList > 0
@@ -2584,7 +3420,6 @@ main = do
         _ -> do
           print $ "Wrong option => " ++ head argList ++ ", -h => Help"
     else mymain
---}
 
 bk1 :: [[Int]]
 bk1 =
@@ -2637,7 +3472,7 @@ main = do
          let sk = (zipWith . zipWith) (\x y -> (x, y)) s' bk1
 
          let ska = (map . map) (\(x, y) -> ((***) (+1) (+2) x, y)) sk
-         let skr = (zipWith . zipWith) (\x y -> (x, y)) s' $ rotateN 1 bk1
+         let skr = (zipWith . zipWith) (\x y -> (x, y)) s' $ rotatetateN 1 bk1
          let sks = (map . filter) (\(x, y) -> y == 1) skr
          let bk1 :: [[Int]]
              bk1 = [ [0, 0, 0, 0, 0]
@@ -2688,12 +3523,10 @@ main = do
        printMat $ rotateN 2 mat
 --}
 
-
 -- import Data.Array.IO
 -- import Control.Monad
 
 data MyX = MyX {name00_ :: String, age00_ :: Int} deriving (Show, Eq)
-
 
 {--
 main :: IO ()
@@ -2707,7 +3540,7 @@ main = do
     -- Create a mutable 2D array with dimensions 3x3
     -- arr <- DAO.newArray ((1,1), (3,3)) 0 :: IO (IOArray (Int, Int) Int)
     -- arr <- DAO.newArray ((1,1), (3,3)) x :: IO (IOArray (Int, Int) MyX)
-    
+
     arr <- DAO.newArray ((1,1), (3,3)) x2 :: IO (IOArray (Int, Int) (Int, Color3 GLdouble))
     arx <- DAO.newArray ((1,1), (3,3)) x3 :: IO (IOArray (Int, Int) (Int, Color3 GLdouble))
     ary <- DAO.newArray ((1,1), (3,3)) grid :: IO (IOArray (Int, Int) (Int, Int, Color3 GLdouble))
@@ -2734,7 +3567,6 @@ main = do
       -- let lt = filter (\((x, y), a) -> 0 <= y && y <= 1) ls
       -- fw "lt"
       -- pre lt
-    
 
     -- Read and print the initial 2D array
     elems <- getElems arr
@@ -2781,15 +3613,14 @@ main = do
       a55 <- mapIndices (0, 2) (\x -> x + 1) lsx >>= getElems
       printMat $ partList 0 a55
 
-  
-    a44 <- mapArray id ark >>= getElems   
+    a44 <- mapArray id ark >>= getElems
     fw "a44"
     putStrLn $ show a44
     fw "a55"
     let a55 = partList 5 a44
     printMat $ a55
     fw "kk"
-  
+
     -- apply lambda function on an array
     arr2 <- mapArray (\x -> (fst x + 1, snd x)) arr >>= getElems
     associatedArr <- mapArray (\x -> (fst x + 1, snd x)) arr >>= getAssocs
@@ -2800,7 +3631,6 @@ main = do
     fw "print 2d"
     printMat $ partList 3 associatedArr
 
-    
     -- Read and print the modified 2D array
     modifiedElems <- getElems arr
     putStrLn $ "Modified array: " ++ show modifiedElems
@@ -2808,15 +3638,18 @@ main = do
 
 --
 -- (z,       y, x)
---  Layer 
+--  Layer
 --          Col
 --               Row
 -- (l, c, r)
--- 
+--
 
-data D3 = D3{zVec_ :: Int,
-             yVec_ :: Int,
-             xVec_ :: Int} deriving (Show, Eq)
+data D3 = D3
+  { zVec_ :: Int,
+    yVec_ :: Int,
+    xVec_ :: Int
+  }
+  deriving (Show, Eq)
 
 revIndex :: (Int, Int) -> Int -> Maybe Int
 revIndex (a, b) x = DM.lookup x m
@@ -2827,36 +3660,36 @@ revIndex (a, b) x = DM.lookup x m
 
 -- /Users/aaa/myfile/bitbucket/tmp/xx_5686.x
 -- /Users/aaa/myfile/bitbucket/tmp/xx_3123.x
-  
+
 walkBlockXX :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [(Int, Int, Int)]
 walkBlockXX (a, b, c) f arr = do
   ls <- walkfun (a, b, c) f arr
   mapM_ (uncurry $ DAO.writeArray arr) ls
   return $ map fst ls
   where
-   walkfun :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [((Int, Int, Int), BlockAttr)]
-   walkfun (a, b, c) f arr = do
-     bound <- DAO.getBounds arr
-     if DAO.inRange bound (a, b, c) then do
-       x <- DAO.readArray arr (a, b, c)
-       if f x then do
-         DAO.writeArray arr (a, b, c) initBlockAttr
-         walkfun (a + 1, b, c) f arr >>= \s1 ->
-           walkfun (a - 1, b, c) f arr >>= \s2 ->
-           walkfun (a, b + 1, c) f arr >>= \s3 ->
-           walkfun (a, b - 1, c) f arr >>= \s4 ->
-           return (s1 ++ s2 ++ s3 ++ s4 ++ [((a, b, c), x)])
-       else do
-         return []
-     else do
-       return []
-
-
+    walkfun :: (Int, Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO [((Int, Int, Int), BlockAttr)]
+    walkfun (a, b, c) f arr = do
+      bound <- DAO.getBounds arr
+      if DAO.inRange bound (a, b, c)
+        then do
+          x <- DAO.readArray arr (a, b, c)
+          if f x
+            then do
+              DAO.writeArray arr (a, b, c) initBlockAttr
+              walkfun (a + 1, b, c) f arr >>= \s1 ->
+                walkfun (a - 1, b, c) f arr >>= \s2 ->
+                  walkfun (a, b + 1, c) f arr >>= \s3 ->
+                    walkfun (a, b - 1, c) f arr >>= \s4 ->
+                      return (s1 ++ s2 ++ s3 ++ s4 ++ [((a, b, c), x)])
+            else do
+              return []
+        else do
+          return []
 
 -- <&> = F a -> (a -> b) -> F b
 -- y0, y1: -1  0  1  2  3
 --               x  x   x
-funx :: (Int, Int) -> (Int, Int) -> (Int -> Bool) -> IOArray (Int, Int, Int) Int -> IO()
+funx :: (Int, Int) -> (Int, Int) -> (Int -> Bool) -> IOArray (Int, Int, Int) Int -> IO ()
 funx (y0, y1) (yy0, yy1) f arr = do
   when (y0 <= y1) $ do
     let z0 = 0
@@ -2864,29 +3697,33 @@ funx (y0, y1) (yy0, yy1) f arr = do
 
     -- ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> z == 0 && y == y1 && (b1 e || b2 e || b3 e || b4 e))
     ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> z == 0 && y == y1 && f e)
-    if len ls == c1 - c0 + 1 then do
-      fw "Full Row"
-      DAO.getAssocs arr >>= mapM_ (\((zDir, yDir, xDir), _) -> do
-            let ms = revIndex (yy0, yy1) yDir
-            let y' = case ms of
-                         Just s -> s
-                         Nothing -> error "ERROR: Invalid index"
-            when (zDir == z0) $ do
-              if y0 < y' && y' <= y1 then do
-                s <- DAO.readArray arr  (zDir, y' - 1, xDir)
-                DAO.writeArray arr      (zDir, y',     xDir) s
-              else do
-                when (y0 == y') $ do
-                  DAO.writeArray arr (zDir, y', xDir) 0
-        )
-      funx (yy0, yy1) (yy0, yy1) f arr
+    if len ls == c1 - c0 + 1
+      then do
+        fw "Full Row"
+        DAO.getAssocs arr
+          >>= mapM_
+            ( \((zDir, yDir, xDir), _) -> do
+                let ms = revIndex (yy0, yy1) yDir
+                let y' = case ms of
+                      Just s -> s
+                      Nothing -> error "ERROR: Invalid index"
+                when (zDir == z0) $ do
+                  if y0 < y' && y' <= y1
+                    then do
+                      s <- DAO.readArray arr (zDir, y' - 1, xDir)
+                      DAO.writeArray arr (zDir, y', xDir) s
+                    else do
+                      when (y0 == y') $ do
+                        DAO.writeArray arr (zDir, y', xDir) 0
+            )
+        funx (yy0, yy1) (yy0, yy1) f arr
       else do
-      funx (y0, y1 - 1) (yy0, yy1) f arr
-      pp "Not equal to len"
+        funx (y0, y1 - 1) (yy0, yy1) f arr
+        pp "Not equal to len"
     fw "funx print arr"
     printMat3 arr
 
-removeBottom :: G.Window -> (Int, Int) -> (Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
+removeBottom :: G.Window -> (Int, Int) -> (Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO ()
 removeBottom w (y0, y1) (yy0, yy1) f arr = do
   when (y0 <= y1) $ do
     let fstLayer = 0
@@ -2894,103 +3731,110 @@ removeBottom w (y0, y1) (yy0, yy1) f arr = do
     bt@((a0, b0, c0), (a1, b1, c1)) <- getBounds arr
     let gridWidth = a1 - a0 + 1
     ls <- DAO.mapArray id arr >>= getAssocs <&> filter (\((z, y, x), e) -> x == fstLayer && y == y1 && f e)
-    if len ls == gridWidth then do
-      let lt = map (\(t, e) -> (t, e{color_ = white})) ls
-      mapM_ (\(t, e) -> do
-                  DAO.writeArray arr t e
-                  -- drawFinal w arr initRectGrid
-              ) lt
-      -- drawFinal w arr initRectGrid
+    if len ls == gridWidth
+      then do
+        let lt = map (\(t, e) -> (t, e {color_ = white})) ls
+        mapM_
+          ( \(t, e) -> do
+              DAO.writeArray arr t e
+              -- drawFinal w arr initRectGrid
+          )
+          lt
+        -- drawFinal w arr initRectGrid
 
-      fw "Full Row"
-      logFileG ["MyFullRow"]
-      logFileG [show bt]
-      logFileG $ map show ls
-      logFileG ["EndFullRow"]
-      logFileG ["myy1"]
-      logFileG [show y1]
-      DAO.getAssocs arr >>= mapM_ (\((zDir, yDir, xDir), _) -> do
-            let ms = revIndex (yy0, yy1) yDir
-            let y' = case ms of
-                         Just s -> s
-                         Nothing -> error "ERROR: Invalid index"
-            -- KEY: two dimensions for now
-            when (xDir == fstLayer) $ do
-              logFileG ["CallMyMaybe0"]
-              logFileG ["yy0 y' yy1"]
-              logFileG $ map show [yy0, y', yy1]
-              logFileG ["y0, y1"]
-              logFileG $ map show [y0, y1]
-              logFileG ["zDir yDir xDir"]
-              logFileG $ map show [zDir, yDir, xDir]
-              -- -10                   9
-              if yy0 <= yDir && yDir < yy1 && y1 <= yDir then do
-                logFileG ["CallMyMaybe1"]
-                -- KEY: move one row down
-                s <- DAO.readArray arr  (zDir, yDir + 1, xDir)
-                DAO.writeArray arr      (zDir, yDir,     xDir) s
-              else do
-                when (yy1 == yDir) $ do
-                  DAO.writeArray arr (zDir, yDir, xDir) initBlockAttr
-              drawFinal w arr initRectGrid
-        )
-      -- Remove the bottom row
-      -- XXX here
-      fallBlock w arr
-      -- drawFinal w arr initRectGrid
-      -- showCurrBoardArr arr
-      removeBottom w (yy0, yy1) (yy0, yy1) f arr
-      -- drawFinal w arr initRectGrid
-      else do
-      removeBottom w (y0, y1 - 1) (yy0, yy1) f arr
+        fw "Full Row"
+        logFileG ["MyFullRow"]
+        logFileG [show bt]
+        logFileG $ map show ls
+        logFileG ["EndFullRow"]
+        logFileG ["myy1"]
+        logFileG [show y1]
+        DAO.getAssocs arr
+          >>= mapM_
+            ( \((zDir, yDir, xDir), _) -> do
+                let ms = revIndex (yy0, yy1) yDir
+                let y' = case ms of
+                      Just s -> s
+                      Nothing -> error "ERROR: Invalid index"
+                -- KEY: two dimensions for now
+                when (xDir == fstLayer) $ do
+                  logFileG ["CallMyMaybe0"]
+                  logFileG ["yy0 y' yy1"]
+                  logFileG $ map show [yy0, y', yy1]
+                  logFileG ["y0, y1"]
+                  logFileG $ map show [y0, y1]
+                  logFileG ["zDir yDir xDir"]
+                  logFileG $ map show [zDir, yDir, xDir]
+                  -- -10                   9
+                  if yy0 <= yDir && yDir < yy1 && y1 <= yDir
+                    then do
+                      logFileG ["CallMyMaybe1"]
+                      -- KEY: move one row down
+                      s <- DAO.readArray arr (zDir, yDir + 1, xDir)
+                      DAO.writeArray arr (zDir, yDir, xDir) s
+                    else do
+                      when (yy1 == yDir) $ do
+                        DAO.writeArray arr (zDir, yDir, xDir) initBlockAttr
+                  drawFinal w arr initRectGrid
+            )
+        -- Remove the bottom row
+        -- XXX here
+        fallBlock w arr
+        -- drawFinal w arr initRectGrid
+        -- showCurrBoardArr arr
+        removeBottom w (yy0, yy1) (yy0, yy1) f arr
+      else -- drawFinal w arr initRectGrid
+      do
+        removeBottom w (y0, y1 - 1) (yy0, yy1) f arr
 
-      -- pp "Not equal to len"
-    -- fw "funx print arr"
-    -- printMat3 arr
+-- pp "Not equal to len"
+-- fw "funx print arr"
+-- printMat3 arr
 
-removeBottomX :: G.Window -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO()
+removeBottomX :: G.Window -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO ()
 removeBottomX w f arr = do
   ((z0, y0, x0), (z1, y1, x1)) <- DAO.getBounds arr
   removeBottom w (y0, y1) (y0, y1) f arr
-  
-fallBlock :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> IO()
+
+fallBlock :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> IO ()
 fallBlock w arr = do
   let rr = initRectGrid
-  DAO.getAssocs arr >>= mapM_ (\((z, y, x), ax) -> do
-                                if isFilled_ ax then do
-                                  lsArr <- getAssocs arr
-                                  let f x = isFilled_ x && isFilled_ ax && tetrisNum_ x == tetrisNum_ ax
-                                  lt <- walkBlockXX (z, y, x) f arr
-                                  let lsArr' = filter (\(x,_) -> x `notElem` lt) lsArr
-                                  let ls = map (\(z0, y0, x0) -> (z0, y0 - 1, x0)) lt
+  DAO.getAssocs arr
+    >>= mapM_
+      ( \((z, y, x), ax) -> do
+          if isFilled_ ax
+            then do
+              lsArr <- getAssocs arr
+              let f x = isFilled_ x && isFilled_ ax && tetrisNum_ x == tetrisNum_ ax
+              lt <- walkBlockXX (z, y, x) f arr
+              let lsArr' = filter (\(x, _) -> x `notElem` lt) lsArr
+              let ls = map (\(z0, y0, x0) -> (z0, y0 - 1, x0)) lt
 
-                                  logFileG ["fallBlock"]
-                                  logFileG $ map show ls
-                                  let b = checkMoveArr ls lsArr' rr
-                                  when (len lt > 0 && b) $ do
-                                    logFileG ["movedown"]
-                                    let lv = map (,ax) ls
-                                    logFileG $ map show lv
-                                  
-                                    mapM_ (uncurry $ DAO.writeArray arr) $ map (,initBlockAttr) lt
-                                    mapM_ (uncurry $ DAO.writeArray arr) lv
-                                    drawFinal w arr initRectGrid
-                                    logFileG ["endmovedown"]
-                                    fallBlock w arr
-                                    -- showCurrBoardArr arr
-                                    -- threadDelay 2000000
-                                  else do
-                                  pp "ee"
-                                pp "ok"
-                               )
+              logFileG ["fallBlock"]
+              logFileG $ map show ls
+              let b = checkMoveArr ls lsArr' rr
+              when (len lt > 0 && b) $ do
+                logFileG ["movedown"]
+                let lv = map (,ax) ls
+                logFileG $ map show lv
 
-  
-  
+                mapM_ (uncurry $ DAO.writeArray arr) $ map (,initBlockAttr) lt
+                mapM_ (uncurry $ DAO.writeArray arr) lv
+                drawFinal w arr initRectGrid
+                logFileG ["endmovedown"]
+                fallBlock w arr
+            else -- showCurrBoardArr arr
+            -- threadDelay 2000000
+            do
+              pp "ee"
+          pp "ok"
+      )
+
 {--
   11122
-  ee12 
-  ex12 
-   x   
+  ee12
+  ex12
+   x
 
 --}
 
@@ -3084,10 +3928,11 @@ main = do
          fw "removeBottom arr"
          printMat3 arr
 --}
-  
+
+{--
 main = do
        let bk1 =[
-                [ [0, 0, 0, 0, 0],
+                [ [0, 0, 1, 0, 0],
                   [0, 0, 1, 0, 0],
                   [0, 1, 1, 1, 0],
                   [0, 0, 0, 0, 0],
@@ -3095,10 +3940,14 @@ main = do
                 ]
               ]
        when True $ do
-         let centerBrick = map (\z -> map (\y -> map (\x -> (x - 2, y - 2, z)) [0 .. len (head . head $ bk1) - 1]) $ reverse [0 .. len (head . head $ bk1) - 1]) [0 .. len (head . head $ bk1) - 1]
-
+         let n1 = [0 .. len (head . head $ bk1) - 1]
+         let n2 = reverse n1
+         let n3 = n1
+         let centerBrick = map (\z -> map (\y -> map (\x -> (x - 2, y - 2, z)) n1  ) n2) n3
          let ss = getShape3 centerBrick bk1
+         fw "getShape3"
          pre ss
          fw "centerBrick"
          mapM_ (\x -> do printMat x; fw "") centerBrick
          pp "ok"
+--}
