@@ -37,73 +37,18 @@ module Main where
 -- import Graphics.UI.GLUT
 -- import Graphics.UI.GLUT.Callbacks.Global
 import AronGraphic
-  ( blue,
-    cmpVex,
-    convexHull,
-    cyan,
-    drawDot,
-    drawPrimitiveVex,
-    drawQuadsColor,
-    drawRect,
-    drawRectColor,
-    drawSegmentNoEnd,
-    drawSegmentWithEndPt,
-    drawSurfaceFromList,
-    geneParamSurface,
-    gray,
-    green,
-    magenta,
-    red,
-    renderCoordinates,
-    scaleFont,
-    show3dStr,
-    strToVector3,
-    strToVertex3,
-    white,
-    yellow,
-    (+:),
-    (-:),
-  )
 import AronModule
-  ( C (C),
-    FrameCount (..),
-    en,
-    fi,
-    fl,
-    fw,
-    im,
-    iterateList,
-    len,
-    logFileG,
-    mergeList,
-    partList,
-    pp,
-    pre,
-    printBox,
-    printMat,
-    printMat3,
-    randomInt,
-    randomIntList,
-    re,
-    readRefFrame2,
-    resetRefFrame,
-    rf,
-    sqrtC',
-    takeBetweenExc,
-    timeNowMilli,
-    trim,
-    unique,
-    writeFileList,
-    readFileList,
-    ρ,
-    (?),
-  )
+import AronAlias
+import AronHtml2
+import AronToken
 import AronOpenGL
 import Control.Arrow
 import Control.Concurrent
-import Control.Lens hiding (pre, re)
-import Control.Monad
-import Control.Monad (unless, when)
+import Control.Exception
+import Control.Lens
+    ( Field1(_1), Field2(_2), Field3(_3), Field4(_4), (<&>), (^.) )
+-- import Control.Monad
+import Control.Monad (unless, when, join)
 import qualified Control.Monad.State as CMS
 -- import AronDevLib
 
@@ -111,6 +56,7 @@ import Data.Array.IO
 import qualified Data.Array.IO as DAO
 import Data.Complex
 import Data.IORef
+    ( modifyIORef, writeIORef, readIORef, newIORef, IORef )
 import Data.Int
 import qualified Data.List as DL
 import qualified Data.Map as DM
@@ -118,8 +64,9 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.StateVar
-import Data.Typeable
+-- import Data.Typeable
 import Data.Typeable (typeOf)
+import qualified Text.Read as DT
 import qualified Data.Vector as VU
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
@@ -129,6 +76,33 @@ import Foreign.Ptr
 import Foreign.Storable
 import GHC.Float.RealFracMethods
 import Graphics.Rendering.OpenGL
+    ( viewport,
+      perspective,
+      loadIdentity,
+      matrixMode,
+      preservingMatrix,
+      renderPrimitive,
+      ComparisonFunction(Lequal),
+      ClearBuffer(DepthBuffer, ColorBuffer),
+      Size(Size),
+      Position(Position),
+      MatrixMode(Modelview, Projection),
+      Matrix(getMatrixComponents, newMatrix),
+      MatrixOrder(RowMajor, ColumnMajor),
+      GLmatrix,
+      MatrixComponent(rotate, translate),
+      Vector3(..),
+      Vertex(vertex),
+      Vertex4(Vertex4),
+      Normal(normal),
+      Normal3(..),
+      Color(color),
+      PrimitiveMode(Triangles, TriangleStrip, LineLoop, Quads, TriangleFan),
+      GLdouble,
+      Color3(..),
+      Vertex3(..),
+      Capability(Enabled),
+      GLfloat )
 import Graphics.Rendering.OpenGL as GL
   ( GLdouble,
     MatrixComponent (scale),
@@ -137,6 +111,8 @@ import Graphics.Rendering.OpenGL as GL
     depthFunc,
     lookAt,
     matrix,
+    Capability(Enabled),
+    blend,
     multMatrix,
   )
 import Graphics.Rendering.OpenGL.GL.CoordTrans
@@ -144,11 +120,14 @@ import Graphics.Rendering.OpenGL.GLU.Matrix as GM
 import qualified Graphics.UI.GLFW as G
 import qualified Graphics.UI.GLUT as GLUT
 import Language.Haskell.Interpreter
+import System.Posix.Unistd
 import System.Directory
+import System.Process
 import System.Environment
 import System.Exit
 import System.IO
 import qualified Text.Printf as PR
+import System.IO.Silently
 
 -- |
 --
@@ -179,8 +158,10 @@ import qualified Text.Printf as PR
 --   @
 tmpfile = "/tmp/tmpfile.txt"
 
+{--
 mc :: (GLfloat, GLfloat) -> (GLfloat, GLfloat) -> (GLfloat, GLfloat)
 mc (a, b) (a', b') = (a * a' - b * b', a * b' + a' * b)
+--}
 
 convexPts :: IO [Vertex3 GLfloat]
 convexPts = return cx
@@ -193,9 +174,11 @@ convexPts = return cx
         Vertex3 0.12 0.8 0,
         Vertex3 1.3 0.12 0
       ]
+  
 
+  
 drawCylinderX :: [[Vertex3 GLfloat]] -> IO ()
-drawCylinderX cx = drawSurfaceFromList cx
+drawCylinderX = drawSurfaceFromList
 
 helpme :: IO ()
 helpme = do
@@ -276,6 +259,10 @@ randomColor = randomInt 0 (len lt - 1) >>= \x -> return $ lt !! x
         Color3 0.1 0.6 0.4
       ]
 
+-- (a -> b -> c) => (a -> b -> a)
+randomColorList :: Int -> IO [Color3 GLdouble]
+randomColorList n = mapM (const randomColor) [1..n]
+  
 grid :: [[[Vertex3 GLfloat]]]
 grid = [[[Vertex3 a b (a * a - b * b) | a <- aa] | b <- bb] | c <- cc]
   where
@@ -462,8 +449,8 @@ renderText str = do
 
 -- |
 --    === cylinder xz-plane, perpendicular to xz-plane
-cylinder :: GLfloat -> IO ()
-cylinder r = drawSurfaceFromList cylinderPt
+cylinderX :: GLfloat -> IO ()
+cylinderX r = drawSurfaceFromList cylinderPt
 
 cylinderPt :: [[Vertex3 GLfloat]]
 cylinderPt = cm
@@ -558,7 +545,7 @@ vertex3Triple cx = ts
     ls = let s = partList 3 cx in if (len . last) s == 3 then s else init s
     ts = map (\(a : b : c : _) -> (a, b, c)) ls
 
--- |
+{-|  
 --    === KEY: Convert a list vertices to tuple3 vertices
 --
 --    @
@@ -566,6 +553,7 @@ vertex3Triple cx = ts
 --
 --     => [(Vertex3 0.1 0.1 0.1, Vertex3 0.2 0.2 0.2, Vertex3 0.3 0.3 03)]
 --    @
+-}
 listToTuple3Vex :: [Vertex3 GLfloat] -> [(Vertex3 GLfloat, Vertex3 GLfloat, Vertex3 GLfloat)]
 listToTuple3Vex cx =
   let lss = partList 3 cx
@@ -637,6 +625,14 @@ listToTuple2Vex cx =
   where
     num = 2
 
+maybeX' :: (Maybe a1, Maybe a2) -> b -> ((a1, a2) -> b) -> b
+maybeX' (m1, m2) b f = case m1 of
+  Nothing -> error "e1"
+  Just x1 -> case m2 of
+             Nothing -> error "e2"
+             Just x2 -> f (x1, x2)
+  
+
 --   #endif
 
 -- |
@@ -650,10 +646,11 @@ mymain = do
   G.windowHint (G.WindowHint'DoubleBuffer True)
   -- if init failed, we exit the program
   bool successfulInit exitFailure $ do
-    mw <- G.createWindow 1000 1000 "PlotGeometry" Nothing Nothing
-    maybe' mw (G.terminate >> exitFailure) $ \window -> do
-      G.makeContextCurrent mw
-
+    mw0 <- G.createWindow 1000 1000 "PlotGeometry 1" Nothing Nothing
+    mw1 <- G.createWindow 1000 1000 "PlotGeometry 2" Nothing Nothing
+    -- maybe' :: Maybe a -> b -> (a -> b) -> b  
+    -- maybe' mw (G.terminate >> exitFailure) $ \window -> do
+    maybeX' (mw0, mw1) (G.terminate >> exitFailure)  $ \(window0, window1) -> do      
       -- ref <- newIORef initCam
       refCamRot <- newIORef initCameraRot
       refStep <- newIORef initStep
@@ -685,9 +682,14 @@ mymain = do
       ioArray <- DAO.newArray ((- nx, - ny, 0), (nx - 1, ny - 1, 0)) blockAttr :: IO (IOArray (Int, Int, Int) BlockAttr)
       animaStateArr <- initAnimaState
 
-      -- mymain xxx
-      mainLoopSimple window refCamRot refGlobal refFrame animaStateArr cx' ioArray
-      G.destroyWindow window
+      -- mymain
+      -- mainLoopSimple window refCamRot refGlobal refFrame animaStateArr cx' ioArray
+      -- thead 1
+      -- G.makeContextCurrent mw0
+      mainLoop (window0, window1) refCamRot refGlobal refFrame animaStateArr cx' ioArray
+
+      G.destroyWindow window0
+      G.destroyWindow window1
       G.terminate
       exitSuccess
 
@@ -842,22 +844,10 @@ testmultMatrix = do
   mat <-
     newMatrix
       RowMajor
-      [ 1,
-        0,
-        0,
-        x,
-        0,
-        1,
-        0,
-        y,
-        0,
-        0,
-        1,
-        z,
-        0,
-        0,
-        0,
-        1
+      [ 1, 0, 0, x,
+        0, 1, 0, y,
+        0, 0, 1, z,
+        0, 0, 0, 1
       ] ::
       IO (GLmatrix GLfloat)
 
@@ -870,45 +860,153 @@ testmultMatrix = do
   ls <- getMatrixComponents RowMajor mat -- [GLfloat]
   -- pre ls
   writeFileList "/tmp/m.x" $ map show ls
-
-multModelviewVec :: Vertex3 GLfloat -> IO [GLfloat]
-multModelviewVec (Vertex3 x y z) = do
-  --                      let x = 1.0::GLfloat
-  --                      let y = 0.0::GLfloat
-  --                      let z = 0.0::GLfloat
+  
+{-|
+   KEY: rotate around Z-Axis
+-}  
+multiRotateZ :: GLfloat -> IO [GLfloat]
+multiRotateZ x = do
   mat <-
     newMatrix
       RowMajor
-      [ 1,
-        0,
-        0,
-        x,
-        0,
-        1,
-        0,
-        y,
-        0,
-        0,
-        1,
-        z,
-        0,
-        0,
-        0,
-        1
-      ] ::
-      IO (GLmatrix GLfloat)
-
-  -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/Graphics-Rendering-OpenGL-GL-CoordTrans.html
-  -- multMatrix :: (Matrix m, MatrixComponent c) => m c -> IO ()
+      [ cos x,  (negate . sin) x, 0, 0,
+        sin x,  cos x,            0, 0,
+        0,      0,                1, 0,
+        0,      0,                0, 1
+      ] :: IO (GLmatrix GLfloat)
   GL.multMatrix mat
-
   -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/src/Graphics.Rendering.OpenGL.GL.CoordTrans.html#getMatrixComponents
   -- getMatrixComponents :: MatrixComponent c => MatrixOrder -> m c -> IO [c]
   ls <- getMatrixComponents RowMajor mat -- [GLfloat]
   -- pre ls
-  writeFileList "/tmp/m.x" $ map show ls
+  writeFileList "/tmp/mz.x" $ map show ls
   return ls
 
+testMeZ :: GLfloat -> IO()
+testMeZ rad = do
+  preservingMatrix $ do
+    loadIdentity
+    rotate (radianToDegree rad) (Vector3 0 0 1 :: Vector3 GLfloat)
+    ls <- getModelviewMatrixRow
+    let f s = map (\x -> abs x < 0.00001 ? 0 $ x) s
+    let lx = partList 4 $ f ls
+    tx <- (cap . printMat) lx
+    logFileG ["testMeZ 90 Vector3 0 0 1"]
+    logFileG [tx]
+  
+testMeX :: GLfloat -> IO()
+testMeX rad = do
+  preservingMatrix $ do
+    loadIdentity
+    rotate (radianToDegree rad) $ (Vector3 1 0 0 :: Vector3 GLfloat)
+    ls <- getModelviewMatrixRow
+    let f s = map (\x -> abs x < 0.00001 ? 0 $ x) s
+    let lx = partList 4 $ f ls
+    tx <- (cap . printMat) lx
+    logFileG ["testMeX 90 Vector3 1 0 0"]
+    logFileG [tx]
+  
+testMeY :: GLfloat -> IO()
+testMeY rad = do
+  preservingMatrix $ do
+    loadIdentity
+    rotate (radianToDegree rad) (Vector3 0 1 0 :: Vector3 GLfloat)
+    ls <- getModelviewMatrixRow
+    let f s = map (\x -> abs x < 0.00001 ? 0 $ x) s
+    let lx = partList 4 $ f ls
+    tx <- (cap . printMat) lx
+    logFileG ["testMeY 90 Vector3 0 1 0"]
+    logFileG [tx]
+  
+{-|
+   KEY: rotate around Y-Axis
+-}
+multiRotateY :: GLfloat -> IO [GLfloat]
+multiRotateY x = do
+  mat <-
+    newMatrix
+      RowMajor
+      [ cos x,             0, sin x, 0,
+        0,                 1, 0,     0,
+        (negate . sin) x,  0, cos x, 0,
+        0,                 0, 0,     1
+      ] :: IO (GLmatrix GLfloat)
+  GL.multMatrix mat
+  -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/src/Graphics.Rendering.OpenGL.GL.CoordTrans.html#getMatrixComponents
+  -- getMatrixComponents :: MatrixComponent c => MatrixOrder -> m c -> IO [c]
+  ls <- getMatrixComponents RowMajor mat -- [GLfloat]
+  -- pre ls
+  writeFileList "/tmp/my.x" $ map show ls
+  return ls
+
+{-|
+   KEY: rotate around X-Axis
+-}
+multiRotateX :: GLfloat -> IO [GLfloat]
+multiRotateX x = do
+  mat <-
+    newMatrix
+      RowMajor
+      [
+        1, 0,                 0,                0,
+        0, cos x,             (negate . sin) x, 0,
+        0, sin x,             cos x,            0,          
+        0, 0,                 0,                1
+      ] :: IO (GLmatrix GLfloat)
+  GL.multMatrix mat
+  -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/src/Graphics.Rendering.OpenGL.GL.CoordTrans.html#getMatrixComponents
+  -- getMatrixComponents :: MatrixComponent c => MatrixOrder -> m c -> IO [c]
+  ls <- getMatrixComponents RowMajor mat -- [GLfloat]
+  -- pre ls
+  writeFileList "/tmp/mx.x" $ map show ls
+  return ls
+
+multiModelScale ::(GLfloat, GLfloat, GLfloat) -> IO [GLfloat]
+multiModelScale (x, y, z) = do
+  mat <-
+    newMatrix
+      RowMajor
+      [ x,0,0,0,
+        0,y,0,0,
+        0,0,z,0,
+        0,0,0,1
+      ] :: IO (GLmatrix GLfloat)
+
+  -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/Graphics-Rendering-OpenGL-GL-CoordTrans.html
+  -- multMatrix :: (Matrix m, MatrixComponent c) => m c -> IO ()
+  GL.multMatrix mat
+  -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/src/Graphics.Rendering.OpenGL.GL.CoordTrans.html#getMatrixComponents
+  -- getMatrixComponents :: MatrixComponent c => MatrixOrder -> m c -> IO [c]
+  ls <- getMatrixComponents RowMajor mat -- [GLfloat]
+  writeFileList "/tmp/m4.x" $ map show ls
+  return ls
+  
+multiModelviewVec :: Vector3 GLfloat -> IO [GLfloat]
+multiModelviewVec (Vector3 x y z) = do
+  mat <-
+    newMatrix
+      RowMajor
+      [ 1,0,0,x,
+        0,1,0,y,
+        0,0,1,z,
+        0,0,0,1
+      ] :: IO (GLmatrix GLfloat)
+  -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/Graphics-Rendering-OpenGL-GL-CoordTrans.html
+  -- multMatrix :: (Matrix m, MatrixComponent c) => m c -> IO ()
+  GL.multMatrix mat
+  -- https://hackage.haskell.org/package/OpenGL-3.0.3.0/docs/src/Graphics.Rendering.OpenGL.GL.CoordTrans.html#getMatrixComponents
+  -- getMatrixComponents :: MatrixComponent c => MatrixOrder -> m c -> IO [c]
+  getMatrixComponents RowMajor mat -- [GLfloat]
+  -- pre ls
+  -- writeFileList "/tmp/m.x" $ map show ls
+  
+multiModelviewMat :: [GLfloat] -> IO [GLfloat]
+multiModelviewMat ls = do
+  mat <- newMatrix RowMajor ls :: IO (GLmatrix GLfloat)
+  GL.multMatrix mat
+  getMatrixComponents RowMajor mat -- [GLfloat]
+
+  
 getMatrixTest :: IO ()
 getMatrixTest = do
   -- let pnameMatrix = getMatrix $ matrixModeToGetMatrix Projection
@@ -941,7 +1039,53 @@ getModelviewMatrix = do
   pre ls
   writeFileList "/tmp/m1.x" $ map show ls
   return ls
+  
+getModelviewMatrixCol :: IO [GLfloat]
+getModelviewMatrixCol = do
+  let stateVar = GL.matrix (Just $ Modelview 16) :: StateVar (GLmatrix GLfloat)
+  m1 <- Data.StateVar.get stateVar
+  pre m1
+  -- ls <- getMatrixComponents RowMajor m1  -- [GLfloat]
+  ls <- getMatrixComponents ColumnMajor m1 -- [GLfloat]
+  pre ls
+  writeFileList "/tmp/m1.x" $ map show ls
+  return ls
 
+{--
+     x
+       y
+   z
+
+   x * y = z
+   y * z = x
+--}
+  
+getModelviewMatrixRow :: IO [GLfloat]
+getModelviewMatrixRow = do
+  preservingMatrix $ do
+    let stateVar = GL.matrix (Just $ Modelview 16) :: StateVar (GLmatrix GLfloat)
+    m1 <- Data.StateVar.get stateVar
+    pre m1
+    ls <- getMatrixComponents RowMajor m1  -- [GLfloat]
+    -- ls <- getMatrixComponents ColumnMajor m1 -- [GLfloat]
+    pre ls
+    writeFileList "/tmp/m1.x" $ map show ls
+    return ls
+
+{-|
+  KEY: return 4x4 column major matrix
+-}
+getModelviewMatrix2d :: IO [[GLdouble]]
+getModelviewMatrix2d = do
+  preservingMatrix $ do
+    let stateVar = GL.matrix (Just $ Modelview 16) :: StateVar (GLmatrix GLdouble)
+    m1 <- Data.StateVar.get stateVar
+    pre m1
+    ls <- getMatrixComponents RowMajor m1  -- [GLfloat]
+    let lt = (tran . partList 4) ls
+    writeFileList "/tmp/m22.x" $ map show lt
+    return lt
+  
 matrixTest :: IO ()
 matrixTest = do
   let stateVar = GL.matrix (Just $ Modelview 16) :: StateVar (GLmatrix GLfloat)
@@ -1139,6 +1283,7 @@ let r = MyRec = {a_ = 3, b_ = a_ + 4}
   ((-2,-2),0) ((-1,-2),0) ((0,-2),0) ((1,-2),0) ((2,-2),0)
 --}
 
+-- DONOTDELETE: /Users/aaa/myfile/github/haskell-opengl-tetris/src/keyboardCallBackNew-2024-01-19-11-19-06.x
 keyBoardCallBackNew :: IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
 keyBoardCallBackNew refCamRot refGlobalRef ioArray window key scanCode keyState modKeys = do
   pp "keyBoardCallBack in $b/haskelllib/AronOpenGL.hs"
@@ -1161,22 +1306,22 @@ keyBoardCallBackNew refCamRot refGlobalRef ioArray window key scanCode keyState 
                 currXYZ <- readIORef refCamRot <&> currXYZ_
                 case currXYZ of
                    v | v == 1 -> do
-                         modifyIORef refCamRot (\s -> let s' = s{alpha_  = alpha_ s  + _STEP} in s'{xyzRotDeg_ = alpha_ s'})
+                         modifyIORef refCamRot (\s -> s{alpha_ = alpha_ s + _STEP})
                      | v == 2 -> do
-                         modifyIORef refCamRot (\s -> let s' = s{beta_ = beta_ s + _STEP} in s'{xyzRotDeg_ = beta_ s'})
+                         modifyIORef refCamRot (\s -> s{beta_ = beta_ s + _STEP})
                      | v == 3 -> do
-                         modifyIORef refCamRot (\s -> let s' = s{gramma_ = gramma_ s + _STEP} in s'{xyzRotDeg_ = gramma_ s'})
+                         modifyIORef refCamRot (\s -> s{gramma_ = gramma_ s + _STEP})
                      | otherwise -> error "Invalid currXYZ_ value, Key Right"
   
             | k == G.Key'Left -> do
                 currXYZ <- readIORef refCamRot <&> currXYZ_
                 case currXYZ of
                    v | v == 1 -> do
-                         modifyIORef refCamRot (\s -> let s' = s{alpha_  = alpha_ s  - _STEP} in s'{xyzRotDeg_ = alpha_ s'})
+                         modifyIORef refCamRot (\s -> s{alpha_ = alpha_ s - _STEP})
                      | v == 2 -> do
-                         modifyIORef refCamRot (\s -> let s' = s{beta_  = beta_ s  - _STEP} in s'{xyzRotDeg_ = beta_ s'})
+                         modifyIORef refCamRot (\s -> s{beta_ = beta_ s - _STEP})
                      | v == 3 -> do
-                         modifyIORef refCamRot (\s -> let s' = s{gramma_  = gramma_ s  - _STEP} in s'{xyzRotDeg_ = gramma_ s'})
+                         modifyIORef refCamRot (\s -> s{gramma_ = gramma_ s - _STEP})
                      | otherwise -> error "Invalid currXYZ_ value, Key Left"
   
             --  | k == G.Key'Left -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = - _STEP, yy = 0, zz = 0}})
@@ -1204,15 +1349,13 @@ keyBoardCallBackNew refCamRot refGlobalRef ioArray window key scanCode keyState 
             --                                  + -> Update Coord to YZ-plane
 
             --  | k == G.Key'Y -> modifyIORef refGlobalRef (\s -> s {xyzAxis_ = flipAxis (xyzAxis_ s) yAxis})
-            | k == G.Key'A -> do
-                vec <- readIORef refCamRot <&> vecRotX_
-                modifyIORef refCamRot (\s -> s{xyzRotVec_ = vec, currXYZ_ = 1})
-            | k == G.Key'B -> do
-                vec <- readIORef refCamRot <&> vecRotY_
-                modifyIORef refCamRot (\s -> s{xyzRotVec_ = vec, currXYZ_ = 2})
-            | k == G.Key'C -> do
+            | k == G.Key'1 -> do
+                modifyIORef refCamRot (\s -> s{currXYZ_ = 1, vecAxisY_ = vecY_ s, vecAxisZ_ = vecZ_ s})
+            | k == G.Key'2 -> do
+                modifyIORef refCamRot (\s -> s{currXYZ_ = 2, vecAxisX_ = vecX_ s, vecAxisZ_ = vecZ_ s})
+            | k == G.Key'3 -> do
                 vec <- readIORef refCamRot <&> vecRotZ_
-                modifyIORef refCamRot (\s -> s{xyzRotVec_ = vec, currXYZ_ = 3})
+                modifyIORef refCamRot (\s -> s{currXYZ_ = 3})
   
             | k == G.Key'Y ->
                 modifyIORef refCamRot (\s -> let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 1.0 0, up_ = Vector3 1.0 0 0}})
@@ -1252,22 +1395,6 @@ keyBoardCallBackNew refCamRot refGlobalRef ioArray window key scanCode keyState 
             --  | k == G.Key'O -> modifyIORef refCamRot (\s -> s {fovDeg_ = fovDeg_ s + 5.0})
             --                                  ↑
             --                                  + -> Update Coord to XY-plane
-            -- zoom in
-            | k == G.Key'I -> modifyIORef refCamRot (\s -> s {fovDeg_ = fovDeg_ s - 5.0})
-            --  | k == G.Key'Space -> writeIORef refStep initStep
-            {--
-            | k == G.Key'R -> do
-                              bmap <- readIORef refGlobalRef >>= return . boardMap_
-                              block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
-                              modifyIORef refGlobalRef (\s -> s{moveX_ =  let mx = moveX_ s
-                                                                              my = moveY_ s
-                                                                              m = map (\(a, b) -> (a + mx + 1, b + my)) block1
-                                                                              b = checkMove m bmap rr
-                                                                          in  b ? mx + 1 $ mx
-                                                               }
-                                                       )
-                              print block1
-            --}
 
             | k == G.Key'W -> do
               nowTime <- timeNowMilli
@@ -1415,6 +1542,301 @@ keyBoardCallBackNew refCamRot refGlobalRef ioArray window key scanCode keyState 
     (key == G.Key'Escape && keyState == G.KeyState'Pressed)
     (G.setWindowShouldClose window True)
 
+keyBoardCallBackNew2 :: IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
+keyBoardCallBackNew2 refCamRot refGlobalRef ioArray window key scanCode keyState modKeys = do
+  pp "keyBoardCallBack in $b/haskelllib/AronOpenGL.hs"
+  putStrLn $ "inside =>" ++ show keyState ++ " " ++ show key
+  globalRef <- readIORef refGlobalRef
+  cam <- readIORef refCamRot
+  let axisOld = xyzAxis_ globalRef
+  let fovOld = fovDegree_ globalRef
+  logFileG ["fovOld=" ++ show fovOld]
+  rr <- readIORef refGlobalRef <&> rectGrid_
+  coordFrame <- readIORef refCamRot <&> coordFrame_
+  case keyState of
+    ks
+      | ks `elem` [G.KeyState'Pressed, G.KeyState'Repeating] -> do
+        -- G.KeyState'Pressed -> do
+        -- write Step{...} to ref
+        case key of
+          k
+            | k == G.Key'Right -> do
+                currXYZ <- readIORef refCamRot <&> currXYZ_
+                case currXYZ of
+                   v | v == 1 -> do
+                         modifyIORef refCamRot (\s -> s{alpha_ = alpha_ s + _STEP})
+                         alpha <- readIORef refCamRot <&> alpha_
+                         let vecXCF = coordFrame ^._1
+                         let vecYCF = coordFrame ^._2
+                         let vecZCF = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecXCF (rf $ (pi/180) * _STEP)
+                         -- multiModelviewMat ls
+                         let lsY = vecToList3 vecYCF ++ [0]
+                         let lsZ = vecToList3 vecZCF ++ [0]
+                         let vy3 = (listToVec . join) $ mm `multiVec` lsY
+                         let vz3 = (listToVec . join) $ mm `multiVec` lsZ
+
+                         modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecXCF, vy3, vz3)})
+                         mm' <- (cap . printMat) mm
+                         logFileG ["mm_matrix"]
+                         logFileG [mm']
+
+                         logFileG ["alpha=" ++ show alpha]
+                         logFileG ["vecXCF"]
+                         logFileG [show vecXCF]  
+                         logFileG ["n=1 vecvy3"]
+                         logFileG [show vy3]
+                         logFileG ["n=1 vecvz3"]
+                         logFileG [show vz3]
+                         logFileG ["lenn lsY lsZ"]
+                         logFileG $ map show lsY
+                         logFileG $ map show lsZ
+  
+                     | v == 2 -> do
+                         modifyIORef refCamRot (\s -> s{beta_ = beta_ s + _STEP})
+                         let vecXCF = coordFrame ^._1
+                         let vecYCF = coordFrame ^._2
+                         let vecZCF = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecYCF (rf $ (pi/180) * _STEP)
+                         -- multiModelviewMat ls
+                         let lsX = vecToList3 vecXCF ++ [0]
+                         let lsZ = vecToList3 vecZCF ++ [0]
+                         let vx3 = (listToVec . join) $ mm `multiVec` lsX
+                         let vz3 = (listToVec . join) $ mm `multiVec` lsZ
+                         modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vecYCF, vz3)})
+                         mm' <- (cap . printMat) mm
+                         logFileG ["mm_matrix"]
+                         logFileG [mm']
+  
+                     | v == 3 -> do
+                         let vecXCF = coordFrame ^._1
+                         let vecYCF = coordFrame ^._2
+                         let vecZCF = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecZCF (rf $ (pi/180) * _STEP)
+                         let lsX = vecToList3 vecXCF ++ [0]
+                         let lsY = vecToList3 vecYCF ++ [0]
+                         let vx3 = (listToVec . join) $ mm `multiVec` lsX
+                         let vy3 = (listToVec . join) $ mm `multiVec` lsY
+                         modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vy3, vecZCF)})
+                     | v == 4 -> do
+                         persp <- readIORef refCamRot <&> persp_
+                         modifyIORef refCamRot (\s -> s{persp_ = persp{zn_ = zn_ persp + 0.1}})
+                         persp' <- readIORef refCamRot <&> persp_
+                         logFileGT "persp_1" [show persp']
+  
+                     | otherwise -> error "Invalid currXYZ_ value, Key Right"
+  
+            | k == G.Key'Left -> do
+                currXYZ <- readIORef refCamRot <&> currXYZ_
+                case currXYZ of
+                   v | v == 1 -> do
+                         modifyIORef refCamRot (\s -> s{alpha_ = alpha_ s - _STEP})
+                         let vecXCF = coordFrame ^._1
+                         let vecYCF = coordFrame ^._2
+                         let vecZCF = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecXCF (rf $ (pi/180) * negate _STEP)
+                         let lsY = vecToList3 vecYCF ++ [0]
+                         let lsZ = vecToList3 vecZCF ++ [0]
+                         let vy3 = (listToVec . join) $ mm `multiVec` lsY
+                         let vz3 = (listToVec . join) $ mm `multiVec` lsZ
+
+                         modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecXCF, vy3, vz3)})
+
+                     | v == 2 -> do
+                         modifyIORef refCamRot (\s -> s{beta_ = beta_ s - _STEP})
+                         let vecXCF = coordFrame ^._1
+                         let vecYCF = coordFrame ^._2
+                         let vecZCF = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecYCF (rf $ (pi/180) * negate _STEP)
+                         let lsX = vecToList3 vecXCF ++ [0]
+                         let lsZ = vecToList3 vecZCF ++ [0]
+                         let vx3 = (listToVec . join) $ mm `multiVec` lsX
+                         let vz3 = (listToVec . join) $ mm `multiVec` lsZ
+
+                         modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vecYCF, vz3)})
+  
+                     | v == 3 -> do
+                         let vecXCF = coordFrame ^._1
+                         let vecYCF = coordFrame ^._2
+                         let vecZCF = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecZCF (rf $ (pi/180) * negate _STEP)
+                         let lsX = vecToList3 vecXCF ++ [0]
+                         let lsY = vecToList3 vecYCF ++ [0]
+                         let vx3 = (listToVec . join) $ mm `multiVec` lsX
+                         let vy3 = (listToVec . join) $ mm `multiVec` lsY
+                         modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vy3, vecZCF)})
+                     | v == 4 -> do
+                         persp <- readIORef refCamRot <&> persp_
+                         modifyIORef refCamRot (\s -> s{persp_ = persp{zn_ = zn_ persp - 0.1}})                             
+                     | otherwise -> error "Invalid currXYZ_ value, Key Left"
+
+            | k == G.Key'Up -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = _STEP, zz = 0}})
+            | k == G.Key'Down -> modifyIORef refCamRot (\s -> let a = delta_ s in s {delta_ = a {xx = 0, yy = - _STEP, zz = 0}})
+            | k == G.Key'X -> do
+                modifyIORef refCamRot (\s -> let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 1.0 0}})
+            | k == G.Key'1 -> do
+                modifyIORef refCamRot (\s -> s{currXYZ_ = 1, vecAxisY_ = vecY_ s, vecAxisZ_ = vecZ_ s})
+            | k == G.Key'2 -> do
+                modifyIORef refCamRot (\s -> s{currXYZ_ = 2, vecAxisX_ = vecX_ s, vecAxisZ_ = vecZ_ s})
+            | k == G.Key'3 -> do
+                modifyIORef refCamRot (\s -> s{currXYZ_ = 3})
+            | k == G.Key'4 -> do
+                modifyIORef refCamRot (\s -> s{currXYZ_ = 4})
+  
+            | k == G.Key'Z -> do
+                currXYZ <- readIORef refCamRot <&> currXYZ_
+                case currXYZ of
+                   v | v == 1 -> do
+                         modifyIORef refCamRot(\s ->let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 0 1.0}})
+                     | v == 2 -> do
+                         -- modifyIORef refCamRot(\s ->let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 0 1.0 0, up_ = Vector3 1.0 0 0}})
+                         pp ""
+                     | v == 3 -> do
+                         modifyIORef refCamRot(\s ->let a = modelview_ s in s{modelview_ = a{eye_ = Vertex3 1.0 0 0}})
+                     | otherwise -> do
+                         pp "unknown number"  
+  
+            --  | k == G.Key'O -> modifyIORef refGlobalRef (\s -> s {fovDegree_ = fovDegree_ s + 5.0})
+            | k == G.Key'O -> do
+                modifyIORef refCamRot (\s -> let p = persp_ s in s{persp_ = p{fov_ = fov_ p + 5.0}})
+            --                                  ↑
+            --                                  + -> Update Coord to XY-plane
+                logFileG ["CameraRot_O"]
+                readIORef refCamRot >>= \x -> logFileG [show x]
+            -- zoom in
+            | k == G.Key'I -> do
+                modifyIORef refCamRot (\s -> let p = persp_ s in s{persp_ = p{fov_ = fov_ p - 5.0}})
+            --                                  ↑
+            --                                  + -> Update Coord to XY-plane
+                logFileG ["CameraRot_I"]
+                readIORef refCamRot >>= \x -> logFileG [show x]
+
+            -- TODO: In orthogonal projective status,
+            | k == G.Key'Space -> do
+                currXYZ <- readIORef refCamRot <&> currXYZ_
+                case currXYZ of
+                   v | v == 1 -> do
+                         modifyIORef refCamRot (\s -> s {coordFrame_ = (Vector3 1 0 0, Vector3 0 1 0, Vector3 0 0 1)})
+                         modifyIORef refCamRot (\s -> s {coordFrameMat_ = matId 4})                           
+                         pp "kk"
+                     | otherwise -> do
+                         pp "ok"
+  
+            | otherwise -> pp $ "Unknown Key Press" ++ show key
+      | ks == G.KeyState'Released -> do
+        if key == G.Key'Right then do
+          pp "Release Key => Right"
+          else pp "Press No Right"
+        if key == G.Key'Left then do
+          pp "Release Key => left"
+          else pp "Press No Right"
+        if key == G.Key'Up then do
+          pp "Release Key => up"
+          else pp "Release No Up"
+        if key == G.Key'Down then do
+          pp "Release Key => Down"
+          else pp "Release No Down"
+      | otherwise -> pp "Unknow keyState"
+  when
+    (key == G.Key'Escape && keyState == G.KeyState'Pressed)
+    (G.setWindowShouldClose window True)
+
+keyBoardCall2d:: IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
+keyBoardCall2d refCamRot refGlobalRef ioArray window key scanCode keyState modKeys = do
+  putStrLn $ "inside =>" ++ show keyState ++ " " ++ show key
+  globalRef <- readIORef refGlobalRef
+  cam <- readIORef refCamRot
+  let axisOld = xyzAxis_ globalRef
+  let fovOld = fovDegree_ globalRef
+  logFileG ["fovOld=" ++ show fovOld]
+  rr <- readIORef refGlobalRef <&> rectGrid_
+  let delDeg = 1.0
+  case keyState of
+    ks
+      | ks `elem` [G.KeyState'Pressed, G.KeyState'Repeating] -> do
+        case key of
+          k
+            | k == G.Key'Right -> do
+                modifyIORef  refCamRot (\s -> s{rotX_ = rotX_ s + delDeg})
+                pp "Right"
+            | k == G.Key'Left -> do
+                modifyIORef  refCamRot (\s -> s{rotX_ = rotX_ s - delDeg})
+            | k == G.Key'Up -> do
+                modifyIORef  refCamRot (\s -> s{rotY_ = rotY_ s + delDeg})
+                pp "Up"
+            | k == G.Key'Down -> do
+                modifyIORef  refCamRot (\s -> s{rotY_ = rotY_ s - delDeg})
+                pp "Down"
+            | k == G.Key'J -> do
+                modifyIORef  refCamRot (\s -> s{rotZ_ = rotZ_ s + delDeg})
+                pp "J"
+            | k == G.Key'K -> do
+                modifyIORef  refCamRot (\s -> s{rotZ_ = rotZ_ s - delDeg})
+                pp "K"
+            | otherwise -> pp $ "Unknown Key Press" ++ show key
+      | ks == G.KeyState'Released -> do
+        -- G.KeyState'Released -> do
+        if key == G.Key'Right then pp "Release Key => Right" else pp "Press No Right"
+        if key == G.Key'Left then pp "Release Key => left" else pp "Press No Right"
+        if key == G.Key'Up then pp "Release Key => up" else pp "Release No Up"
+        if key == G.Key'Down then pp "Release Key => Down" else pp "Release No Down"
+      | otherwise -> pp "Unknow keyState"
+  when
+    (key == G.Key'Escape && keyState == G.KeyState'Pressed)
+    (G.setWindowShouldClose window True)
+
+{--  
+keyBoardCallBackNew :: IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
+keyBoardCallBackNew refCamRot refGlobalRef ioArray window key scanCode keyState modKeys = do
+  putStrLn $ "inside =>" ++ show keyState ++ " " ++ show key
+  globalRef <- readIORef refGlobalRef
+  cam <- readIORef refCamRot
+  let axisOld = xyzAxis_ globalRef
+  let fovOld = fovDegree_ globalRef
+  logFileG ["fovOld=" ++ show fovOld]
+  rr <- readIORef refGlobalRef <&> rectGrid_
+  let delDeg = 1.0
+  case keyState of
+    ks
+      | ks `elem` [G.KeyState'Pressed, G.KeyState'Repeating] -> do
+        case key of
+          k
+            | k == G.Key'Right -> do
+                modifyIORef  refCamRot (\s -> s{rotX_ = rotX_ s + delDeg})
+                pp "Right"
+            | k == G.Key'Left -> do
+                modifyIORef  refCamRot (\s -> s{rotX_ = rotX_ s - delDeg})
+            | k == G.Key'Up -> do
+                modifyIORef  refCamRot (\s -> s{rotY_ = rotY_ s + delDeg})
+                pp "Up"
+            | k == G.Key'Down -> do
+                modifyIORef  refCamRot (\s -> s{rotY_ = rotY_ s - delDeg})
+                pp "Down"
+            | k == G.Key'J -> do
+                modifyIORef  refCamRot (\s -> s{rotZ_ = rotZ_ s + delDeg})
+                pp "J"
+            | k == G.Key'K -> do
+                modifyIORef  refCamRot (\s -> s{rotZ_ = rotZ_ s - delDeg})
+                pp "K"
+            | otherwise -> pp $ "Unknown Key Press" ++ show key
+      | ks == G.KeyState'Released -> do
+        -- G.KeyState'Released -> do
+        if key == G.Key'Right then pp "Release Key => Right" else pp "Press No Right"
+        if key == G.Key'Left then pp "Release Key => left" else pp "Press No Right"
+        if key == G.Key'Up then pp "Release Key => up" else pp "Release No Up"
+        if key == G.Key'Down then pp "Release Key => Down" else pp "Release No Down"
+      | otherwise -> pp "Unknow keyState"
+  when
+    (key == G.Key'Escape && keyState == G.KeyState'Pressed)
+    (G.setWindowShouldClose window True)
+--}
+
 -- |
 --    KEY:
 --    NOTE: USED
@@ -1464,20 +1886,8 @@ keyBoardCallBackX refStep refGlobalRef ioArray window key scanCode keyState modK
             --                                  + -> Update Coord to XY-plane
 
             -- TODO: In orthogonal projective status,
-            | k == G.Key'Space -> writeIORef refStep initStep
-            {--
-            | k == G.Key'R -> do
-                              bmap <- readIORef refGlobalRef >>= return . boardMap_
-                              block1 <- readIORef refGlobalRef >>= \x -> return $ map fst $ block1_ x
-                              modifyIORef refGlobalRef (\s -> s{moveX_ =  let mx = moveX_ s
-                                                                              my = moveY_ s
-                                                                              m = map (\(a, b) -> (a + mx + 1, b + my)) block1
-                                                                              b = checkMove m bmap rr
-                                                                          in  b ? mx + 1 $ mx
-                                                               }
-                                                       )
-                              print block1
-            --}
+            | k == G.Key'Space -> do
+                writeIORef refStep initStep
 
             | k == G.Key'W -> do
               nowTime <- timeNowMilli
@@ -2246,7 +2656,15 @@ drawRectFill2dX c (w, h) = do
 --   http://localhost/html/indexUnderstandOpenGL.html
 drawCube :: IO ()
 drawCube = do
+  
   -- drawPrimitive' TriangleStrip green [v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12]
+  preservingMatrix $ do
+    renderPrimitive TriangleStrip $
+      mapM_ (\(c, v) -> do
+               color c
+               vertex v
+             ) ls
+  {--
   preservingMatrix $ do
     renderPrimitive Quads $
       mapM_
@@ -2293,6 +2711,7 @@ drawCube = do
             vertex v
         )
         ls_right
+  --}
   where
     f (Color3 a b c) = Color3 (a * 0.5) (b * 0.5) (c * 0.5)
     ls =
@@ -2994,16 +3413,38 @@ mainLoopSimple w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
   matrixMode $= Projection
   loadIdentity
   let zf = 0.5
-  perspective 90 1.0 zf (zf + 4.0)
+  perspective 0 1.0 zf (zf + 4.0)
 
   matrixMode $= Modelview 0
   loadIdentity
-  ls <- readFileList "/tmp/input.x"
-  let x1 = head ls
-  pre x1
-  let s1 = read x1 :: [GLdouble]
-  let vex = Vertex3 (head s1) (s1 !! 1) (last s1) :: Vertex3 GLdouble
-  GL.lookAt vex (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+  vex <- readFileStr "./input.x" >>= \x -> return (read x :: Vertex3 GLdouble)
+  -- GL.lookAt (Vertex3 0 0 1) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+
+  {--
+            y 
+               \
+          /       x
+          z  -->
+        
+
+            y          
+            |
+            -- > x               
+           /
+          z 
+
+       rotate 90 Y-axis (right-hand)
+
+          y  +x
+          | / 
+          | -- > +z
+
+       +x => +z
+       +y => +y
+       +z => -x
+
+  --}
+  GL.lookAt (Vertex3 0 0 1.0) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
 
   -- rotateWorld refCamRot (fromIntegral width) (fromIntegral height)
 
@@ -3012,34 +3453,707 @@ mainLoopSimple w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
   -- keyboardRot => rotate around {x-axis, y-axis, y-axis} in some degrees
   -- keyboardRot refCam refStep (fromIntegral width) (fromIntegral height)
   -- renderCoordinates
-  when True $ do
-    let anima1 = 4
-    let intervalx = 1000 -- larger number is slower
-    (isNext, index, animaState) <- readAnimaState animaStateArr anima1 intervalx
-    -- saveImageOpenGL w fn
-    let deg = 10 * fi index :: GLdouble
-    rotate  deg (Vector3 1 0 0) -- rotate y-axis beta  degree/radian
-    writeAnimaState animaStateArr animaState
-  when True $ do
-    let anima1 = 3
-    let intervalx = 1000 -- larger number is slower
-    (isNext, index, animaState) <- readAnimaState animaStateArr anima1 intervalx
-    -- saveImageOpenGL w fn
-    let deg = 5 * fi index :: GLdouble
-    rotate  deg (Vector3 0 1 0) -- rotate y-axis beta  degree/radian
-    writeAnimaState animaStateArr animaState
-
+  when False $ do
+    let m4 :: Vector3 GLfloat -> [[GLfloat]]
+        m4 (Vector3 x y z) = [ [x, 0, 0, 0],
+                               [y, 0, 0, 0],
+                               [z, 0, 0, 0],
+                               [0, 0, 0, 0]
+                             ]
+    let l3ToVec :: [GLfloat] -> Vector3 GLfloat
+        l3ToVec cx = Vector3 (head cx) (cx !! 1) (cx !! 2)
     
-
+    rotX <- readIORef refCamRot <&> rotX_
+    vecX <- readIORef refCamRot <&> vecX_
+  
+    vecY <- readIORef refCamRot <&> vecY_
+    vecZ <- readIORef refCamRot <&> vecZ_
+    let deg = 10 * rotX
+    ls <- getModelviewMatrixCol
+    logFileG ["Before rotate deg  vecX, RowMajor"]
+    let f s = map (\x -> abs x < 0.00001 ? 0 $ x) s
+    let lx = (tran . partList 4) $ f ls
+    tx <- (cap . printMat) lx
+    logFileG ["look_from 1.0 0 0)"]
+    logFileG [tx]
+    logFileG ["vecY00"]
+    logFileG [show vecY]
+    logFileG ["vecZ00"]
+    logFileG [show vecZ]
+    dg <- readFile "/tmp/ee.x" >>= \x -> return (read x :: GLfloat)
+    -- rotate 90 vecY -- rotate X-axis beta  degree/radian
+    -- Move to Vertex3 0.5 0 0
+    (v, rx) <- readFile "/tmp/aa.x" >>= \x -> return (read x :: (Vector3 GLfloat, GLfloat))
+    -- multiModelviewVec v
+    -- multiRotateY rx
+    lt <- getModelviewMatrixCol
+  
+    -- Row Major Matrix => Column Major Matrix
+    let mc = (tran . partList 4) lt
+    ms <- (cap . printMat) $ (map . map) (\x -> abs x < 0.00001 ? 0 $ x) mc
+    logFileG ["model00 rot 90 Y-axis"]
+    logFileG [ms]
+    let vecY' = let m = multiMat mc $ m4 vecY in l3ToVec $ join $ getColumn m 1
+    let vecZ' = let m = multiMat mc $ m4 vecZ in l3ToVec $ join $ getColumn m 1
+    logFileG ["After rotate deg  vecX, RowMajor"]
+    logFileG ["vecY11"]
+    logFileG [show vecY']
+    logFileG ["vecZ11"]
+    logFileG [show vecZ']
+    let lv = tran $ partList 4 $ f lt
+    s <- (cap . printMat) lv
+    logFileG [s]
+    printMat lv
+  
+  {--
+  when True $ do
+    rotY <- readIORef refCamRot <&> rotY_
+    vecY <- readIORef refCamRot <&> vecY_
+    let deg = 10 * rotY
+    let rad = degreeToRadian (rf deg)
+    rotate  deg vecY -- rotate y-axis beta  degree/radian
+  when True $ do
+    rotZ <- readIORef refCamRot <&> rotZ_
+    vecZ <- readIORef refCamRot <&> vecZ_
+    let deg = 10 * rotZ
+    rotate  deg vecZ -- rotate y-axis beta  degree/radian
+  when False $ do
+    testMeX (pi/2)
+    testMeY (pi/2)
+    testMeZ (pi/2)
+  
+  when True $ do
+    testMeX (pi*3/2)
+    testMeY (pi*3/2)
+    testMeZ (pi*3/2)
+  --}
+  
   renderCoordinates
   -- view matrix: http://xfido.com/html/indexUnderstandOpenGL.html
   -- matrixMode $= Modelview 0
-  drawCubeQuad 0.3
+  {--
+  let lv = circleN (Vertex3 0 0 0) 0.2 6
+  let cen = Vertex3 0 0 0
+  let r = 0.3
+  drawPrimitive' LineLoop red lv
+  --}
+  -- drawCubeQuad 0.3
+
+  preservingMatrix $ do
+    speed <- readFileStr "./speed.x" >>= \x -> return $ (read x :: Int)
+    let anima1 = speed
+    let interval = 4
+    (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 interval
+    let del = pi/180.0
+    rotate (del * fi index1) (Vector3 0 0 1 :: Vector3 GLdouble)
+    cylinderX 0.2
+    logFileG ["index100=" ++ show index1]
+    writeAnimaState animaStateArr animaState1
+  preservingMatrix $ do
+    let lv = map (\x -> Vertex3 x 0.5 0) [0, 0 + 0.2 .. 1.0]
+    let ls = map (\x -> Vertex3 x 0   0) [0, 0 + 0.2 .. 1.0]
+    let lt = join $ zipWith (\x y -> [x, y]) lv ls
+    let lt' = zip lt $ join $ repeat [green, yellow, blue, cyan, gray, white]
+    drawPrimitive' TriangleStrip red lv
+  
+    renderPrimitive TriangleStrip $ mapM_(\(v, c) -> do
+        color c
+        vertex v) lt'
+  
+    pp "ok"
   drawFinal w ioArray initRectGrid
   mainLoopSimple w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
+
+colorChange :: GLdouble -> Color3 GLdouble -> Color3 GLdouble
+colorChange x (Color3 a b c) = Color3 (a*x) (b*x) (c*x)
+  
+{-|
+   KEY: draw cylinder
+
+   @
+   let r = 0.5             -- radius of circle
+   let l = 0.4             -- length of cylinder
+   let leftClose = True    -- close the left end
+   let rightClose = False  -- close the right end
+   cylinder r l (leftClose, rightClose)
+   @
+-}
+cylinder :: GLfloat -> GLfloat -> (Bool, Bool) -> [Color3 GLdouble]-> IO()
+cylinder r leng (left, right) cl = do
+  let d = 2.0*pi/10.0
+  let lw = [0, 0 + d .. 2*pi]
+  let lv = map (\x -> Vertex3 (r * cos x) leng (r * sin x)) lw
+  let ls = map (\x -> Vertex3 (r * cos x) 0    (r * sin x)) lw
+  let lt = join $ zipWith (\x y -> [x, y]) lv ls
+  -- let lt' = zip lt $ join $ repeat [green, yellow, blue, cyan, gray, white]
+  let lt' = zip lt $ (join . repeat) cl
+  renderPrimitive TriangleStrip $ mapM_(\(v, c) -> do
+      color c
+      vertex v) lt'
+  when left $ do
+    renderPrimitive TriangleFan $ mapM_ (\v -> do
+        color green
+        vertex v) $ Vertex3 (r * cos 0) leng (r * sin 0) : lv
+  when right $ do
+    renderPrimitive TriangleFan $ mapM_ (\v -> do
+        color yellow
+        vertex v) $ Vertex3 (r * cos 0) 0 (r * sin 0) : ls
+
+skewMatrix3 :: (Num a) => (a, a, a) -> [[a]]
+skewMatrix3 (x, y, z) = [
+                         [0,  -z, y],
+                         [z,  0, -x],
+                         [-y, x,  0]
+                        ]
+  
+{-|
+
+  KEY: rotate around arbitrary axis in 3d
+
+   * Rodrigues's rotation formula
+
+   <https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula Rodrigues_Rotation_Formula>
+
+
+  @
+   rotVec :: Vector3 GLdouble -> Vector3 GLdouble -> GLfloat -> Vector3 GLdouble
+
+   -- k is unit vector rotation axis
+   -- v is rotate around k in radian
+   rotVec k v radius
+  @
+-}
+rotVec :: (Floating a) => Vector3 a -> Vector3 a -> a -> Vector3 a
+rotVec k v theta = ax + bx + cx
+  where
+    f (Vector3 x y z) = (x, y, z)
+    toList (Vector3 x y z) = [x, y, z]
+    vec x = Vector3 (head x) ((head . tail) x) (last x)
+    skew = skewMatrix3 $ f k
+    ax = v
+    bx = let a = sin theta
+             b = (vec . join) $ skew `multiVec` toList v
+         in  a *: b
+    cx = let a  = 1 - cos theta
+             b = (vec $ join $  skew `multiVec` join (skew `multiVec` toList v))
+         in a *: b
+
+{-|
+
+  KEY: rotate around arbitrary axis in 3d
+
+   * Rodrigues's rotation formula
+
+   <https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula Rodrigues_Rotation_Formula>
+
+  @
+   rotMat :: Vector3 GLdouble -> GLdouble -> [[GLdouble]]
+
+   -- k is unit vector rotation axis
+   -- φ is rotate around k in radius
+   rotMat k φ radius
+  @
+-}
+rotMat :: (Floating a) => Vector3 a -> a -> [[a]]
+rotMat k θ = id3 + ax + bx
+  where
+    id3 = out (\a b -> a == b ? 1 $ 0) [1..3] [1..3]
+    f (Vector3 x y z) = (x, y, z)
+    m = skewMatrix3 $ f k
+    ax = sin θ ×× m
+    bx = (1 - cos θ) ×× (m `multiMat` m)
+  
+-- let m = (map . map) rf $ padMat3To4 $ rotMat k (rf $ del * fi i)  
+rotMat4Tup :: (Floating a) => Vector3 a -> a -> ([[a]], [a])
+rotMat4Tup k θ = (m4, join m4)
+  where
+    id3 = out (\a b -> a == b ? 1 $ 0) [1..3] [1..3]
+    f (Vector3 x y z) = (x, y, z)
+    m = skewMatrix3 $ f k
+    ax = sin θ ×× m
+    bx = (1 - cos θ) ×× (m `multiMat` m)
+    m3 = id3 + ax + bx
+    m4 = padMat3To4 m3
+
+  
+drawAxis :: Vector3 GLfloat -> [Color3 GLdouble] -> IO()
+drawAxis v cl = do
+  preservingMatrix $ do
+    let v0 = Vector3 1 0 0 :: (Vector3 GLfloat)
+    let v1 = v
+    let m = padMat3To4 $ rotToVecMat v0 v1
+    multiModelviewMat $ join m
+    cylinderArrow 1.0 cl
+  
+{-|
+   === KEY: rotate vector to other vector
+
+   * rotate v₀ to v₁ in angle θ radian around v₀ ⊗ v₁
+
+   @
+   let v0 = Vector3 1 0 0
+   let v1 = Vector3 0 0 (-1)
+   let θ  = pi/2
+   rotToVecMat v₀ v₁ θ
+   @
+-}
+rotToVecMat :: (Floating a, Eq a) => Vector3 a -> Vector3 a  -> [[a]]
+rotToVecMat v₀ v₁ = rotMat vᵤ θ
+  where
+    vᵤ = case v₀ ⊗ v₁ of
+              Nothing -> uv v₀
+              -- Nothing -> error "ERROR: two vectors can not be parallel, ERROR123"
+              Just v -> uv v
+    θ = angle2Vector v₀ v₁
+
+{-|
+   === KEY: vector projects on plane
+-}
+projOnPlane :: (Num a, Eq a) => Vector3 a -> (Vector3 a, Vector3 a) -> Vector3 a
+projOnPlane v (v0, v1) = v - vp
+  where
+    vc = case v0 ⊗ v1 of
+              Nothing -> error "ERROR: two vectors can not be parallel, ERROR124"
+              Just v -> v
+    vp = (v `dot3ve` vc) *: vc
+
+{-|
+
+  @
+  -- 3x3  to 4x4 matrix
+
+    1 2 3
+    4 5 6
+    7 8 9
+
+    1 2 3 0
+    4 5 6 0
+    7 8 9 0
+    0 0 0 1
+  @
+-}
+padMat3To4 :: (Num a) => [[a]] -> [[a]]
+padMat3To4 m = tran mx
+  where
+    m' = m ++ [[0, 0, 0]]
+    mt = tran m'
+    mx = mt ++ [[0, 0, 0, 1]]
+    
+{-|
+  
+  @
+  (Vertex3 0 0 0) ->  (Vertex3 1 0 0)
+
+  cylinder + cone
+  -- leng is the total length of cylinder and cone
+  cylinderArrow leng [yellow, gray]
+  @
+-}
+cylinderArrow :: GLfloat -> [Color3 GLdouble] -> IO()
+cylinderArrow leng cl = do
+  let cyRatio = 0.9 :: GLfloat
+  let cyLen =   rf $leng * cyRatio
+  let cyRadius = cyLen * 0.01
+  let coneRadius = cyRadius * 2.0
+  let coneHeigh = rf $ leng * (1.0 - cyRatio)
+  rotate (-90) (Vector3 0 0 1 ::Vector3 GLdouble)
+  preservingMatrix $ do
+    cylinder cyRadius cyLen (True, True)  cl
+    translate (Vector3 0 (rf cyLen) 0 :: Vector3 GLdouble)
+    cone coneRadius coneHeigh 8 cl
+
+
+  
+coord :: IO()
+coord = do
+  preservingMatrix $ do
+    let r = 0.02  -- radius of cone
+    let clen = 0.95 :: GLdouble  -- length of cylinder
+    let lo = rf $ 1.0 - clen     -- length of cone
+    let nStep = 8                -- n-polygon, etc approximate circle
+    
+    -- +X-axis
+    preservingMatrix $ do
+      rotate (-90) (Vector3 0 0 1 :: Vector3 GLdouble)
+      cylinder (r * 0.5) (rf $ clen - 0.01) (True, True) [red, colorChange 0.5 red]
+    preservingMatrix $ do
+      translate (Vector3 clen 0 0 :: Vector3 GLdouble)
+      rotate (-90) (Vector3 0 0 1 :: Vector3 GLdouble)
+      cone r lo nStep [red]
+  
+    -- +Y-axis
+    preservingMatrix $ do
+      cylinder (r * 0.5) (rf $ clen - 0.01) (True, True) [green, colorChange 0.5 green]
+    preservingMatrix $ do
+      translate (Vector3 0 clen 0 :: Vector3 GLdouble)
+      cone r lo nStep [green]
+  
+    -- +Z-axis
+    preservingMatrix $ do
+      -- deg <- readAndParse "/tmp/kee.x" :: IO GLdouble
+      let deg = 30
+      rotate 90 (Vector3 1 0 0 :: Vector3 GLdouble)
+      cylinder (r * 0.5) (rf $ clen - 0.01) (True, True) [blue, colorChange 0.5 blue]
+    
+    preservingMatrix $ do
+      translate (Vector3 0 0 clen :: Vector3 GLdouble)
+      rotate 90 (Vector3 1 0 0 :: Vector3 GLdouble)
+      cone r lo nStep [blue]
+    
+
+  
+{-|
+
+   KEY: cone
+
+   @
+   let r = 0.05 -- radius of circle
+   let l = 0.5  -- length of cylinder
+   cone r l
+   @
+-}
+cone :: GLfloat -> GLfloat -> Int -> [Color3 GLdouble] -> IO()
+cone r leng n cl = do
+  let d = 2.0*pi/fi n
+  -- let lc = [green, yellow, blue, cyan, gray, white]
+  let ld = [yellow, green, white, blue, gray, cyan]
+  let lw = [0, 0 + d .. 2.0*pi]
+  let lv = map (\x -> Vertex3 (r * cos x) leng (r * sin x)) lw
+  let ls = map (\x -> Vertex3 (r * cos x) 0    (r * sin x)) lw
+  let lp = zip ls $ join $ repeat cl
+  let lt = join $ zipWith (\x y -> [x, y]) lv ls
+  -- (x, y, z) <- readAndParse "/tmp/tu.x" :: IO(GLfloat, GLfloat, GLfloat)
+  renderPrimitive TriangleFan $ mapM_ (\(v, c) -> do
+      color c
+      vertex v) $ (Vertex3 0 leng 0 :: Vertex3 GLfloat, white) : lp
+  renderPrimitive TriangleFan $ mapM_ (\(v, c) -> do
+      color c
+      vertex v) $ (Vertex3 0 0 0 :: Vertex3 GLfloat, white) : lp
+{-|
+
+   KEY: vector to vertex
+
+   'Vector3' to 'Vertex3'
+-}
+vecToVex :: Vector3 a -> Vertex3 a
+vecToVex (Vector3 x y z) = Vertex3 x y z
+
+vecToList3 :: Vector3 a -> [a]
+vecToList3 (Vector3 x y z) = [x, y, z]
+
+listToVec :: [a] -> Vector3 a
+listToVec ls = Vector3 (head lt) ((head . tail) lt) (last lt)
+  where
+    lt = take 3 ls
+
+{-|
+
+  KEY: angle between two `Vector3 GLfloat` `Vertex3 GLfloat`
+
+-}
+angle2Vector :: (Floating a) => Vector3 a -> Vector3 a -> a
+angle2Vector v0 v1 = acos $ (n0*n0 + n1*n1 - dx*dx) / (2 * n0 * n1)
+  where 
+    x0 = vecToVex v0
+    x1 = vecToVex v1
+    dx = distX x0 x1
+    xz = Vertex3 0 0 0
+    n0 = distX xz x0
+    n1 = distX xz x1
+  
+{-|
+
+   KEY: vertex to vector
+
+   'Vertex3' to 'Vector3'
+-}
+vexToVec :: Vertex3 a -> Vector3 a
+vexToVec (Vertex3 x y z) = Vector3 x y z
+
+{--
+vecToM3x :: Vector3 GLdouble -> [[GLdouble]]
+vecToM3x (Vector3 x y z) = [
+                            [x, 0, 0],
+                            [y, 0, 0],
+                            [z, 0, 0]
+                           ]
+
+vecToM3y :: Vector3 GLdouble -> [[GLdouble]]
+vecToM3y (Vector3 x y z) = [
+                            [0, x, 0],
+                            [0, y, 0],
+                            [0, z, 0]
+                          ]
+  
+vecToM3z :: Vector3 GLdouble -> [[GLdouble]]
+vecToM3z (Vector3 x y z) = [
+                            [0, 0, x],
+                            [0, 0, y],
+                            [0, 0, z]
+                          ]
+--}
+  
+vecToM4x :: Vector3 GLdouble -> [[GLdouble]]
+vecToM4x (Vector3 x y z) = [
+                            [x, 0, 0, 0],
+                            [y, 0, 0, 0],
+                            [z, 0, 0, 0],
+                            [0, 0, 0, 0]
+                          ]
+
+vecToM4y :: Vector3 GLdouble -> [[GLdouble]]
+vecToM4y (Vector3 x y z) = [
+                            [0, x, 0, 0],
+                            [0, y, 0, 0],
+                            [0, z, 0, 0],
+                            [0, 0, 0, 0]
+                          ]
+
+vecToM4z :: Vector3 GLdouble -> [[GLdouble]]
+vecToM4z (Vector3 x y z) = [
+                            [0, 0, x, 0],
+                            [0, 0, y, 0],
+                            [0, 0, z, 0],
+                            [0, 0, 0, 0]
+                          ]
+
+fx (Vector3 x y z) = Vector3 (rf x) (rf y) (rf z)
+
+rotateWorldX :: IORef CameraRot -> Double -> Double -> IO ()
+rotateWorldX refCamRot w h = do
+  currXYZ <- readIORef refCamRot <&> currXYZ_
+  coordFrame <- readIORef refCamRot <&> coordFrame_
+  case currXYZ of
+    n | n == 1 -> do
+          coordFrameMat <- readIORef refCamRot <&> coordFrameMat_
+          let ls = join coordFrameMat
+          multiModelviewMat ls
+          pp "n == 1"
+      | n == 2 -> do
+          coordFrameMat <- readIORef refCamRot <&> coordFrameMat_
+          let ls = join coordFrameMat
+          multiModelviewMat ls
+          pp "n == 2"
+      | n == 3 -> do
+          coordFrameMat <- readIORef refCamRot <&> coordFrameMat_
+          let ls = join coordFrameMat
+          multiModelviewMat ls
+          pp "n == 3"
+      | n == 4 -> do
+          coordFrameMat <- readIORef refCamRot <&> coordFrameMat_
+          let ls = join coordFrameMat
+          multiModelviewMat ls
+          pp "n == 4"  
+      | otherwise -> do
+          error $ "currXYZ invalid Integer = " ++ show currXYZ
+    
+  
+rotateWorld :: IORef CameraRot -> Double -> Double -> IO ()
+rotateWorld refCamRot w h = do
+  {--
+  modifyIORef refCamRot (\c -> c {alpha_ = alpha_ c + xx (delta_ c)})
+  modifyIORef refCamRot (\c -> c {beta_ = beta_ c + yy (delta_ c)})
+  modifyIORef refCamRot (\c -> c {gramma_ = gramma_ c + zz (delta_ c)})
+  modifyIORef refCamRot (\c -> c {dist_ = ww (delta_ c)})
+  --}
+  -- rotate ( alpha_  cam) ( Vector3 1 0 0 :: Vector3 GLdouble)  -- rotate x-axix alpha degree/radian
+  --                ↑→ degree
+  -- rotate ( beta_   cam) ( Vector3 0 1 0 :: Vector3 GLdouble)  -- rotate y-axis beta  degree/radian
+  --                ↑→ degree
+  -- rotate ( gramma_ cam) ( Vector3 0 0 1 :: Vector3 GLdouble)  -- rotate z-axis gamma degree/radian
+  --                ↑→ degree
+  -- multiModelviewVec v
+
+  {--
+  xyzRotVec <- readIORef refCamRot<&> xyzRotVec_
+  xyzRotDeg <- readIORef refCamRot <&> xyzRotDeg_
+  rotate xyzRotDeg xyzRotVec -- rotate y-axis beta  degree/radian
+  pp "ok"
+  --}
+  currXYZ <- readIORef refCamRot <&> currXYZ_
+  coordFrame <- readIORef refCamRot <&> coordFrame_
+  case currXYZ of
+    n | n == 1 -> do
+          alpha <- readIORef refCamRot <&> alpha_
+          vecX <- readIORef refCamRot <&> vecX_
+          vecY <- readIORef refCamRot <&> vecY_
+          vecZ <- readIORef refCamRot <&> vecZ_
+  
+          vecAxisX <- readIORef refCamRot <&> vecAxisX_
+          vecAxisY <- readIORef refCamRot <&> vecAxisY_
+          vecAxisZ <- readIORef refCamRot <&> vecAxisZ_
+  
+          logFileG ["xyz44"]
+          logFileG [show vecX]
+          logFileG [show vecY]
+          logFileG [show vecZ]
+  
+          xyzRotDeg <- readIORef refCamRot <&> xyzRotDeg_
+          -- rotate xyzRotDeg (fx vecX) -- rotate y-axis beta  degree/radian
+  
+          let mo = let dg = (pi/180) * alpha in rotx dg
+          -- mo <- getModelviewMatrix2d
+          mox <- (cap . printMat) mo
+          logFileG ["mo"]
+          logFileG [mox]
+
+          let m1 = vecToM3y $ fx vecAxisX
+          let m2 = multiMat mo m1
+          m1x <- (cap . printMat) m1
+          m2x <- (cap . printMat) m2
+          logFileG ["m1x"]
+          logFileG [m1x]
+          logFileG ["m2x"]
+          logFileG [m2x]
+          
+          let ls = join $ getColumn m2 2
+          let vecY' = Vector3 (ls !! 0) (ls !! 1) (ls !! 2)
+          
+          let vecZ' = let m1 = vecToM3z $ fx vecAxisZ
+                          m2 = multiMat mo m1
+                          ls = join $ getColumn m2 3
+                      in Vector3 (ls !! 0) (ls !! 1) (ls !! 2)
+          logFileG ["vecY44"]
+          logFileG [show vecY']
+          logFileG ["vecZ44"]
+          logFileG [show vecZ']
+          logFileG ["xyzRotDeg=" ++ show xyzRotDeg]
+          logFileG [show xyzRotDeg]
+
+          -- rotate around x-axis
+          let vecXCF = coordFrame ^._1
+          let vecYCF = coordFrame ^._2
+          let vecZCF = coordFrame ^._3
+          let (mm, ls) = rotMat4Tup vecXCF (rf $ (pi/180) * alpha)
+          multiModelviewMat ls
+          let lsY = vecToList3 vecYCF ++ [0]
+          let lsZ = vecToList3 vecZCF ++ [0]
+          let vy3 = listToVec $ join $ mm `multiVec` lsY
+          let vz3 = listToVec $ join $ mm `multiVec` lsZ
+          -- rotate alpha (fx vecAxisX) -- rotate y-axis beta  degree/radian
+          modifyIORef refCamRot (\s -> s{coordFrame_ = (vecXCF, vy3, vz3)})
+           
+          modifyIORef refCamRot (\s -> s{vecY_ = fx vecY'})
+          modifyIORef refCamRot (\s -> s{vecZ_ = fx vecZ'})
+
+      | n == 2 -> do
+          beta <- readIORef refCamRot <&> beta_
+          vecX <- readIORef refCamRot <&> vecX_
+          vecY <- readIORef refCamRot <&> vecY_
+          vecZ <- readIORef refCamRot <&> vecZ_
+  
+          vecAxisX <- readIORef refCamRot <&> vecAxisX_
+          vecAxisY <- readIORef refCamRot <&> vecAxisY_
+          vecAxisZ <- readIORef refCamRot <&> vecAxisZ_
+  
+          logFileG ["xyz66"]
+          logFileG [show vecX]
+          logFileG [show vecY]
+          logFileG [show vecZ]
+  
+          xyzRotDeg <- readIORef refCamRot <&> xyzRotDeg_
+          -- rotate xyzRotDeg (fx vecX) -- rotate y-axis beta  degree/radian
+  
+          let mo = let dg = (pi/180) * beta in roty dg
+          -- mo <- getModelviewMatrix2d
+          moy <- (cap . printMat) mo
+          logFileG ["moy"]
+          logFileG [moy]
+
+          let m1 = vecToM3x $ fx vecAxisX
+          let m2 = multiMat mo m1
+          m1x <- (cap . printMat) m1
+          m2x <- (cap . printMat) m2
+          logFileG ["m1x"]
+          logFileG [m1x]
+          logFileG ["m2x"]
+          logFileG [m2x]
+
+          
+          let ls = join $ getColumn m2 1
+          let vecX' = Vector3 (ls !! 0) (ls !! 1) (ls !! 2)
+          
+          let vecZ' = let m1 = vecToM3z $ fx vecAxisZ
+                          m2 = multiMat mo m1
+                          ls = join $ getColumn m2 3
+                      in Vector3 (ls !! 0) (ls !! 1) (ls !! 2)
+          logFileG ["vecX44"]
+          logFileG [show vecX']
+          logFileG ["vecZ44"]
+          logFileG [show vecZ']
+          logFileG ["xyzRotDeg=" ++ show xyzRotDeg]
+          logFileG [show xyzRotDeg]
+
+          rotate beta (fx vecAxisY) -- rotate y-axis beta  degree/radian
+          
+          modifyIORef refCamRot (\s -> s{vecX_ = fx vecX'})
+          modifyIORef refCamRot (\s -> s{vecZ_ = fx vecZ'})
+
+      | n == 3 -> do
+          vecX <- readIORef refCamRot <&> vecX_
+          vecY <- readIORef refCamRot <&> vecY_
+          vecZ <- readIORef refCamRot <&> vecZ_
+
+          xyzRotDeg <- readIORef refCamRot <&> xyzRotDeg_
+          -- rotate xyzRotDeg (fx vecZ) -- rotate y-axis beta  degree/radian
+  
+          -- mo <- getModelviewMatrix2d
+          let mo = let dg = (pi/180) * xyzRotDeg in rotz dg
+          let vecX' = let m1 = vecToM3x $ fx vecX
+                          m2 = multiMat mo m1
+                          ls = join $ getColumn m2 1
+                      in Vector3 (ls !! 0) (ls !! 1) (ls !! 2)
+          
+          let vecY' = let m1 = vecToM3y $ fx vecY
+                          m2 = multiMat mo m1
+                          ls = join $ getColumn m2 2
+                      in Vector3 (ls !! 0) (ls !! 1) (ls !! 2)         
+          modifyIORef refCamRot (\s -> s{vecX_ = fx vecX'})
+          modifyIORef refCamRot (\s -> s{vecY_ = fx vecY'})
+  
+      | otherwise -> do
+          error $ "currXYZ invalid Integer = " ++ show currXYZ
+  
+
+gg cx = map (\(a, b) -> zipWith (\x y -> [x, y]) a b) cx
+fg x y = zipWith (\a b -> (a, b)) (init x) (tail y)
+hg m = map join $ gg $ fg m m
+
+sleepSecRedis :: String -> IO()
+sleepSecRedis s = do
+    bracket
+      (redisConnectDefault)
+      (redisDisconnect)
+      (\conn -> flip redisGetConn s conn <&> \x -> case x of
+                                      Just s -> case DT.readMaybe s :: Maybe Int of
+                                                     Just x -> x
+                                                     Nothing -> 0
+                                      Nothing -> 0
+      ) >>= usleep
+
+window2d :: G.Window -> IO()
+window2d w = do
+  GL.clear [ColorBuffer, DepthBuffer]
+  (width, height) <- G.getFramebufferSize w
+  viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
+  GL.depthFunc $= Just Lequal
+  matrixMode $= Projection
+  loadIdentity
+  ortho2D (-1) 1 (-1) 1
+  matrixMode $= Modelview 0
+  loadIdentity  
+
+saveImageFrame :: G.Window -> IOArray Int AnimaState -> IO()
+saveImageFrame w animaStateArr = do
+  let anima1 = 1
+  let intervalx = 0 -- larger number is slower
+  (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 intervalx
+  let fn = "/tmp/img_" ++ show (index1 + 1000) ++ ".png"
+  saveImageOpenGL w fn
+  writeAnimaState animaStateArr animaState1 {animaIndex_ = index1}
   
 mainLoop ::
-  G.Window ->
+  (G.Window, G.Window) ->
   IORef CameraRot ->
   -- IORef Step ->
   IORef GlobalRef ->
@@ -3048,16 +4162,19 @@ mainLoop ::
   [[Vertex3 GLfloat]] ->
   DAO.IOArray (Int, Int, Int) BlockAttr ->
   IO ()
-mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unless' (G.windowShouldClose w) $ do
+mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unlessX' (G.windowShouldClose w) (G.windowShouldClose w1) $ do
   (width, height) <- G.getFramebufferSize w
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
 
   GL.clear [ColorBuffer, DepthBuffer]
   GL.depthFunc $= Just Lequal
+  -- GL.blend $= Enabled
 
   -- G.setKeyCallback w (Just $ keyBoardCallBackNew refStep refGlobal ioArray) -- AronOpenGL
-  G.setKeyCallback w (Just $ keyBoardCallBackNew refCamRot refGlobal ioArray) -- AronOpenGL
-  G.setMouseButtonCallback w (Just $ mouseCallbackX refGlobal) -- mouse event
+  G.getWindowFocused w >>= \b -> when b $ G.setKeyCallback w (Just $ keyBoardCallBackNew2 refCamRot refGlobal ioArray) -- AronOpenGL
+  G.getWindowFocused w1 >>= \b -> when b $ G.setKeyCallback w1 (Just $ keyBoardCallBackNew refCamRot refGlobal ioArray) -- AronOpenGL
+  G.getWindowFocused w >>= \b -> when b $ G.setMouseButtonCallback w (Just $ mouseCallbackX refGlobal) -- mouse event
+  G.getWindowFocused w1 >>= \b -> when b $ G.setMouseButtonCallback w1 (Just $ mouseCallbackX refGlobal) -- mouse event
   -- lightingInfo
   loadIdentity -- glLoadIdentity
   -- view matrix: http://xfido.com/html/indexUnderstandOpenGL.html
@@ -3108,74 +4225,27 @@ mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unl
   xyzAxis <- getXYZAxis refGlobal
   fovNew <- getFOVDegree refGlobal
   fovDeg <- readIORef refCamRot <&> fovDeg_
-  fov <- readIORef refCamRot  <&> persp_ <&> fov_
-  case xyzAxis of
-    --                                 +---> YZ-plane
-    --                                 ↓
-    var
-      | xa var -> do
-          -- GL.lookAt (Vertex3 1.0 0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
-          pp "xa"
-      --                               +---> XZ-plane
-      --                               ↓
-      | ya var ->
-          -- GL.lookAt (Vertex3 0 1.0 0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 1 0 0 :: Vector3 GLdouble)
-          pp "ya"
-      --                                 +---> XY-plane
-      --                                 ↓
-      | za var -> do
-        -- Graphics.Rendering.OpenGL.GLU.Matrix perspective :: GLdouble -> GLdouble -> GLdouble -> GLdouble -> IO ()
-
-        -- glFrustum describes a perspective matrix that produces a perspective projection. (left,bottom,-near) and (right,top,-near) specify the points on the near clipping plane that
-        -- are mapped to the lower left and upper right corners of the window, respectively, assuming that the eye is located at (0, 0, 0). -far specifies the location of the far clipping
-        -- plane. Both near and far must be positive. The corresponding matrix is
-
-        {--
-        let zf = 0.5
-        -- perspective (field of view) width/height zNear zFar
-        -- perspective 90 1.0 zf (zf + 4.0)
-        -- perspective 126.934 1.0 zf (zf + 4.0)
-        -- zoom in, zoom out
-        matrixMode $= Projection
-        loadIdentity
-        perspective fovNew 1.0 zf (zf + 4.0)
-
-        matrixMode $= Modelview 0
-        loadIdentity
-        GL.lookAt (Vertex3 0 0 1.0 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
-        --}
-        pp "za"
-      | otherwise -> do
-        -- GM.lookAt (Vertex3 0.2 0.2 0.2 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
-        -- keyboardRot refCam refStep (fromIntegral width) (fromIntegral height)
-        -- rotateWorld refCamRot (fromIntegral width) (fromIntegral height)
-
-        preservingMatrix $ do
-          {--
-           data MatrixMode =
-                Modelview GLsizei  -- ^ The modelview matrix stack of the specified vertex unit.
-              | Projection         -- ^ The projection matrix stack.
-              | Texture            -- ^ The texture matrix stack.
-              | Color              -- ^ The color matrix stack.
-              | MatrixPalette      -- ^ The matrix palette stack.
-              deriving ( Eq, Ord, Show )
-          --}
-          loadIdentity
-          fw "loadIdentity"
-          ls <- getModelviewMatrix
-          let lss = partList 4 ls
-          printMat lss
-          -- GM.lookAt (Vertex3 0 2 3 :: Vertex3 GLdouble) (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
-          fw "getModelviewMatrix"
-          lr <- getModelviewMatrix
-          let lt = partList 4 lr
-          printMat lt
-
+  fov <- readIORef refCamRot <&> persp_ <&> fov_
+  zf <- readIORef refCamRot <&> persp_ <&> zf_
+  zn <- readIORef refCamRot <&> persp_ <&> zn_
+  coordFrame <- readIORef refCamRot <&> coordFrame_
+  
   eye <- readIORef refCamRot <&> modelview_ <&> eye_
+
+
+  
+  -- eye' <- read <$> readFile "/tmp/vv.x" :: IO (Vertex3 GLdouble)
   matrixMode $= Projection
   loadIdentity
-  let zf = 0.5
-  perspective fov 1.0 zf (zf + 4.0)
+
+  preservingMatrix $ do
+    translate (Vector3 0.5 0 0 :: Vector3 GLdouble)
+    GL.scale (1.2:: GL.GLdouble) 1 1
+    drawTorus 0.1 0.2 4 [yellow, gray, magenta]
+  
+  -- let zf = 0.5
+  -- perspective fov 1.0 zf (zf + 4.0)
+  perspective fov 1.0 zn zf
 
   matrixMode $= Modelview 0
   loadIdentity
@@ -3183,14 +4253,55 @@ mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unl
   logFileG ["eye00"]
   logFileG [show eye]
 
-  rotateWorld refCamRot (fromIntegral width) (fromIntegral height)
+  rotateWorldX refCamRot (fromIntegral width) (fromIntegral height)
+  
+  let cc = [green, blue, cyan, magenta, yellow]
+  preservingMatrix $ do
+    GL.scale (1:: GL.GLdouble) 2.0 1
+    drawTorus 0.1 0.2 10 cc
+  {--
+  preservingMatrix $ do
+    mapM_ (\x -> do
+      -- translate (Vector3 (0.1 * x) 0 0 :: Vector3 GLdouble)
+      drawSphereN 10 0.4 cc
+          ) [1]
+  --}
+  
+  -- mapM_ (\v -> drawDot v) $ drawSpherePt (Vertex3 0 0 0) 0.4
 
   -- AronOpenGL.hs
   -- delta refStep to modify Cam{xx, yy, zz} in degree
   -- keyboardRot => rotate around {x-axis, y-axis, y-axis} in some degrees
   -- keyboardRot refCam refStep (fromIntegral width) (fromIntegral height)
-  renderCoordinates
+  preservingMatrix $ do
+    -- renderCoordinates
+    pp "ok"
   -- show3dStr "1234" red 0.8
+  -- xxx
+  {--
+         a1 a2 a3
+
+         b1  b2  b3
+
+
+        a1 b1 a2 b2
+   --}
+  preservingMatrix $ do
+    let ax = map (\x -> Vertex3 (0.2 * x) 0.3 0) [0..3]
+    let bx = map (\x -> Vertex3 (0.2 * x) 0.7 0) [0..3]
+    mapM_ (drawSegmentFromTo yellow) [ax, bx]
+    let g a b = let h x y = zipWith (\a b -> [a, b]) x y
+                in join $ h a b
+    let zm = join $ zipWith(\a b -> [a, b]) ax bx
+    let zm' = zip [yellow, white, green, blue, cyan, red, colorChange 0.5 yellow, colorChange 0.5 cyan] zm
+    let ls = [Vertex3 0 0 0] :: [Vertex3 GLfloat]    
+    renderPrimitive TriangleStrip $ mapM_ (\(c, v) -> do
+                                          color c
+                                          vertex v
+                                        ) zm'
+
+    pp "ok"
+
 
   curStr <- getStr refGlobal
   show3dStr curStr red 0.8
@@ -3207,7 +4318,7 @@ mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unl
     logFileG ["isNextX=" ++ show isNext0 ++ " animaIndex_=" ++ show (animaIndex_ animaState)]
     -- my <- readIORef refGlobal >>= return . moveY_
     -- KEY: falling block, drop block
-    when True $ do
+    when False $ do
       when isNext0 $ do
         rr <- readIORef refGlobal <&> rectGrid_
         bmap <- readIORef refGlobal <&> boardMap_
@@ -3259,35 +4370,240 @@ mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unl
 
     when True $ do
       -- KEY: rotate brick, rotate tetris
-      rotateTetries refGlobal initRectGrid ioArray
+      -- rotateTetries refGlobal initRectGrid ioArray
       -- show current tetris
-      currBrickX refGlobal initRectGrid
+      -- currBrickX refGlobal initRectGrid
+      pp "Ok"
   -- KEY: show board, show grid, draw board
   -- showCurrBoardArr ioArray
 
-  drawCubeQuad 0.3
-  drawFinal w ioArray initRectGrid
+  -- drawCubeQuad 0.3
+  when False $ do
+    preservingMatrix $ do
+      let d = 2.0*pi/10.0
+      let c = 0.05
+      let lw = [0, 0 + d .. 2.0*pi]
+      let lv = map (\x -> Vertex3 (c * cos x) 0 (c * sin x)) lw
+      let ls = map (\x -> Vertex3 (c * cos x) (-0.5)   (c * sin x)) lw
+      let lt = join $ zipWith (\x y -> [x, y]) lv ls
+      let lt' = zip lt $ join $ repeat [green, yellow, blue, cyan, gray, white]
+      (x, y, z) <- readAndParse "/tmp/tu.x" :: IO(GLfloat, GLfloat, GLfloat)
+      multiModelScale (x, y, z)
+      drawPrimitive' TriangleStrip red lv
+      renderPrimitive TriangleStrip $ mapM_(\(v, c) -> do
+          color c
+          vertex v) lt'
+  
+  when False $ do
+    preservingMatrix $ do
+      let la = [green, yellow, blue, cyan, gray, white]
+      let lb = [yellow, green, blue, gray, cyan, magenta]
+      let d = 2.0*pi/10.0
+      let c = 0.12 :: GLfloat
+      let lw = [0, 0 + d .. 2.0*pi]
+      -- let lv = map (\x -> Vertex3 (c * cos x) 0.5 (c * sin x)) lw
+      let ls = map (\x -> Vertex3 (c * cos x) 0.01   (c * sin x)) lw
+      let lc = Vertex3 0 0.01 0 : ls
+      let lc' = zip lc $ join $ repeat la
+      let ls' = Vertex3 0 0.2 0 : ls
+      let lt' = zip ls' $ join $ repeat lb
+      -- drawPrimitive' TriangleStrip red lv
+      renderPrimitive TriangleFan $ mapM_(\(v, c) -> do
+          color c
+          vertex v) lt'
 
-  let anima1 = 1
-  let intervalx = 0 -- larger number is slower
-  (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 intervalx
-  let fn = "/tmp/img_" ++ show (index1 + 1000) ++ ".png"
-  -- saveImageOpenGL w fn
-  writeAnimaState animaStateArr animaState1 {animaIndex_ = index1}
+      renderPrimitive TriangleFan $ mapM_(\(v, c) -> do
+          color c
+          vertex v) lc'
+  when False $ do
+    preservingMatrix $ do
+      -- x <- readAndParse "/tmp/cc.x" :: IO GLfloat
+      let r = 0.1
+      let l = 0.5
+      -- coord
+      cylinderArrow 1.0 [red, colorChange 0.5  red]
+      -- rotate x (Vector3 0 0 1)
+      -- cylinder r l (True, False)
+    preservingMatrix $ do
+      -- x <- readAndParse "/tmp/cc.x" :: IO GLfloat
+      let r = 0.1
+      let l = 0.5
+      -- coord
+      rotate 45 (Vector3 0 0 1 :: Vector3 GLdouble)
+      cylinderArrow 1.0 [green, colorChange 0.5 green]
+    preservingMatrix $ do
+      -- x <- readAndParse "/tmp/cc.x" :: IO GLfloat
+      let r = 0.1
+      let l = 0.5
+      -- coord
+      rotate (-45) (Vector3 0 0 1 :: Vector3 GLdouble)
+      cylinderArrow 1.0 [green, red, yellow]
+  
+  when False $ do
+    preservingMatrix $ do
+      let v0 = Vector3 1 0 (-1)
+      let xAxis = Vector3 1 0 0
+      let x0 = vecToVex v0
+      let x1 = vecToVex xAxis
+      let di = distX x0 x1
+      let a0 = distX (Vertex3 0 0 0) x0
+      let a1 = distX (Vertex3 0 0 0) x1
+      let x = angle2Vector v0 xAxis
+      logFileG ["angle 2 vector"]
+      logFileG ["angle=" ++ show x]
+      let ls = join $ padMat3To4 $ roty (pi/2)
+      -- let k = uv $ Vector3 1 0 (-1) ⊗ (Vector3 0 1 0 :: Vector3 GLdouble)
+      let cv = Vector3 1 0 0
+      -- let u = Vector3 1 0.3 0 ⊗ (Vector3 0 0 (-1) :: Vector3 GLdouble)
+      let u = case Vector3 1 0.3 0 ⊗ (Vector3 0 0 (-1) :: Vector3 GLdouble) of
+                   Nothing -> error "ERROR: two vector are parallel."
+                   Just v -> v
+      -- let k0 = uv $ cv ⊗ u
+      let k0 =  case cv ⊗ u of
+                     Nothing -> error "ERROR: two vectors are parallel."
+                     Just v -> uv v
+      let k = uv u
+      let 
+      x <- readAndParse "/tmp/vv.x" :: IO GLdouble
+
+      let del = pi/20 :: GLdouble
+      let anima1 = 4
+      let intervalx = 100 -- larger number is slower
+      -- (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 intervalx
+      mapM_ (\i -> do
+        let m = (map . map) rf $ padMat3To4 $ rotMat k (rf $ del * fi i)
+        preservingMatrix $ do
+          multiModelviewMat $ join m
+        -- rotate (x * (180/pi)) (Vector3 0 1 0)
+          cylinderArrow 1.0 [yellow, colorChange 0.5 yellow]
+       ) [1..40]
+      -- writeAnimaState animaStateArr animaState1
+      preservingMatrix $ do
+        let makeAxis :: Vector3 GLdouble -> IO()
+            makeAxis v = do
+              let v0 = Vector3 1 0 0
+              let v1 = v
+              let m = (map . map) rf $ padMat3To4 $ rotToVecMat v0 v1
+              multiModelviewMat $ join m
+              cylinderArrow 1.0 [green, colorChange 0.5 green]
+        makeAxis u
+      drawAxis (Vector3 0 0 (-1)) [yellow, fmap (*0.5) yellow]
+      drawAxis (Vector3 1 0.3 0) [gray, fmap (*05) gray]
+      -- drawCubeQuad 0.1
+
+  when True $ do
+    preservingMatrix $ do
+      drawAxis (Vector3 1 0 0) [red, fmap (*0.5) red]
+      drawAxis (Vector3 0 1 0) [green, fmap (*05) green]
+      drawAxis (Vector3 0 0 1) [blue, fmap (*05) blue]
+      drawCubeQuad 0.02
+
+    -- θ <- readAndParse "/tmp/aa.x"
+    conn <- redisConnectDefault
+    -- s  <- redisGetConn conn "kk0"
+    θ <- redisGetConn conn "kk0" <&> \x -> case x of
+                                      Just s -> case DT.readMaybe s :: Maybe GLfloat of
+                                                     Just x -> x
+                                                     Nothing -> 0
+                                      Nothing -> 0
+    let k = Vector3 0 1 0
+    let m = (map . map) rf $ padMat3To4 $ rotMat k θ
+    multiModelviewMat $ join m
+    preservingMatrix $ do
+      drawAxis (Vector3 1 0 0) [red, fmap (*0.5) red]
+      drawAxis (Vector3 0 1 0) [green, fmap (*05) green]
+      drawAxis (Vector3 0 0 1) [blue, fmap (*05) blue]
+      drawCubeQuad 0.02
+    redisDisconnect conn
+    pp "ok"
+
+  when False $ do
+    preservingMatrix $ do
+      let v0 = Vector3 1 0 (-1) :: Vector3 GLdouble
+      let xAxis = Vector3 1 0 0
+      let x0 = vecToVex v0
+      let x1 = vecToVex xAxis
+      let di = distX x0 x1
+      let a0 = distX (Vertex3 0 0 0) x0
+      let a1 = distX (Vertex3 0 0 0) x1
+      let x = angle2Vector v0 xAxis
+      logFileG ["angle 2 vector"]
+      logFileG ["angle=" ++ show x]
+      multiModelviewVec (Vector3 0.2 0 0)
+      rotate (x * (180/pi)) (Vector3 0 1 0)
+      cylinderArrow 1.0 [yellow, colorChange 0.5 yellow]
+
+  when False $ do
+    preservingMatrix $ do
+      let v0 = Vector3 1 0 (-1) :: Vector3 GLdouble
+      let xAxis = Vector3 1 0 0
+      let x0 = vecToVex v0
+      let x1 = vecToVex xAxis
+      let di = distX x0 x1
+      let a0 = distX (Vertex3 0 0 0) x0
+      let a1 = distX (Vertex3 0 0 0) x1
+      let x = angle2Vector v0 xAxis
+      logFileG ["angle 2 vector"]
+      logFileG ["angle=" ++ show x]
+      rotate (x * (180/pi)) (Vector3 0 1 0)
+      cylinderArrow 1.0 [yellow, colorChange 0.5 yellow]
+
+  
+  when False $ do
+    preservingMatrix $ do
+      let r = 0.1
+      let l = 0.5
+      translate (Vector3 0 0.2 0 :: Vector3 GLdouble)
+      cone r l 3 [red, blue]
+    preservingMatrix $ do
+      let r = 0.1
+      let l = 0.5
+      translate (Vector3 0 (-0.4) 0 :: Vector3 GLdouble)
+      cone r l 3 [yellow]
+    preservingMatrix $ do
+      let r = 0.1
+      let l = 0.5
+      translate (Vector3 0.2 (-0.1) 0 :: Vector3 GLdouble)
+      cone r l 4 [cyan]
+
+  -- drawFinal w ioArray initRectGrid
+  showCurrBoardArr ioArray
+  drawRectGridX initRectGrid
+  -- G.swapBuffers w
+
+  G.makeContextCurrent $ Just w1
+  G.swapBuffers w1
+  G.pollEvents
+
+  sleepSecRedis "second"
+  -- usleep nsec
+
+  -- window 1
+  window2d w
+  drawRect (Vertex3 (-0.5) 0.5 0, Vertex3 0.5 (-0.5) 0)
+  -- GL.lookAt eye (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+
+  preservingMatrix $ do
+    translate (Vector3 0 0 0 :: Vector3 GLdouble)
+    drawTorus 0.1 0.2 10 [yellow, gray, magenta]
+
+  G.makeContextCurrent $ Just w
+  G.swapBuffers w
+
+  G.pollEvents
+
+  -- saveImageFrame w animaStateArr
 
   -- saveImageOpenGL w "/tmp/img0.png"
-  -- xxx
   -- draw 20 x 20 grid
   -- drawFinal w initRectGrid
   -- KEY: draw  grid
   -- drawRectGridX initRectGrid
-
   -- END_triangulation
-
   -- G.swapBuffers w
 
   -- G.pollEvents
-  mainLoop w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
+  mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
 
 mainLoopTest ::
   G.Window ->
@@ -3385,13 +4701,8 @@ mainLoopTest w refCam refStep refGlobal refGlobalFrame animaStateArr lssVex ioAr
 
   drawFinal w ioArray initRectGrid
 
-  let anima1 = 1
-  let intervalx = 0 -- larger number is slower
-  (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 intervalx
-  let fn = "/tmp/img_" ++ show (index1 + 1000) ++ ".png"
-  saveImageOpenGL w fn
-  writeAnimaState animaStateArr animaState1 {animaIndex_ = index1}
-  -- xxx
+  -- saveImageFrame w animaStateArr
+  
   -- draw 20 x 20 grid
   -- drawFinal w initRectGrid
   -- KEY: draw  grid
@@ -3419,7 +4730,8 @@ main = do
         "-h" -> helpme
         _ -> do
           print $ "Wrong option => " ++ head argList ++ ", -h => Help"
-    else mymain
+    else do
+      mymain
 
 bk1 :: [[Int]]
 bk1 =
@@ -3778,7 +5090,6 @@ removeBottom w (y0, y1) (yy0, yy1) f arr = do
                   drawFinal w arr initRectGrid
             )
         -- Remove the bottom row
-        -- XXX here
         fallBlock w arr
         -- drawFinal w arr initRectGrid
         -- showCurrBoardArr arr

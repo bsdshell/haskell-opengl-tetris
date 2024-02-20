@@ -124,7 +124,8 @@ executable             haskell-opengl-tetris
                        -- Tue 15 Aug 09:26:26 2023 
                        -- ppShow pPrint
                        pretty-show,
-                       StateVar
+                       StateVar,
+                       silently
 
 
 
