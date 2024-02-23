@@ -4131,8 +4131,8 @@ sleepSecRedis s = do
                                       Nothing -> 0
       ) >>= usleep
 
-window2d :: G.Window -> IO()
-window2d w = do
+beginWindow2d :: G.Window -> IO()
+beginWindow2d w = do
   GL.clear [ColorBuffer, DepthBuffer]
   (width, height) <- G.getFramebufferSize w
   viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
@@ -4142,6 +4142,19 @@ window2d w = do
   ortho2D (-1) 1 (-1) 1
   matrixMode $= Modelview 0
   loadIdentity  
+
+endWindow2d :: G.Window -> IO()
+endWindow2d w = do
+  G.makeContextCurrent $ Just w
+  G.swapBuffers w
+  G.pollEvents
+  
+endWindow3d :: G.Window -> IO()
+endWindow3d w = do
+  G.makeContextCurrent $ Just w
+  G.swapBuffers w
+  G.pollEvents
+    
 
 saveImageFrame :: G.Window -> IOArray Int AnimaState -> IO()
 saveImageFrame w animaStateArr = do
@@ -4177,7 +4190,7 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
   G.getWindowFocused w1 >>= \b -> when b $ G.setMouseButtonCallback w1 (Just $ mouseCallbackX refGlobal) -- mouse event
   -- lightingInfo
   loadIdentity -- glLoadIdentity
-  -- view matrix: http://xfido.com/html/indexUnderstandOpenGL.html
+  -- view matrix: http://localhost/html/indexUnderstandOpenGL.html
   -- matrixMode $= Modelview 0
 
   -- A matrix stack.
@@ -4222,19 +4235,11 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
   -- matrixMode $= Modelview 0
 
   -- step <- readIORef refStep
-  xyzAxis <- getXYZAxis refGlobal
-  fovNew <- getFOVDegree refGlobal
-  fovDeg <- readIORef refCamRot <&> fovDeg_
+  
   fov <- readIORef refCamRot <&> persp_ <&> fov_
   zf <- readIORef refCamRot <&> persp_ <&> zf_
   zn <- readIORef refCamRot <&> persp_ <&> zn_
-  coordFrame <- readIORef refCamRot <&> coordFrame_
-  
   eye <- readIORef refCamRot <&> modelview_ <&> eye_
-
-
-  
-  -- eye' <- read <$> readFile "/tmp/vv.x" :: IO (Vertex3 GLdouble)
   matrixMode $= Projection
   loadIdentity
 
@@ -4571,15 +4576,13 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
   drawRectGridX initRectGrid
   -- G.swapBuffers w
 
-  G.makeContextCurrent $ Just w1
-  G.swapBuffers w1
-  G.pollEvents
+  endWindow3d w1
 
   sleepSecRedis "second"
   -- usleep nsec
 
   -- window 1
-  window2d w
+  beginWindow2d w
   drawRect (Vertex3 (-0.5) 0.5 0, Vertex3 0.5 (-0.5) 0)
   -- GL.lookAt eye (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
 
@@ -4587,10 +4590,7 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
     translate (Vector3 0 0 0 :: Vector3 GLdouble)
     drawTorus 0.1 0.2 10 [yellow, gray, magenta]
 
-  G.makeContextCurrent $ Just w
-  G.swapBuffers w
-
-  G.pollEvents
+  endWindow2d w
 
   -- saveImageFrame w animaStateArr
 
