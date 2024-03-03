@@ -97,7 +97,7 @@ import Graphics.Rendering.OpenGL
       Normal(normal),
       Normal3(..),
       Color(color),
-      PrimitiveMode(Triangles, TriangleStrip, LineLoop, Quads, TriangleFan),
+      PrimitiveMode(Triangles, TriangleStrip, LineLoop, Quads, TriangleFan, Points),
       GLdouble,
       Color3(..),
       Vertex3(..),
@@ -646,11 +646,11 @@ mymain = do
   G.windowHint (G.WindowHint'DoubleBuffer True)
   -- if init failed, we exit the program
   bool successfulInit exitFailure $ do
-    mw0 <- G.createWindow 1000 1000 "PlotGeometry 1" Nothing Nothing
-    mw1 <- G.createWindow 1000 1000 "PlotGeometry 2" Nothing Nothing
+    mw3d <- G.createWindow 1000 1000 "PlotGeometry 3D" Nothing Nothing
+    mw2d <- G.createWindow 1000 1000 "PlotGeometry 2D" Nothing Nothing
     -- maybe' :: Maybe a -> b -> (a -> b) -> b  
     -- maybe' mw (G.terminate >> exitFailure) $ \window -> do
-    maybeX' (mw0, mw1) (G.terminate >> exitFailure)  $ \(window0, window1) -> do      
+    maybeX' (mw3d, mw2d) (G.terminate >> exitFailure)  $ \(window3d, window2d) -> do      
       -- ref <- newIORef initCam
       refCamRot <- newIORef initCameraRot
       refStep <- newIORef initStep
@@ -686,10 +686,10 @@ mymain = do
       -- mainLoopSimple window refCamRot refGlobal refFrame animaStateArr cx' ioArray
       -- thead 1
       -- G.makeContextCurrent mw0
-      mainLoop (window0, window1) refCamRot refGlobal refFrame animaStateArr cx' ioArray
+      mainLoop (window3d, window2d) refCamRot refGlobal refFrame animaStateArr cx' ioArray
 
-      G.destroyWindow window0
-      G.destroyWindow window1
+      G.destroyWindow window3d
+      G.destroyWindow window2d
       G.terminate
       exitSuccess
 
@@ -3268,10 +3268,10 @@ initAnimaState :: IO (IOArray Int AnimaState)
 initAnimaState = do
   currTime <- timeNowMilli <&> fi
   let an = AnimaState {animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 1000, animaSlot_ = 0}
-  let anx = AnimaState {animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 4000, animaSlot_ = 0}
+  -- let anx = AnimaState {animaTime_ = currTime, animaIndex_ = 0, animaInterval_ = 4000, animaSlot_ = 0}
   -- DAO.newArray (0, 5) an
-  let ls = [an, anx, an, an, an, an]
-  DAO.newListArray (0, 5) ls
+  let ls = replicate 100 an
+  DAO.newListArray (0, len ls - 1) ls
 
 readAnimaState :: IOArray Int AnimaState -> Int -> Int -> IO (Bool, Int, AnimaState)
 readAnimaState arr ix interval = do
@@ -3290,9 +3290,9 @@ readAnimaState arr ix interval = do
       return (isNext, oldIndex, an {animaSlot_ = ix})
 
 writeAnimaState :: IOArray Int AnimaState -> AnimaState -> IO ()
-writeAnimaState arr an = do
-  let ix = animaSlot_ an
-  DAO.writeArray arr ix an
+writeAnimaState arr state = do
+  let ix = animaSlot_ state
+  DAO.writeArray arr ix state
 
 flipIsNext :: IOArray Int AnimaState -> Int -> IO ()
 flipIsNext arr ix = do
@@ -3541,6 +3541,7 @@ mainLoopSimple w refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
 
   preservingMatrix $ do
     speed <- readFileStr "./speed.x" >>= \x -> return $ (read x :: Int)
+  
     let anima1 = speed
     let interval = 4
     (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 interval
@@ -3829,6 +3830,8 @@ cone r leng n cl = do
   renderPrimitive TriangleFan $ mapM_ (\(v, c) -> do
       color c
       vertex v) $ (Vertex3 0 0 0 :: Vertex3 GLfloat, white) : lp
+{--
+
 {-|
 
    KEY: vector to vertex
@@ -3838,17 +3841,45 @@ cone r leng n cl = do
 vecToVex :: Vector3 a -> Vertex3 a
 vecToVex (Vector3 x y z) = Vertex3 x y z
 
-vecToList3 :: Vector3 a -> [a]
-vecToList3 (Vector3 x y z) = [x, y, z]
+vexToVec :: Vertex3 a -> Vector3 a
+vexToVec (Vertex3 x y z) = Vector3 x y z
+
+
+vecToList :: Vector3 a -> [a]
+vecToList (Vector3 x y z) = [x, y, z]
+
+vexToList :: Vertex3 a -> [a]
+vexToList (Vertex3 x y z) = [x, y, z]
 
 listToVec :: [a] -> Vector3 a
 listToVec ls = Vector3 (head lt) ((head . tail) lt) (last lt)
   where
     lt = take 3 ls
 
+listToVex :: [a] -> Vertex3 a
+listToVex ls = Vertex3 (head lt) ((head . tail) lt) (last lt)
+  where
+    lt = take 3 ls
 {-|
 
-  KEY: angle between two `Vector3 GLfloat` `Vertex3 GLfloat`
+  === KEY: point to a line, pt to a line, distance from a pt to a line
+  
+  <<http://localhost:8080/pdf/project_matrix.pdf project_matrix>>
+-}
+ptToLine3d :: Vertex3 GLfloat -> (Vertex3 GLfloat, Vertex3 GLfloat) -> GLfloat
+ptToLine3d p0 (q1, q2) = nr vr
+  where
+    -- http://localhost:8080/pdf/project_matrix.pdf
+    v0 = vexToList p0
+    v12 = q1 -: q2
+    u12 = uv v12
+    ls = vecToList u12
+    mx = out (*) ls ls  -- outer product two vector
+    vp = join $ mx `multiVec` v0  -- p0 project onto v12
+    vr = p0 -: listToVex vp     -- p0 reject onto  v12
+{-|
+
+  KEY: angle between two `Vector3 a` `Vertex3 a`
 
 -}
 angle2Vector :: (Floating a) => Vector3 a -> Vector3 a -> a
@@ -3860,15 +3891,12 @@ angle2Vector v0 v1 = acos $ (n0*n0 + n1*n1 - dx*dx) / (2 * n0 * n1)
     xz = Vertex3 0 0 0
     n0 = distX xz x0
     n1 = distX xz x1
+--}
+
+vecToList3 :: Vector3 a -> [a]
+vecToList3 (Vector3 x y z) = [x, y, z]
+
   
-{-|
-
-   KEY: vertex to vector
-
-   'Vertex3' to 'Vector3'
--}
-vexToVec :: Vertex3 a -> Vector3 a
-vexToVec (Vertex3 x y z) = Vector3 x y z
 
 {--
 vecToM3x :: Vector3 GLdouble -> [[GLdouble]]
@@ -3919,8 +3947,8 @@ vecToM4z (Vector3 x y z) = [
 
 fx (Vector3 x y z) = Vector3 (rf x) (rf y) (rf z)
 
-rotateWorldX :: IORef CameraRot -> Double -> Double -> IO ()
-rotateWorldX refCamRot w h = do
+rotateWorldX :: IORef CameraRot -> IO ()
+rotateWorldX refCamRot = do
   currXYZ <- readIORef refCamRot <&> currXYZ_
   coordFrame <- readIORef refCamRot <&> coordFrame_
   case currXYZ of
@@ -4131,6 +4159,131 @@ sleepSecRedis s = do
                                       Nothing -> 0
       ) >>= usleep
 
+{-|
+   === Better get redis value
+
+   DATA: Tuesday, 27 February 2024 12:18 PST
+
+   @
+   v <- getRedisX "xx3"
+   @
+-}
+getRedisX :: String -> IO Int
+getRedisX s = do
+  bracket
+    (redisConnectDefault)
+    (redisDisconnect)
+    (\conn -> flip redisGetConn s conn <&> \x -> case x of
+                                    Just s -> case DT.readMaybe s :: Maybe Int of
+                                                   Just x -> x
+                                                   Nothing -> 0
+                                    Nothing -> 0
+    )
+  
+getRedisXf :: String -> IO GLfloat
+getRedisXf s = do
+  bracket
+    (redisConnectDefault)
+    (redisDisconnect)
+    (\conn -> flip redisGetConn s conn <&> \x -> case x of
+                                    Just s -> case DT.readMaybe s :: Maybe GLfloat of
+                                                   Just x -> x
+                                                   Nothing -> 0.0
+                                    Nothing -> 0.0
+    )
+  
+getRedisXStr :: String -> IO String
+getRedisXStr s = do
+  bracket
+    (redisConnectDefault)
+    (redisDisconnect)
+    (\conn -> flip redisGetConn s conn <&> \x -> case x of
+                                    Just s -> s
+                                    Nothing -> "[]"
+    )
+  
+nx_1 (Vertex3 x y z) = Vertex3 (-x) y    z
+nx_2 (Vertex3 x y z) = Vertex3  x   (-y) z
+nx_3 (Vertex3 x y z) = Vertex3  x   y    (-z)
+nx_12 (Vertex3 x y z) = Vertex3 (-x) (-y) z
+  
+vx_1 (Vertex3 x y z) = x
+vx_2 (Vertex3 x y z) = y
+vx_3 (Vertex3 x y z) = z
+
+v_x (Vector3 x y z) = x
+v_y (Vector3 x y z) = y
+v_z (Vector3 x y z) = z
+
+
+sdfRect :: Vertex3 GLfloat -> Vertex3 GLfloat -> Bool -> GLfloat
+sdfRect r s isRound = isRound ? (if dx > 0 && dy > 0 then ds else  max dx dy) $ (min ds $ max dx dy)
+  where
+   dx = vx_1 $ s - r
+   dy = vx_2 $ s - r
+   ds = nr (r -: s)
+
+sdfRect3d :: Vertex3 GLfloat -> Vertex3 GLfloat -> Bool -> GLfloat
+sdfRect3d r s isRound = isRound ? (if dx > 0 && dy > 0 && dz > 0 then ds else  max dz $ max dz $ max dx dy) $ (min ds $ max dz $ max dx dy)
+  where
+   u = s - r
+   dx = vx_1 u
+   dy = vx_2 u
+   dz = vx_3 u
+   ds = nr (r -: s)
+
+sdfCircle :: Vertex3 GLfloat -> GLfloat -> Vertex3 GLfloat -> GLfloat
+sdfCircle c r s = nr (c -: s) - r
+addy (Vertex3 x y z) = Vertex3 x (y + 0.2) z
+
+mulMat :: [[GLfloat]] -> Vertex3 GLfloat -> Vertex3 GLfloat
+mulMat cx vx = v0
+  where
+    ls = vexToList vx
+    v0 = listToVex $ join $ cx `multiVec` ls
+
+beginWindow3d :: G.Window -> IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> IO()
+beginWindow3d w3d refCamRot refGlobal ioArray = do
+  (width, height) <- G.getFramebufferSize w3d
+  viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
+  GL.clear [ColorBuffer, DepthBuffer]
+  GL.depthFunc $= Just Lequal
+  G.getWindowFocused w3d >>= \b -> when b $ G.setKeyCallback w3d (Just $ keyBoardCallBackNew2 refCamRot refGlobal ioArray)
+  G.getWindowFocused w3d >>= \b -> when b $ G.setMouseButtonCallback w3d (Just $ mouseCallbackX refGlobal)
+  loadIdentity
+  
+  fov <- readIORef refCamRot <&> persp_ <&> fov_
+  zf <- readIORef refCamRot <&> persp_ <&> zf_
+  zn <- readIORef refCamRot <&> persp_ <&> zn_
+  eye <- readIORef refCamRot <&> modelview_ <&> eye_
+  matrixMode $= Projection
+  loadIdentity
+
+  perspective fov 1.0 zn zf
+
+  matrixMode $= Modelview 0
+  loadIdentity
+  GL.lookAt eye (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+  
+-- keyBoardCallBackNew2 :: IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
+-- mainLoop (w2d, w3d) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unlessX' (G.windowShouldClose w2d) (G.windowShouldClose w3d) $ do
+beginWindow2dX :: G.Window -> IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> IO()
+beginWindow2dX w2d refCamRot refGlobal ioArray = do
+  GL.clear [ColorBuffer, DepthBuffer]
+  (width, height) <- G.getFramebufferSize w2d
+  viewport $= (Position 0 0, Size (fi width) (fi height))
+  GL.depthFunc $= Just Lequal
+
+  G.getWindowFocused w2d >>= \b -> when b $ G.setKeyCallback w2d (Just $ keyBoardCallBackNew2 refCamRot refGlobal ioArray)
+  G.getWindowFocused w2d >>= \b -> when b $ G.setMouseButtonCallback w2d (Just $ mouseCallbackX refGlobal)
+  
+  matrixMode $= Projection
+  loadIdentity
+  -- gluOrtho2D left right bottom top, near plane = -1, far plane = 1
+  ortho2D (-1) 1 (-1) 1
+  matrixMode $= Modelview 0
+  loadIdentity    
+  
 beginWindow2d :: G.Window -> IO()
 beginWindow2d w = do
   GL.clear [ColorBuffer, DepthBuffer]
@@ -4165,6 +4318,48 @@ saveImageFrame w animaStateArr = do
   saveImageOpenGL w fn
   writeAnimaState animaStateArr animaState1 {animaIndex_ = index1}
   
+{--
+{-|
+ -
+  === KEY: draw convexhull or draw spiral
+
+  DATE: Monday, 26 February 2024 16:33 PST
+  
+  NOTE: At least two vertex vertices vertexes
+
+  @
+  -- Draw convexHull
+  let ls = [Vertex3 0 0 0, Vertex3 0.5 0 0, Vertex3 0 0.5 0, Vertex3 0.2 0.2]
+  let isConvexHull = True
+  let lt = convexHull4X ls isConvexHull
+  mapM_ (drawSegment red) lt
+  mapM_ (drawDot green) ls
+
+  -- Draw spiral
+  let isConvexHull = False
+  let lt = convexHull4X ls isConvexHull
+  @
+
+ -}
+convexHull4X :: [Vertex3 GLfloat] -> Bool -> [(Vertex3 GLfloat, Vertex3 GLfloat)]
+convexHull4X lt isConvexHull = convexHull4 lt top topx top' isConvexHull
+  where
+    cmp (Vertex3 x y z) (Vertex3 x' y' z') = y > y'
+    lt' = qqsort cmp lt
+    top = if len lt' /= 0 then head lt' else error "len lt' can not be zero"
+    topx = addx top
+    top' = top
+    addx (Vertex3 x y z) = Vertex3 (x + 1) y z
+  
+    convexHull4 :: [Vertex3 GLfloat] -> Vertex3 GLfloat -> Vertex3 GLfloat -> Vertex3 GLfloat -> Bool -> [(Vertex3 GLfloat, Vertex3 GLfloat)]
+    convexHull4 lt top topx top' isConvexHull = if top' /= pt0 then convexHull4 lx' pt0 top top' isConvexHull ++ [(top, pt0)] else [(top, top')]
+      where
+        lx = qqsort (\a b -> a ^._1 > b ^._1) $ map (\x -> (x /= (isConvexHull ? top $ top') ? cosVex3 x top topx $ -1, x, top, topx)) lt 
+        hpt = if len lx /= 0 then head lx else error "convexHull4 len lx == 0"
+        pt0 = hpt ^._2 
+        lx' = map (^._2) $ filter (\x -> x ^._2 /= pt0) lx
+--}
+  
 mainLoop ::
   (G.Window, G.Window) ->
   IORef CameraRot ->
@@ -4175,90 +4370,15 @@ mainLoop ::
   [[Vertex3 GLfloat]] ->
   DAO.IOArray (Int, Int, Int) BlockAttr ->
   IO ()
-mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unlessX' (G.windowShouldClose w) (G.windowShouldClose w1) $ do
-  (width, height) <- G.getFramebufferSize w
-  viewport $= (Position 0 0, Size (fromIntegral width) (fromIntegral height))
-
-  GL.clear [ColorBuffer, DepthBuffer]
-  GL.depthFunc $= Just Lequal
-  -- GL.blend $= Enabled
-
-  -- G.setKeyCallback w (Just $ keyBoardCallBackNew refStep refGlobal ioArray) -- AronOpenGL
-  G.getWindowFocused w >>= \b -> when b $ G.setKeyCallback w (Just $ keyBoardCallBackNew2 refCamRot refGlobal ioArray) -- AronOpenGL
-  G.getWindowFocused w1 >>= \b -> when b $ G.setKeyCallback w1 (Just $ keyBoardCallBackNew refCamRot refGlobal ioArray) -- AronOpenGL
-  G.getWindowFocused w >>= \b -> when b $ G.setMouseButtonCallback w (Just $ mouseCallbackX refGlobal) -- mouse event
-  G.getWindowFocused w1 >>= \b -> when b $ G.setMouseButtonCallback w1 (Just $ mouseCallbackX refGlobal) -- mouse event
-  -- lightingInfo
-  loadIdentity -- glLoadIdentity
-  -- view matrix: http://localhost/html/indexUnderstandOpenGL.html
-  -- matrixMode $= Modelview 0
-
-  -- A matrix stack.
-  --
-  --data
-  -- MatrixMode =
-  --     Modelview GLsizei  -- ^ The modelview matrix stack of the specified vertex unit.
-  --   | Projection         -- ^ The projection matrix stack.
-  --   | Texture            -- ^ The texture matrix stack.
-  --   | Color              -- ^ The color matrix stack.
-  --   | MatrixPalette      -- ^ The matrix palette stack.
-  --   deriving ( Eq, Ord, Show )
-
-  -- projection matrix stack
-  -- glMatrixModel(GL_PROJECTION)
-
-  -- matrixMode $= Modelview 0
-  --    let fovy = 80.0
-  --        aspect = 1.0
-  --        zNear = 2.0
-  --        zFar = (-2)
-  --        in GM.perspective fovy aspect zNear zFar
-
-  -- matrixMode $= Modelview 0
-  -- loadIdentity
-
-  {--
-      KeyBoard Character
-      URL: https://hackage.haskell.org/package/GLFW-b-3.3.0.0/docs/Graphics-UI-GLFW.html
-
-      @
-      lookAt :: Vertex3 GLdouble -> Vertex3 GLdouble -> Vector3 GLdouble -> IO ()
-      lookAt (Vertex3 eyeX    eyeY    eyeZ)
-         (Vertex3 centerX centerY centerZ)
-         (Vector3 upX     upY     upZ) =
-      gluLookAt eyeX eyeY eyeZ centerX centerY centerZ upX upY upZx
-
-      data XYZAxis = XYZAxis{xa::Bool, ya::Bool, za::Bool}                      deriving(Show)
-      @
-  --}
-  -- modelview matrix stack
-  -- matrixMode $= Modelview 0
-
-  -- step <- readIORef refStep
+mainLoop (w2d, w3d) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unlessX' (G.windowShouldClose w2d) (G.windowShouldClose w3d) $ do
+  beginWindow3d w3d refCamRot refGlobal ioArray
+  G.getWindowFocused w2d >>= \b -> when b $ G.setKeyCallback w2d (Just $ keyBoardCallBackNew2 refCamRot refGlobal ioArray) -- AronOpenGL
+  G.getWindowFocused w3d >>= \b -> when b $ G.setKeyCallback w3d (Just $ keyBoardCallBackNew refCamRot refGlobal ioArray) -- AronOpenGL
+  G.getWindowFocused w2d >>= \b -> when b $ G.setMouseButtonCallback w2d (Just $ mouseCallbackX refGlobal) -- mouse event
+  G.getWindowFocused w3d >>= \b -> when b $ G.setMouseButtonCallback w3d (Just $ mouseCallbackX refGlobal) -- mouse event
   
-  fov <- readIORef refCamRot <&> persp_ <&> fov_
-  zf <- readIORef refCamRot <&> persp_ <&> zf_
-  zn <- readIORef refCamRot <&> persp_ <&> zn_
-  eye <- readIORef refCamRot <&> modelview_ <&> eye_
-  matrixMode $= Projection
-  loadIdentity
-
-  preservingMatrix $ do
-    translate (Vector3 0.5 0 0 :: Vector3 GLdouble)
-    GL.scale (1.2:: GL.GLdouble) 1 1
-    drawTorus 0.1 0.2 4 [yellow, gray, magenta]
-  
-  -- let zf = 0.5
-  -- perspective fov 1.0 zf (zf + 4.0)
-  perspective fov 1.0 zn zf
-
-  matrixMode $= Modelview 0
-  loadIdentity
-  GL.lookAt eye (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
-  logFileG ["eye00"]
-  logFileG [show eye]
-
-  rotateWorldX refCamRot (fromIntegral width) (fromIntegral height)
+-- /Users/aaa/myfile/bitbucket/tmp/xx_9059.x
+  rotateWorldX refCamRot
   
   let cc = [green, blue, cyan, magenta, yellow]
   preservingMatrix $ do
@@ -4365,7 +4485,7 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
             mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
 
             -- KEY: remove bottom row
-            let f x = isFilled_ x in removeBottomX w f ioArray
+            let f x = isFilled_ x in removeBottomX w2d f ioArray
 
             logFileG ["writeArray"]
             logFileG $ map show ls
@@ -4497,11 +4617,17 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
       -- drawCubeQuad 0.1
 
   when True $ do
+    {--
     preservingMatrix $ do
       drawAxis (Vector3 1 0 0) [red, fmap (*0.5) red]
       drawAxis (Vector3 0 1 0) [green, fmap (*05) green]
       drawAxis (Vector3 0 0 1) [blue, fmap (*05) blue]
       drawCubeQuad 0.02
+    --}
+    drawAxis (Vector3 1 0 0) [red, fmap (*0.5) red]
+    drawAxis (Vector3 0 1 0) [green, fmap (*05) green]
+    drawAxis (Vector3 0 0 1) [blue, fmap (*05) blue]
+    drawCubeQuad 0.02
 
     -- θ <- readAndParse "/tmp/aa.x"
     conn <- redisConnectDefault
@@ -4571,27 +4697,164 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
       translate (Vector3 0.2 (-0.1) 0 :: Vector3 GLdouble)
       cone r l 4 [cyan]
 
+  when False $ do
+    let width = 0.3
+    let height = 0.2
+    delta <- getRedisXf "delta" <&> rf
+    str <- getRedisXStr "str"
+    let s = DT.readMaybe str :: (Maybe [GLfloat])
+    let ls = fromMaybe [] s
+    -- n = len ls > 0 ? last ls $ 10
+    n <- getRedisXf "n" <&> rf
+
+    let anima1 = 6
+    xx <- getRedisX "int"
+    let interval = xx
+    (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 interval
+    let del = pi/100
+    let lv = [[[Vertex3 (1/n*x) (1/n*y) (1/n*z) | x <- [0.0..n]]| y <- [0.0..n]]| z <- [0.0..n]] :: [[[Vertex3 GLfloat]]]
+    renderPrimitive Points $ (mapM_ . mapM_)(\v@(Vertex3 x y z) -> do
+-- /Users/aaa/myfile/bitbucket/tmp/xx_6177.x
+      {--
+      let sd = sdfRect (Vertex3 0.2 0.3 0) v
+      case sd of
+         sd | abs sd <= delta -> do color magenta; vertex v; color yellow; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            --  | sd > 0          -> do color gray;    vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            --  | otherwise       -> do color white;   vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            | otherwise -> return ()
+      let sdc = sdfCircle (Vertex3 0 0 0) 0.2 v
+      case sdc of
+         sd | abs sd <= delta -> do color blue; vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            --  | sd > 0          -> do color gray;    vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            --  | otherwise       -> do color white;   vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            | otherwise -> return ()
+      --}
+      let dl = sdfRect3d (Vertex3 0.2 0.3 0.4) v False
+      case dl of
+         -- sd | abs sd <= delta -> do color yellow; vertex (let m = rotz $ (del * rf index1) in mulMat m v);
+         sd | abs sd <= delta -> do
+              let m = rotx $ (del * rf index1)
+              color magenta; vertex $ mulMat m $ v;
+              color yellow;  vertex $ mulMat m $ nx_1 v;
+              color blue;    vertex $ mulMat m $ nx_2 v;
+              color cyan;    vertex $ mulMat m $ nx_12 v;
+            --  | sd > 0          -> do color gray;    vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            --  | otherwise       -> do color white;   vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            | otherwise -> return ()
+     ) $ join lv
+
+
+    if (index1 >= 200) then do
+         writeAnimaState animaStateArr animaState1{animaIndex_ = 0}
+    else do
+      writeAnimaState animaStateArr animaState1
+
+
   -- drawFinal w ioArray initRectGrid
   showCurrBoardArr ioArray
   drawRectGridX initRectGrid
   -- G.swapBuffers w
 
-  endWindow3d w1
+  endWindow3d w3d
 
   sleepSecRedis "second"
   -- usleep nsec
 
+  -- xx1
   -- window 1
-  beginWindow2d w
-  drawRect (Vertex3 (-0.5) 0.5 0, Vertex3 0.5 (-0.5) 0)
-  -- GL.lookAt eye (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+  beginWindow2d w2d
+  when True $ do
+    let width = 0.3
+    let height = 0.2
+    delta <- getRedisXf "delta" <&> rf
+    str <- getRedisXStr "str"
+    let s = DT.readMaybe str :: (Maybe [GLfloat])
+    let ls = fromMaybe [] s
+    -- n = len ls > 0 ? last ls $ 10
+    n <- getRedisXf "n" <&> rf
 
-  preservingMatrix $ do
-    translate (Vector3 0 0 0 :: Vector3 GLdouble)
-    drawTorus 0.1 0.2 10 [yellow, gray, magenta]
+    let anima1 = 6
+    xx <- getRedisX "int"
+    let interval = xx
+    (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 interval
+    let del = pi/100
+    let lv = [[Vertex3 (1/n*x) (1/n*y) 0 | x <- [0.0..n]]| y <- [0.0..n]] :: [[Vertex3 GLfloat]]
+    renderPrimitive Points $ mapM_(\v@(Vertex3 x y z) -> do
+-- /Users/aaa/myfile/bitbucket/tmp/xx_6177.x
+      let dl = sdfRect3d (Vertex3 0.2 0.3 0.4) v False
+      case dl of
+         -- sd | abs sd <= delta -> do color yellow; vertex (let m = rotz $ (del * rf index1) in mulMat m v);
+         sd | abs sd <= delta -> do
+              let m = rotx $ (del * rf index1)
+              color magenta; vertex $ mulMat m $ v;
+              color yellow;  vertex $ mulMat m $ nx_1 v;
+              color blue;    vertex $ mulMat m $ nx_2 v;
+              color cyan;    vertex $ mulMat m $ nx_12 v;
+            --  | sd > 0          -> do color gray;    vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            --  | otherwise       -> do color white;   vertex v; vertex $ nx_1 v; vertex $ nx_2 v; vertex $ nx_12 v;
+            | otherwise -> return ()
+     ) $ join lv
 
-  endWindow2d w
 
+    if index1 >= 200 then do
+      writeAnimaState animaStateArr animaState1{animaIndex_ = 0}
+    else do
+      writeAnimaState animaStateArr animaState1
+
+  drawDot (Vertex3 0 0 0)
+  when False $ do
+    lx <- rfl "/tmp/cc"
+    let la = map (\x -> do
+                    let v = DT.readMaybe x :: (Maybe (Vertex3 GLfloat))
+                    case v of
+                      Nothing -> Vertex3 0 0 0
+                      Just x -> x
+                 ) lx
+    -- la <- randomVertex 20 
+    let vx = Vertex3
+    -- let lt = [vx 0.2 0.2 0, vx 0 0 0, vx 0.3 0 0, vx 0.15 0.1 0, vx 0.12 0.112 0, vx 0.13 (-0.5) 0] :: [Vertex3 GLfloat]
+    -- let lt = [vx 0.2 0.2 0, vx 0 0 0] :: [Vertex3 GLfloat]
+    -- let lt = [vx 0.2 0.2 0, vx 0 0 0, vx 0.3 0 0]
+    -- let lt = [vx 0.2 0.2 0, vx 0 0 0]
+    let lt = la
+    mapM_ drawDot lt
+    -- let ls = filter (\x -> x /= top) lt
+    let lv = convexHull4X lt False
+    -- let lv = convexHullAllSeg lt
+    -- let lv = convexHull3 lt
+    {--
+    mapM_ (\x -> do
+             drawSegment green x
+          ) lv
+    --}
+
+    let anima1 = 5
+    let interval = 500
+    (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 interval
+
+    if index1 < len lv then do
+      mapM_ (\x -> do
+              drawSegment green x
+            ) $ take index1 lv
+      writeAnimaState animaStateArr animaState1
+    else do
+      writeAnimaState animaStateArr animaState1{animaIndex_ = 0}
+
+    logFileG ["xx1index1=" ++ show index1]
+
+
+    pp "lv"
+    mapM_ print lv
+  {--
+  when False $ do
+    drawRect (Vertex3 (-0.5) 0.5 0, Vertex3 0.5 (-0.5) 0)
+    -- GL.lookAt eye (Vertex3 0 0 0 :: Vertex3 GLdouble) (Vector3 0 1 0 :: Vector3 GLdouble)
+    preservingMatrix $ do
+      translate (Vector3 0 0 0 :: Vector3 GLdouble)
+      drawTorus 0.1 0.2 10 [yellow, gray, magenta]
+  --}
+
+  endWindow2d w2d
   -- saveImageFrame w animaStateArr
 
   -- saveImageOpenGL w "/tmp/img0.png"
@@ -4603,7 +4866,7 @@ mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
   -- G.swapBuffers w
 
   -- G.pollEvents
-  mainLoop (w, w1) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
+  mainLoop (w2d, w3d) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
 
 mainLoopTest ::
   G.Window ->
@@ -4721,6 +4984,17 @@ drawFinal w arr rr = do
   drawRectGridX rr
   G.swapBuffers w
   G.pollEvents
+  
+bk1 :: [[Int]]
+bk1 =
+  [ [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+  ]
+
+  
 
 main = do
   argList <- getArgs
@@ -4733,110 +5007,6 @@ main = do
     else do
       mymain
 
-bk1 :: [[Int]]
-bk1 =
-  [ [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [1, 1, 1, 1, 1],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0]
-  ]
-
-{--
-main = do
-       when True $ do
-         let ls = [(1, 2)]
-         let m = DM.empty
-         let m1 = DM.insert (1, 2) (Vertex3 0.1 0.1 0.1, green, True) m
-         print $ checkMove ls m1 initRectGrid == False
-       when True $ do
-         let ls = [(1, 2), (1, 3)]
-         let m = DM.empty
-         let m1 = DM.insert (1, 2) (Vertex3 0.1 0.1 0.1, green, False) m
-         print $ checkMove ls m1 initRectGrid == True
-       when True $ do
-         let ls = [(1, 2), (1, 3)]
-         let m = DM.empty
-         let m1 = DM.insert (1, 5) (Vertex3 0.1 0.1 0.1, green, True) m
-         print $ checkMove ls m1 initRectGrid == True
-       when True $ do
-         let ls = [(1, 2), (1, 3)]
-         let m = DM.empty
-         let m1 = DM.insert (1, 5) (Vertex3 0.1 0.1 0.1, green, False) m
-         print $ checkMove ls m1 initRectGrid == True
-       when True $ do
-         let ls = [(1, 2), (1, 3)]
-         let m = DM.empty
-         let m1 = DM.insert (1, 5) (Vertex3 0.1 0.1 0.1, green, False) m
-         let m2 = DM.insert (1, 3) (Vertex3 0.1 0.1 0.1, green, True) m1
-         print $ checkMove ls m2 initRectGrid == False
-       when True $ do
-         let ls = [(1, 2), (1, 3)]
-         let m = DM.empty
-         let m1 = DM.insert (1, 5) (Vertex3 0.1 0.1 0.1, green, False) m
-         let m2 = DM.insert (1, 3) (Vertex3 0.1 0.1 0.1, green, False) m1
-         print $ checkMove ls m1 initRectGrid == True
-       when True $ do
-         let f x = join (***) x
-         let s  = map (\y -> map (\x -> (x, y)) [0..4]) $ reverse [0..4]
-         let s' = map (\y -> map (\x -> (x - 2, y - 2)) [0..4]) $ reverse [0..4]
-
-         let sk = (zipWith . zipWith) (\x y -> (x, y)) s' bk1
-
-         let ska = (map . map) (\(x, y) -> ((***) (+1) (+2) x, y)) sk
-         let skr = (zipWith . zipWith) (\x y -> (x, y)) s' $ rotatetateN 1 bk1
-         let sks = (map . filter) (\(x, y) -> y == 1) skr
-         let bk1 :: [[Int]]
-             bk1 = [ [0, 0, 0, 0, 0]
-                 ,[0, 0, 0, 0, 0]
-                 ,[1, 1, 1, 1, 1]
-                 ,[0, 0, 0, 0, 0]
-                 ,[0, 0, 0, 0, 0]
-                 ]
-
-         let ss = (zipWith . zipWith) (\x y -> (x, y)) s' s
-         let st = (map . map) (\x -> let n = (snd . snd) x in n == 2 ? (x, 1) $ (x, 0)) ss
-         let m1 = (map . map) snd st
-         let rs = rotateN 1 st
-         let m2 = (map . map) snd rs
-         printMat s
-         fw "s'"
-         printMat s'
-         pp "ok"
-         fw "triple"
-         printMat ss
-         fw "triple 1"
-         printMat st
-         fw "rotateN 1"
-         printMat rs
-         fw "m1"
-         printMat m1
-         fw "m2"
-         printMat m2
-         fw "sk"
-         printMat sk
-         fw "skr"
-         printMat skr
-         fw "ska"
-         printMat ska
-         fw "sks"
-         printMat sks
-
---}
-{--
-main = do
-       fw "mat"
-       printMat mat
-       fw "mat 0"
-       printMat $ rotateN 0 mat
-       fw "mat 1"
-       printMat $ rotateN 1 mat
-       fw "mat 2"
-       printMat $ rotateN 2 mat
---}
-
--- import Data.Array.IO
--- import Control.Monad
 
 data MyX = MyX {name00_ :: String, age00_ :: Int} deriving (Show, Eq)
 
