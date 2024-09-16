@@ -2615,6 +2615,7 @@ centerBlockMove c@(nx, ny) sx (cx, cy) color = do
       -- drawRectGridColor color [0] [0] 0.02
       drawRectFill2dX color (0.1, 0.1)
 
+{--
 -- |
 --    === KEY: fill rectangle
 --
@@ -2649,6 +2650,7 @@ drawRectFill2dX c (w, h) = do
     vx2' = Vertex3 x0 (- y0) dep
     vx3' = Vertex3 (- x0) (- y0) dep
     f (Color3 a b c) = Color3 (a * 0.5) (b * 0.5) (c * 0.5)
+--}
 
 -- |
 --
@@ -3677,15 +3679,15 @@ rotMat4Tup k θ = (m4, join m4)
     m4 = padMat3To4 m3
 
   
-drawAxis :: Vector3 GLfloat -> [Color3 GLdouble] -> IO()
+drawAxis ::Vector3 GLfloat -> [Color3 GLdouble] -> IO()
 drawAxis v cl = do
   preservingMatrix $ do
-    let v0 = Vector3 1 0 0 :: (Vector3 GLfloat)
-    let v1 = v
-    let m = padMat3To4 $ rotToVecMat v0 v1
+    let v0 = Vector3 1 0 0
+    let m = padMat3To4 $ rotToVecMat v0 v 
     multiModelviewMat $ join m
     cylinderArrow 1.0 cl
   
+
 {-|
    === KEY: rotate vector to other vector
 
@@ -4384,13 +4386,14 @@ mainLoop (w2d, w3d) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioAr
   preservingMatrix $ do
     GL.scale (1:: GL.GLdouble) 2.0 1
     drawTorus 0.1 0.2 10 cc
+  
   {--
   preservingMatrix $ do
     mapM_ (\x -> do
       -- translate (Vector3 (0.1 * x) 0 0 :: Vector3 GLdouble)
       drawSphereN 10 0.4 cc
           ) [1]
-  --}
+  --} 
   
   -- mapM_ (\v -> drawDot v) $ drawSpherePt (Vertex3 0 0 0) 0.4
 
@@ -4564,7 +4567,7 @@ mainLoop (w2d, w3d) refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioAr
       rotate (-45) (Vector3 0 0 1 :: Vector3 GLdouble)
       cylinderArrow 1.0 [green, red, yellow]
   
-  when False $ do
+  when True $ do
     preservingMatrix $ do
       let v0 = Vector3 1 0 (-1)
       let xAxis = Vector3 1 0 0

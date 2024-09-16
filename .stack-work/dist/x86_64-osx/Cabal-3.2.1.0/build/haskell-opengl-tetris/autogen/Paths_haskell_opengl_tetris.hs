@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/install/x86_64-osx/5050d4c17fb8dca4a9a81d415347c61f6a3a357b577d222bcc8d6b35e01917ad/8.10.3/bin"
-libdir     = "/Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/install/x86_64-osx/5050d4c17fb8dca4a9a81d415347c61f6a3a357b577d222bcc8d6b35e01917ad/8.10.3/lib/x86_64-osx-ghc-8.10.3/haskell-opengl-tetris-0.1.0.0-JiTlQS6WqzeF6mqnrUKHJ8-haskell-opengl-tetris"
+libdir     = "/Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/install/x86_64-osx/5050d4c17fb8dca4a9a81d415347c61f6a3a357b577d222bcc8d6b35e01917ad/8.10.3/lib/x86_64-osx-ghc-8.10.3/haskell-opengl-tetris-0.1.0.0-HVbBlEGvJNE9G68ZxUHt5T-haskell-opengl-tetris"
 dynlibdir  = "/Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/install/x86_64-osx/5050d4c17fb8dca4a9a81d415347c61f6a3a357b577d222bcc8d6b35e01917ad/8.10.3/lib/x86_64-osx-ghc-8.10.3"
 datadir    = "/Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/install/x86_64-osx/5050d4c17fb8dca4a9a81d415347c61f6a3a357b577d222bcc8d6b35e01917ad/8.10.3/share/x86_64-osx-ghc-8.10.3/haskell-opengl-tetris-0.1.0.0"
 libexecdir = "/Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/install/x86_64-osx/5050d4c17fb8dca4a9a81d415347c61f6a3a357b577d222bcc8d6b35e01917ad/8.10.3/libexec/x86_64-osx-ghc-8.10.3/haskell-opengl-tetris-0.1.0.0"

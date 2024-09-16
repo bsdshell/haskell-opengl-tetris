@@ -1,18 +1,24 @@
 /Users/aaa/myfile/github/haskell-opengl-tetris/README.md:
   hash: 7607cedf86ef9ed5985d17cf4f7be071ead8d59281b9a843e2aad32be51e04a0
 /Users/aaa/myfile/github/haskell-opengl-tetris/haskell-opengl-tetris.cabal:
-  hash: 951d44c9236bf0c51e02bb3b1f680393346b1b5800eb45600337bff9395eb669
+  hash: e73838ad99984620ec7ce47b85bcd0a13393026c1ab042d9581c46adb4772571
 /Users/aaa/myfile/bitbucket/haskellffi/AronCLibFFI.c:
   hash: 3cacc4a5e3b2e6d7d3b37bc9f621f0ef52182878857f18a0bb53e53578e8fdd5
 /Users/aaa/.stack/programs/x86_64-osx/ghc-8.10.3/lib/ghc-8.10.3/include/ghcversion.h:
   hash: c48ad36f2f58fb4c6880f8883b41f1dc05207e41a06d05dde520edc9773ce4d1
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronToken.hs:
+  hash: 2867e3080967130de9a7cc74e39a60f9074255bb109f41712069f9025af1a241
 /Users/aaa/myfile/github/haskell-opengl-tetris/src/Main.hs:
-  hash: 8a49af80ffb068139d5b3358f585a6a7a080b5bb13275935eecdaa6cf239f817
+  hash: 88d39e86eaa4f57cc87d1ef22d0126dcec96c56836b6677bdc974e177bef8e29
 ? /Users/aaa/myfile/github/haskell-opengl-tetris/.stack-work/dist/x86_64-osx/Cabal-3.2.1.0/build/haskell-opengl-tetris/autogen/cabal_macros.h
-: hash: 75a7c4fb35cdb9b6d6f9213a0366cc36b30e3c85b3f44ddc94cdf00df237cb4f
+: hash: b36843108e852120cc8f0bf577af4a678014aa6c416465a8c8bb0d9cab886f03
 /Users/aaa/myfile/github/haskell-opengl-tetris/src/AronOpenGL.hs:
-  hash: bd2a1dd8d216494de6d0e0695311d3a39e2861655891da5d1707f7f993ff8e95
+  hash: d4642b8dbeadba0e4cd421f94b12f79b2a285a0ec7f36bdb13b368b484b18d95
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronHtml2.hs:
+  hash: 6c1a325178410367af8a9ca502fe620d5ab6372a03c3a2ce3dd35b3f532f84cb
 /Users/aaa/myfile/github/haskell-opengl-tetris/src/AronModule.hs:
-  hash: b06b887f402f94b0de55d21c6ac1af32f34a160a2009247d753ff4af891fd5c4
+  hash: 71266dffd2e27d51f17c8151e9735c6db93234d36351fb12e4efbb7bb80b7062
+/Users/aaa/myfile/github/haskell-opengl-tetris/src/AronAlias.hs:
+  hash: c08a3116fe5d53a5943b65ae494e2d278a139e0dd2003e839061e4faa057e3f6
 /Users/aaa/myfile/github/haskell-opengl-tetris/src/AronGraphic.hs:
-  hash: 0b4763cf40541be65781189ea7b826a9803568d2c550b92f35030a72af9b7063
+  hash: b6c302f78d40ed39969268af6c2d65fdb45607af69adc8d60c4c92892b7b6afe

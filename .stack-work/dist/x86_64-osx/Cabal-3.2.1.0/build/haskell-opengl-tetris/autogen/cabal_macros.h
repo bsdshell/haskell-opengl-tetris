@@ -693,6 +693,17 @@
   (major1) == 0 && (major2) == 3 && (minor) <= 19)
 #endif /* MIN_VERSION_safe */
 
+/* package silently-1.2.5.1 */
+#ifndef VERSION_silently
+#define VERSION_silently "1.2.5.1"
+#endif /* VERSION_silently */
+#ifndef MIN_VERSION_silently
+#define MIN_VERSION_silently(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  2 || \
+  (major1) == 1 && (major2) == 2 && (minor) <= 5)
+#endif /* MIN_VERSION_silently */
+
 /* package split-0.2.3.4 */
 #ifndef VERSION_split
 #define VERSION_split "0.2.3.4"
@@ -1101,7 +1112,7 @@
 #endif /* MIN_TOOL_VERSION_runghc */
 
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "haskell-opengl-tetris-0.1.0.0-JiTlQS6WqzeF6mqnrUKHJ8-haskell-opengl-tetris"
+#define CURRENT_COMPONENT_ID "haskell-opengl-tetris-0.1.0.0-HVbBlEGvJNE9G68ZxUHt5T-haskell-opengl-tetris"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"
