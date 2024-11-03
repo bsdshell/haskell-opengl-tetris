@@ -1,0 +1,2 @@
+689352:*:awk date time, awk time@=637
+awk '{print $6 \"-\" $7 \"-\" $8}'     # date without space

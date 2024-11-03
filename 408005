@@ -1,0 +1,2 @@
+git:*: git no page, git no enter, git page
+for i in {1..13}; do git --no-pager diff HEAD~$i HEAD -- WaiLib.hs; done > /tmp/a.diff

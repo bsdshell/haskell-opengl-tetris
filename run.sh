@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/bin/bash
 
 #================================================================================ 
 # Last Upate: Fri Oct  7 12:39:43 PDT 2016 
@@ -52,17 +52,18 @@ ghcProfile="/usr/local/bin/ghc -i$HOME/myfile/bitbucket/haskelllib -prof -fprof-
 # stack build --ghc-options=-O2 haskellwebapp2 
 
 old=$(timeNow)
+name="haskell-opengl-tetris"
 
 if [[ "$#" -eq 1 ]]; then
     
     # KEY: build only
     if [[ "$1" == 'c' ]]; then 
-	    stack build haskell-opengl-tetris 
+	    stack build "$name"
 	    # stack build --ghc-options="-j +RTS -A128m -n2m -RTS" PlotGeometry 
         printcText 'Build only'
     fi
 else
-	stack build haskell-opengl-tetris && stack exec haskell-opengl-tetris 
+	stack build "$name" && stack exec "$name" 
 fi
 
 new=$(timeNow)
