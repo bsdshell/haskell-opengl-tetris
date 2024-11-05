@@ -572,36 +572,6 @@ keyBoardCallBack3d refCamRot refGlobalRef ioArray window key scanCode keyState m
 
             | k == G.Key'D -> do
               runGame window refGlobalRef ioArray
-              {-
-              mx <- readIORef refGlobalRef <&> moveX_
-              my <- readIORef refGlobalRef <&> moveY_
-              tetX <- readIORef refGlobalRef <&> currTetris_
-              rotN <- readIORef refGlobalRef <&> rotN_
-              lsArr <- getAssocs ioArray
-              let ls = getShapeX $ rotateN rotN (snd tetX)
-
-              let mX = map (\(a, b) -> (a + mx, b + my - 1, 0)) ls
-
-              let b = checkMoveArr mX lsArr rr
-
-              when (not b) $ do
-                let ls3 = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) ls
-                mapM_ (uncurry $ DAO.writeArray ioArray) ls3
-
-              newBlock <- randomBlockX refGlobalRef
-              modifyIORef
-                refGlobalRef
-                ( \s ->
-                    s
-                      { moveX_ = b ? moveX_ s $ 0,
-                        moveY_ = b ? my - 1 $ initY,
-                        count1_ = b ? count1_ s $ 10000000,
-                        rotN_ = b ? rotN_ s $ 0,
-                        currTetris_ = b ? currTetris_ s $ newBlock
-                      }
-                )
-              print "kk"
-              -}
 
             | k == G.Key'W -> do
               nowTime <- timeNowMilli
@@ -1798,7 +1768,6 @@ mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = u
   
   drawRect (Vertex3 0 0.5 0, Vertex3 0.5 0 0)
 
-
   isPaused <- readIORef refGlobal <&> isPaused_
   unless isPaused $ do
     let slotNum0 = 0
@@ -1810,64 +1779,7 @@ mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = u
     -- KEY: falling block, drop block
     when True $ do
       when isNext0 $ do
-        rr <- readIORef refGlobal <&> rectGrid_
-        mx <- readIORef refGlobal <&> moveX_
-        my <- readIORef refGlobal <&> moveY_
-        tetX <- readIORef refGlobal <&> currTetris_
-        rotN <- readIORef refGlobal <&> rotN_
-        ls <- getAssocs ioArray
-
-        let rotTet = rotateN rotN (snd tetX)
-        let tetris = getShapeX rotTet 
-
-        let mX = map (\(a, b) -> (a + mx, b + my - 1, 0)) tetris 
-
-        let lastBlock = map (\(a, b) -> ((a + mx, b + my, 0), fst tetX)) tetris 
-        let isMovable = checkMoveArr mX ls rr
-        {-
-        -- KEY: new block
-        newBlock <- randomBlockX refGlobal
-        modifyIORef
-          refGlobal
-          ( \s ->
-              s
-                { moveY_ = isMovable ? my - 1 $ initY,
-                  moveX_ = isMovable ? moveX_ s $ 0,
-                  currTetris_ = isMovable ? currTetris_ s $ newBlock
-                }
-          )
-        -}
-        if not isMovable
-          then do
-            mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
-
-            -- KEY: remove bottom row
-            let f x = isFilled_ x in removeBottomX w2d f ioArray
-
-            logFileG ["writeArray"]
-            logFileG $ map show ls
-
-            newBlock <- randomBlockX refGlobal
-            modifyIORef
-              refGlobal
-              ( \s ->
-                  s
-                    { moveY_ = initY,
-                      moveX_ = 0,
-                      currTetris_ = newBlock
-                    }
-              )
-          else do 
-            modifyIORef
-              refGlobal
-              ( \s ->
-                  s
-                    { moveY_ = my - 1,
-                      moveX_ = moveX_ s,
-                      currTetris_ = currTetris_ s 
-                    }
-              )
-
+        runGame w2d refGlobal ioArray
         flipIsNext animaStateArr slotNum0
 
     when True $ do
