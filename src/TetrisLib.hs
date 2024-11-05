@@ -106,7 +106,7 @@ data XYZAxis = XYZAxis {xa :: Bool, ya :: Bool, za :: Bool} deriving (Eq, Show)
 data BlockAttr = BlockAttr
   { isFilled_ :: Bool,
     typeId_ :: Int,
-    tetrisCountX_ :: Int,
+    tetrisCount_ :: Int,
     color_ :: Color3 GLdouble
   }
   deriving (Show, Eq)
@@ -115,26 +115,9 @@ type BufferMap = DM.Map String (String, [String])
 
 data GlobalRef = GlobalRef
   { 
-    windowSize_ :: (Int, Int),
-    cursor_ :: (GLfloat, GLfloat),
-    xyzAxis_ :: XYZAxis,
-    mousePressed_ :: (Bool, (GLfloat, GLfloat)),
-    drawRectX_ :: (Vertex3 GLfloat, Vertex3 GLfloat),
-    tranDrawRectX_ :: Vector3 GLdouble,
-    fovDegree_ :: GLdouble,
-    drawPts_ :: [[Vertex3 GLfloat]],
-    randomPts_ :: [Vertex3 GLfloat],
-    randomWalk_ :: [Vertex3 GLfloat],
-    randomWalkInt_ :: [(Int, Int)],
-    boardMap_ :: DM.Map (Int, Int) (Vertex3 GLfloat, Color3 GLdouble, Bool),
-    boardMap1_ :: DM.Map (Int, Int) (Int, Int, Color3 GLdouble),
     moveX_ :: Int,
     moveY_ :: Int,
     rectGrid_ :: RectGrid,
-    centerBrick_ :: [[(Int, Int)]],
-    rot_ :: Bool,
-    rotDeg_ :: Double,
-    time1_ :: Integer,
     count1_ :: Integer,
     rotN_ :: Int,
     -- bk2_ :: [[(Int, Int, Color3 GLdouble)]],
@@ -143,8 +126,6 @@ data GlobalRef = GlobalRef
     --           |  block type rep count
     --           |
     --        block type
-    blockCount_ :: Int,
-    tetrisCount_ :: Int,
     --                                      shape
     --                        color           |
     --            tetris type   |             |
