@@ -133,7 +133,8 @@ data GlobalRef = GlobalRef
     --             |    |       |             |
     currTetris_:: (BlockAttr, [[Int]]),
     isPaused_ :: Bool,
-    font_ :: FTGL.Font
+    font_ :: FTGL.Font,
+    nRow_ :: Int
   }
   deriving (Show)
 

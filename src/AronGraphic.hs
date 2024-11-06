@@ -93,6 +93,7 @@ green = Color3 0 1 0 :: Color3 GLdouble
 blue  = Color3 0 0 1 :: Color3 GLdouble
 white = Color3 1 1 1 :: Color3 GLdouble
 black = Color3 0 0 0 :: Color3 GLdouble
+brown = Color3 0.588 0.294 0 :: Color3 GLdouble
 gray  = Color3 0.47 0.47 0.47 :: Color3 GLdouble
 gray1  = Color3 0.8 0.8 0.8 :: Color3 GLdouble
 cyan    = Color3 0 1 1 :: Color3 GLdouble

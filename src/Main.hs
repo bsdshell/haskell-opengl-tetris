@@ -356,11 +356,36 @@ randomBlockX ref = do
           [0, 1, 1, 1, 0],
           [0, 0, 0, 0, 0]
         ]
+
+  let tet4 =
+        [ [0, 0, 0, 0, 0],
+          [0, 1, 1, 0, 0],
+          [0, 0, 1, 0, 0],
+          [0, 0, 1, 1, 0],
+          [0, 0, 0, 0, 0]
+        ]
+  let tet5 =
+        [ [0, 0, 0, 0, 0],
+          [0, 1, 1, 0, 0],
+          [0, 0, 1, 1, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+        ]
+  let tet6 =
+        [ [0, 0, 0, 0, 0],
+          [0, 1, 1, 1, 0],
+          [0, 0, 1, 0, 0],
+          [0, 0, 1, 0, 0],
+          [0, 0, 1, 0, 0]
+        ]
   tetrisCount <- readIORef ref <&> currTetris_ <&> fst <&> tetrisCount_
   let t1 = 1
   let t2 = 2
   let t3 = 3 
-  let ls = [(tet1, white, t1), (tet2, cyan, t2), (tet3, green, t3)]
+  let t4 = 4 
+  let t5 = 5 
+  let t6 = 6 
+  let ls = [(tet1, white, t1), (tet2, cyan, t2), (tet3, brown, t3), (tet4, gray, t4), (tet5, yellow, t5), (tet6, gray1, t6)]
   inx <- randomInt 0 (len ls - 1)
   let br = ls !! inx
   let bb = (BlockAttr {isFilled_ = True, typeId_ = br ^. _3, tetrisCount_ = tetrisCount + 1, color_ = br ^. _2}, br ^. _1 )
@@ -385,6 +410,15 @@ drawFont fp s sz c v = do
         color c
         FTGL.renderFont font s FTGL.Front 
 
+drawFontX:: FTGL.Font -> String -> GLdouble -> Color3 GLdouble -> Vector3 GLdouble -> IO()
+drawFontX font s sz c v = do
+    preservingMatrix $ do
+        translate v 
+        FTGL.setFontFaceSize font 24 72 
+        -- FTGL.setFontDepth font 1.0
+        GL.scale (sz/scaleFont :: GL.GLdouble) (sz/scaleFont) 1 
+        color c
+        FTGL.renderFont font s FTGL.Front 
 
 
 centerBrickX :: [[Int]] -> [[(Int, Int)]]
@@ -400,7 +434,6 @@ centerBrickX bk = map (\y -> map (\x -> (x - 2, y - 2)) [0 .. width - 1]) $ reve
 -- font_ :: FTGL.Font
 
 initGlobal :: FTGL.Font -> GlobalRef
--- initGlobal :: GlobalRef
 initGlobal font = 
   GlobalRef
     { 
@@ -411,7 +444,8 @@ initGlobal font =
       rotN_ = 0,
       currTetris_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue}, tetris0),
       isPaused_ = False,
-      font_ = font
+      font_ = font,
+      nRow_ = 0
     }
 
 -- Friday, 01 November 2024 12:46 PDT
@@ -1724,7 +1758,10 @@ runGame w2d refGlobal ioArray = do
             mapM_ (uncurry $ DAO.writeArray ioArray) lastBlock
 
             -- KEY: remove bottom row
-            let f x = isFilled_ x in removeBottomX w2d f ioArray
+            nRow <- let f x = isFilled_ x in removeBottomX w2d f ioArray
+            modifyIORef refGlobal (\s -> s{nRow_ = nRow + nRow_ s}) 
+
+            logFileG ["nRow=> " ++ show nRow]
 
             logFileG ["writeArray"]
             logFileG $ map show ls
@@ -1769,6 +1806,8 @@ mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = u
   drawRect (Vertex3 0 0.5 0, Vertex3 0.5 0 0)
 
   isPaused <- readIORef refGlobal <&> isPaused_
+  font <- readIORef refGlobal <&> font_
+  nRow <- readIORef refGlobal <&> nRow_
   unless isPaused $ do
     let slotNum0 = 0
     (isNext0, index, animaState) <- readAnimaState animaStateArr slotNum0 500000
@@ -1786,6 +1825,12 @@ mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = u
       -- KEY: rotate brick, rotate tetris
       -- rotateTetries refGlobal initRectGrid ioArray
       -- show current tetris
+      -- KEY: show nRow, show score, display font, show text
+      let sz = 16 
+          co = yellow 
+          vec = Vector3 0.9 0.9 0
+        in drawFontX font (show nRow) sz co vec
+
       currBrickX refGlobal initRectGrid
       pp "Ok"
   -- KEY: show board, show grid, draw board
@@ -2009,9 +2054,12 @@ funx (y0, y1) (yy0, yy1) f arr = do
     fw "funx print arr"
     printMat3 arr
 
-removeBottom :: G.Window -> (Int, Int) -> (Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO ()
-removeBottom w (y0, y1) (yy0, yy1) f arr = do
-  when (y0 <= y1) $ do
+{-|
+  recur from 
+-}
+removeBottom :: G.Window -> Int -> (Int, Int) -> (Int, Int) -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO Int 
+removeBottom w nRow (y0, y1) (yy0, yy1) f arr = do
+  if (y0 <= y1) then do
     let fstLayer = 0
     let z0 = 0
     bt@((a0, b0, c0), (a1, b1, c1)) <- getBounds arr
@@ -2020,42 +2068,11 @@ removeBottom w (y0, y1) (yy0, yy1) f arr = do
     if len ls == gridWidth
       then do
         mapM_ (\x -> print $ "lsxx " ++ show x) ls
-        {-      
-        let lt = map (\(t, e) -> (t, e {color_ = white})) ls
-        mapM_
-          ( \(t, e) -> do
-              DAO.writeArray arr t e
-          )
-          lt
-        fw "Full Row"
-        logFileG ["MyFullRow"]
-        logFileG [show bt]
-        logFileG $ map show ls
-        logFileG ["EndFullRow"]
-        logFileG ["myy1"]
-        logFileG [show y1]
-        -}
         DAO.getAssocs arr
           >>= mapM_
             ( \((zDir, yDir, xDir), _) -> do
-                {-
-                let ms = revIndex (yy0, yy1) yDir
-                let y' = case ms of
-                      Just s -> s
-                      Nothing -> error "ERROR: Invalid index"
-                -}
                 -- KEY: two dimensions for now
                 when (xDir == fstLayer) $ do
-                  {-
-                  logFileG ["CallMeMaybe0"]
-                  logFileG ["yy0 y' yy1"]
-                  logFileG $ map show [yy0, y', yy1]
-                  logFileG ["y0, y1"]
-                  logFileG $ map show [y0, y1]
-                  logFileG ["zDir yDir xDir"]
-                  logFileG $ map show [zDir, yDir, xDir]
-                  -}
-
                   -- -10                   9
                   -- SEE: how to move row from top to bottom 
                   -- /Users/cat/myfile/try/bottom.png
@@ -2072,19 +2089,20 @@ removeBottom w (y0, y1) (yy0, yy1) f arr = do
             )
         -- Remove the bottom row
         fallBlock w arr
-        removeBottom w (yy0, yy1) (yy0, yy1) f arr
+        removeBottom w (nRow + 1) (yy0, yy1) (yy0, yy1) f arr
       else
       do
-        removeBottom w (y0, y1 - 1) (yy0, yy1) f arr
+        removeBottom w nRow (y0, y1 - 1) (yy0, yy1) f arr
+  else return nRow 
 
 -- pp "Not equal to len"
 -- fw "funx print arr"
 -- printMat3 arr
 
-removeBottomX :: G.Window -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO ()
+removeBottomX :: G.Window -> (BlockAttr -> Bool) -> IOArray (Int, Int, Int) BlockAttr -> IO Int 
 removeBottomX w f arr = do
   ((z0, y0, x0), (z1, y1, x1)) <- DAO.getBounds arr
-  removeBottom w (y0, y1) (y0, y1) f arr
+  removeBottom w 0 (y0, y1) (y0, y1) f arr
 
 fallBlock :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> IO ()
 fallBlock w arr = do
