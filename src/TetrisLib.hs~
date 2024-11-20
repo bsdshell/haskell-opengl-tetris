@@ -87,6 +87,7 @@ data RectGrid = RectGrid
     minY_ :: Float,
     xCount_ :: Int,
     yCount_ :: Int,
+    zCount_ :: Int,
     xEdge_ :: Float,
     yEdge_ :: Float,
     rotStep :: Int

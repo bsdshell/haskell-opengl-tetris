@@ -35,12 +35,16 @@ _STEP = 1.0
 data RectGrid = RectGrid
   { minX_ :: Float,
     maxX_ :: Float,
-    maxY_ :: Float,
     minY_ :: Float,
+    maxY_ :: Float,
+    minZ_ :: Float,
+    maxZ_ :: Float,
     xCount_ :: Int,
     yCount_ :: Int,
+    zCount_ :: Int,
     xEdge_ :: Float,
     yEdge_ :: Float,
+    zEdge_ :: Float,
     rotStep :: Int
   }
   deriving (Show, Eq)
@@ -117,6 +121,7 @@ data GlobalRef = GlobalRef
   { 
     moveX_ :: Int,
     moveY_ :: Int,
+    moveZ_ :: Int,
     rectGrid_ :: RectGrid,
     count1_ :: Integer,
     rotN_ :: Int,
@@ -132,6 +137,7 @@ data GlobalRef = GlobalRef
     --       Global ID  |       |             |
     --             |    |       |             |
     currTetris_:: (BlockAttr, [[Int]]),
+    currTetris3_:: (BlockAttr, [[[Int]]]),
     isPaused_ :: Bool,
     font_ :: FTGL.Font,
     nRow_ :: Int

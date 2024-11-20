@@ -1354,6 +1354,8 @@ drawSegNoEnd c (x0, y0, z0) (x1, y1, z1) = drawSegmentNoEnd2 c (Vertex3 x0 y0 z0
                                       
 {-| 
     === Draw one segment with no endpt
+
+   USE 'drawLine' instead
 -} 
 drawSegmentNoEnd::Color3 GLdouble -> (Vertex3 GLfloat, Vertex3 GLfloat)->IO()
 drawSegmentNoEnd c (p0, p1) = do
@@ -1362,7 +1364,15 @@ drawSegmentNoEnd c (p0, p1) = do
         vertex v3) list
         where
             list = [p0, p1]
-    
+
+drawLine :: Color3 GLdouble -> (Vertex3 GLfloat, Vertex3 GLfloat) -> IO()
+drawLine c (p0, p1) = do
+    renderPrimitive Lines $ mapM_(\v3 -> do
+        color c
+        vertex v3) list
+        where
+            list = [p0, p1]
+  
 {-| 
     === Draw one segment with no endpt
 -} 
@@ -2348,6 +2358,8 @@ drawRectFill2d c (w, h) = do
 
        v3    <—-    v2
     @
+
+   SEE: /Library/WebServer/Documents/xfido/image/drawRect.png
 -}
 drawRectFill2dX :: Color3 GLdouble -> (GLfloat, GLfloat) -> IO ()
 drawRectFill2dX c (w, h) = do
@@ -4964,26 +4976,42 @@ drawCubeQuadT (r, p0) = do
     translate (vec_ p0) 
     drawCubeQuadD r
 
+
+
+
+mulc :: Color3 GLdouble -> GLdouble -> Color3 GLdouble
+mulc (Color3 r g b) x = Color3 (r*x) (g*x) (b*x)
+
 {-|
--- |
--- -
---  KEY: draw cube with quad
---  @
---  @
+  KEY: draw cube with quad
+
+  @
+  drawCubeQuad 0.2
+  @
+
+  SEE: /Library/WebServer/Documents/xfido/image/cubex.png
 -}
-drawCubeQuad :: GLfloat -> IO ()
-drawCubeQuad r =
-  let nfaces = zip3 n [(green, gray), (cyan, blue), (yellow, green), (gray, blue), (white, yellow), (blue, cyan)] facesx
+drawCubeQuadM :: GLfloat -> GLdouble -> IO ()
+drawCubeQuadM r mc =
+  let nfaces = zip3 n [(color2, gray, gray1, blue), 
+                       (color1, blue, gray, brown), 
+                       (color4, green, cyan, color1), 
+                       (gray, blue, gray1, color2), 
+                       (color2, gray, blue, color3), 
+                       (blue, color1, gray, color4)
+                       ] facesx
    in do
         mapM_
-          ( \(n, (c1, c2), [v0, v1, v2, v3]) -> do
+          ( \(n, (c1, c2, c3, c4), [v0, v1, v2, v3]) -> do
               renderPrimitive Quads $ do
                 normal n
-                color  c1 
+                color  $ c1 `mulc` mc 
                 vertex v0
-                color  c2 
+                color  $ c2 `mulc` mc 
                 vertex v1
+                color  $ c3 `mulc` mc 
                 vertex v2
+                color  $ c4 `mulc` mc 
                 vertex v3
           )
           nfaces
@@ -4997,27 +5025,6 @@ drawCubeQuad r =
         Normal3 0.0 0.0 1.0,
         Normal3 0.0 0.0 (-1.0)
       ]
-    faces :: [[Vertex3 GLfloat]]
-    faces =
-      [ [ v 0, v 1, v 2, v 3],
-        [ v 3, v 2, v 6, v 7],
-        [ v 7, v 6, v 5, v 4],
-        [ v 4, v 5, v 1, v 0],
-        [ v 5, v 6, v 2, v 1],
-        [ v 7, v 4, v 0, v 3]
-      ]
-    v :: Int -> Vertex3 GLfloat
-    v x = Vertex3 v0 v1 v2
-      where
-        v0
-          | x == 0 || x == 1 || x == 2 || x == 3 = - r
-          | x == 4 || x == 5 || x == 6 || x == 7 = r
-        v1
-          | x == 0 || x == 1 || x == 4 || x == 5 = - r
-          | x == 2 || x == 3 || x == 6 || x == 7 = r
-        v2
-          | x == 0 || x == 3 || x == 4 || x == 7 = r
-          | x == 1 || x == 2 || x == 5 || x == 6 = - r
     facesx :: [[Vertex3 GLfloat]]
     facesx =
       [ [v0, v1, v2, v3],
@@ -5035,6 +5042,123 @@ drawCubeQuad r =
     v5 = Vertex3 r (- r) (- r)
     v6 = Vertex3 r r (- r)
     v7 = Vertex3 r r r
+
+drawCubeQuadN :: (GLfloat, GLfloat, GLfloat) -> GLdouble -> IO ()
+drawCubeQuadN (x, y, z) mc =
+  let nfaces = zip3 n [(color2, gray, gray1, blue), 
+                       (color1, blue, gray, brown), 
+                       (color4, green, cyan, color1), 
+                       (gray, blue, gray1, color2), 
+                       (color2, gray, blue, color3), 
+                       (blue, color1, gray, color4)
+                       ] facesx
+   in do
+        mapM_
+          ( \(n, (c1, c2, c3, c4), [v0, v1, v2, v3]) -> do
+              renderPrimitive Quads $ do
+                normal n
+                color  $ c1 `mulc` mc 
+                vertex v0
+                color  $ c2 `mulc` mc 
+                vertex v1
+                color  $ c3 `mulc` mc 
+                vertex v2
+                color  $ c4 `mulc` mc 
+                vertex v3
+          )
+          nfaces
+  where
+    n :: [Normal3 GLfloat]
+    n =
+      [ Normal3 (-1.0) 0.0 0.0,
+        Normal3 0.0 1.0 0.0,
+        Normal3 1.0 0.0 0.0,
+        Normal3 0.0 (-1.0) 0.0,
+        Normal3 0.0 0.0 1.0,
+        Normal3 0.0 0.0 (-1.0)
+      ]
+    facesx :: [[Vertex3 GLfloat]]
+    facesx =
+      [ [v0, v1, v2, v3],
+        [v3, v2, v6, v7],
+        [v7, v6, v5, v4],
+        [v4, v5, v1, v0],
+        [v5, v6, v2, v1],
+        [v7, v4, v0, v3]
+      ]
+    v0 = Vertex3 (- x) (- y) z 
+    v1 = Vertex3 (- x) (- y) (- z)
+    v2 = Vertex3 (- x) y     (- z)
+    v3 = Vertex3 (- x) y     z 
+    v4 = Vertex3 x     (- y) z 
+    v5 = Vertex3 x     (- y) (- z)
+    v6 = Vertex3 x     y     (- z)
+    v7 = Vertex3 x     y     z 
+    {-
+    v0 = Vertex3 (- r) (- r) r
+    v1 = Vertex3 (- r) (- r) (- r)
+    v2 = Vertex3 (- r) r (- r)
+    v3 = Vertex3 (- r) r r
+    v4 = Vertex3 r (- r) r
+    v5 = Vertex3 r (- r) (- r)
+    v6 = Vertex3 r r (- r)
+    v7 = Vertex3 r r r
+    -}
+{-|
+  KEY: draw cube with quad
+
+  @
+  drawCubeQuad 0.2
+  @
+
+  SEE: /Library/WebServer/Documents/xfido/image/cubex.png
+-}
+drawCubeQuad :: GLfloat -> IO ()
+drawCubeQuad r =
+  let nfaces = zip3 n [(green, gray, gray1, blue), (cyan, blue, white, brown), (yellow, green, cyan, color1), (gray, blue, white, color2), (white, yellow, blue, color3), (blue, cyan, gray, color4)] facesx
+   in do
+        mapM_
+          ( \(n, (c1, c2, c3, c4), [v0, v1, v2, v3]) -> do
+              renderPrimitive Quads $ do
+                normal n
+                color  c1 
+                vertex v0
+                color  c2 
+                vertex v1
+                color  c3
+                vertex v2
+                color  c4
+                vertex v3
+          )
+          nfaces
+  where
+    n :: [Normal3 GLfloat]
+    n =
+      [ Normal3 (-1.0) 0.0 0.0,
+        Normal3 0.0 1.0 0.0,
+        Normal3 1.0 0.0 0.0,
+        Normal3 0.0 (-1.0) 0.0,
+        Normal3 0.0 0.0 1.0,
+        Normal3 0.0 0.0 (-1.0)
+      ]
+    facesx :: [[Vertex3 GLfloat]]
+    facesx =
+      [ [v0, v1, v2, v3],
+        [v3, v2, v6, v7],
+        [v7, v6, v5, v4],
+        [v4, v5, v1, v0],
+        [v5, v6, v2, v1],
+        [v7, v4, v0, v3]
+      ]
+    v0 = Vertex3 (- r) (- r) r
+    v1 = Vertex3 (- r) (- r) (- r)
+    v2 = Vertex3 (- r) r (- r)
+    v3 = Vertex3 (- r) r r
+    v4 = Vertex3 r (- r) r
+    v5 = Vertex3 r (- r) (- r)
+    v6 = Vertex3 r r (- r)
+    v7 = Vertex3 r r r
+
 
 drawCubeQuadD :: GLdouble -> IO ()
 drawCubeQuadD r =
@@ -5062,27 +5186,6 @@ drawCubeQuadD r =
         Normal3 0.0 0.0 1.0,
         Normal3 0.0 0.0 (-1.0)
       ]
-    faces :: [[Vertex3 GLdouble]]
-    faces =
-      [ [ v 0, v 1, v 2, v 3],
-        [ v 3, v 2, v 6, v 7],
-        [ v 7, v 6, v 5, v 4],
-        [ v 4, v 5, v 1, v 0],
-        [ v 5, v 6, v 2, v 1],
-        [ v 7, v 4, v 0, v 3]
-      ]
-    v :: Int -> Vertex3 GLdouble
-    v x = Vertex3 v0 v1 v2
-      where
-        v0
-          | x == 0 || x == 1 || x == 2 || x == 3 = - r
-          | x == 4 || x == 5 || x == 6 || x == 7 = r
-        v1
-          | x == 0 || x == 1 || x == 4 || x == 5 = - r
-          | x == 2 || x == 3 || x == 6 || x == 7 = r
-        v2
-          | x == 0 || x == 3 || x == 4 || x == 7 = r
-          | x == 1 || x == 2 || x == 5 || x == 6 = - r
     facesx :: [[Vertex3 GLdouble]]
     facesx =
       [ [v0, v1, v2, v3],
