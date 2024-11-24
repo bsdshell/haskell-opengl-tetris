@@ -140,7 +140,12 @@ data GlobalRef = GlobalRef
     currTetris3_:: (BlockAttr, [[[Int]]]),
     isPaused_ :: Bool,
     font_ :: FTGL.Font,
-    nRow_ :: Int
+    nRow_ :: Int,
+    rotAxis_ :: Int,
+    rotDeg_ :: GLdouble,
+    tetFrame_ :: (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat),
+    tetFrameMat_ :: [[GLfloat]],
+    flipFrame_ :: ((Int, GLfloat), (Int, GLfloat), (Int, GLfloat))
   }
   deriving (Show)
 

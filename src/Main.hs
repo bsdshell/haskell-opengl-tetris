@@ -34,7 +34,7 @@ module Main where
 -- import qualified System.Console.ANSI as AN
 -- END
 
--- import Graphics.UI.GLUT
+import Graphics.UI.GLUT
 -- import Graphics.UI.GLUT.Callbacks.Global
 import AronGraphic
 import AronModule
@@ -285,7 +285,7 @@ mymain = do
       ioArray <- DAO.newArray ((-nx, -ny, -nz), (nx - 1, ny - 1, nz - 1)) blockAttr :: IO (IOArray (Int, Int, Int) BlockAttr)
       animaStateArr <- initAnimaState
 
-      mainLoop window3d refCamRot refGlobal refFrame animaStateArr [] ioArray
+      mainLoopX window3d refCamRot refGlobal refFrame animaStateArr [] ioArray
 
       G.destroyWindow window3d
       G.terminate
@@ -296,6 +296,7 @@ multiModelviewMat ls = do
   mat <- newMatrix RowMajor ls :: IO (GLmatrix GLfloat)
   GL.multMatrix mat
   getMatrixComponents RowMajor mat -- [GLfloat]
+
 
 {-|
    KEY: rotate 2d array, rotate matrix
@@ -337,7 +338,7 @@ tetris1 =
           [0, 0, 0, 0, 0]
         ]
   
-tet3d = [
+tet3d0 = [
         [ 
           [0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0],
@@ -413,13 +414,52 @@ tet3d1 = [
        ]
      ]
 
+tet3d2 = [
+        [ 
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+       ],
+       [ 
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+       ],
+       [ 
+          [0, 0, 0, 1, 0],
+          [0, 0, 0, 1, 0],
+          [1, 1, 1, 1, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+       ],
+       [ 
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+       ],
+       [ 
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0]
+       ]
+     ]
+
 randomBlockX3 :: IORef GlobalRef -> IO (BlockAttr, [[[Int]]])
 randomBlockX3 ref = do
   tetrisCount <- readIORef ref <&> currTetris_ <&> fst <&> tetrisCount_
   let t1 = 1
-  let t2 = 2 
-  let ls = [(tet3d, white, t1)]
-  -- let ls = [(tet3d, white, t1), (tet3d1, gray, t2)]
+  let t2 = 2  
+  let t3 = 3  
+  let ls = [(tet3d2, white, t3)]
+  -- let ls = [(tet3d0, white, t1), (tet3d1, gray, t2), (tet3d2, gray, t3)]
   inx <- randomInt 0 (len ls - 1)
   let br = ls !! inx
   let bb = (BlockAttr {isFilled_ = True, typeId_ = br ^. _3, tetrisCount_ = tetrisCount + 1, color_ = br ^. _2}, br ^. _1 )
@@ -539,11 +579,49 @@ initGlobal font =
       count1_ = 10000000,
       rotN_ = 0,
       currTetris_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue}, tetris0),
-      currTetris3_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue}, tet3d),
+      currTetris3_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue}, tet3d0),
       isPaused_ = False,
       font_ = font,
-      nRow_ = 0
+      nRow_ = 0,
+      rotAxis_ = -1,
+      rotDeg_ = 0,
+      tetFrame_ = (Vector3 1 0 0, Vector3 0 1 0, Vector3 0 0 1),
+      tetFrameMat_ = matId 4,
+      flipFrame_ = ((0, 1.0), (1, -1.0), (2, 1.0))
     }
+
+rotateCoorFrameX :: (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat) -> GLfloat -> [[GLfloat]] -> ((Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat), [[GLfloat]])
+rotateCoorFrameX (vecX, vecY, vecZ) rotSpeed m = ((vecX, vecY', vecZ'), viewMat) 
+  where
+    -- rotSpeed = 1.0
+    (mm, ls) = rotMat4Tup vecX (rf $ (pi/180) * rotSpeed)
+    lsY = vecToList3 vecY ++ [0]
+    lsZ = vecToList3 vecZ ++ [0]
+    vecY' = listToVec $ mm `multiVecL` lsY
+    vecZ' = listToVec $ mm `multiVecL` lsZ
+    viewMat = mm `multiMat` m
+
+rotateCoorFrameY :: (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat) ->  GLfloat -> [[GLfloat]] -> ((Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat), [[GLfloat]])
+rotateCoorFrameY (vecX, vecY, vecZ) rotSpeed m = ((vecX', vecY, vecZ'), viewMat) 
+  where
+    -- rotSpeed = -1.0
+    (mm, ls) = rotMat4Tup vecY (rf $ (pi/180) * rotSpeed)
+    lsX = vecToList3 vecX ++ [0]
+    lsZ = vecToList3 vecZ ++ [0]
+    vecX' = listToVec $ mm `multiVecL` lsX
+    vecZ' = listToVec $ mm `multiVecL` lsZ
+    viewMat = mm `multiMat` m
+
+rotateCoorFrameZ :: (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat) ->  GLfloat -> [[GLfloat]] -> ((Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat), [[GLfloat]])
+rotateCoorFrameZ (vecX, vecY, vecZ) rotSpeed m = ((vecX', vecY', vecZ), viewMat) 
+  where
+    -- rotSpeed = 1.0
+    (mm, ls) = rotMat4Tup vecZ (rf $ (pi/180) * rotSpeed)
+    lsX = vecToList3 vecX ++ [0]
+    lsY = vecToList3 vecY ++ [0]
+    vecX' = listToVec $ mm `multiVecL` lsX
+    vecY' = listToVec $ mm `multiVecL` lsY
+    viewMat = mm `multiMat` m
 
 -- Friday, 01 November 2024 12:46 PDT
 -- keyBoardCallBackNew :: IORef CameraRot -> IORef GlobalRef -> IOArray (Int, Int, Int) BlockAttr -> G.KeyCallback
@@ -555,6 +633,7 @@ keyBoardCallBack3d refCamRot refGlobalRef ioArray window key scanCode keyState m
   cam <- readIORef refCamRot
   rr <- readIORef refGlobalRef <&> rectGrid_
   coordFrame <- readIORef refCamRot <&> coordFrame_
+  coordFrameMat <- readIORef refCamRot <&> coordFrameMat_
   rotSpeed <- readIORef refCamRot <&> rotSpeed_
   case keyState of
     ks
@@ -564,60 +643,81 @@ keyBoardCallBack3d refCamRot refGlobalRef ioArray window key scanCode keyState m
             | k == G.Key'Right -> do
                 currXYZ <- readIORef refCamRot <&> currXYZ_
                 case currXYZ of
+
+                        -- rotate around X-Axis
+                        -- old vecY => new vecY' 
+                        -- old vecZ => new vecZ' 
+                        -- SEE: /Library/WebServer/Documents/xfido/image/rotateX.png
                    v | v == 1 -> do
-                         let vecXCF = coordFrame ^._1
-                         let vecYCF = coordFrame ^._2
-                         let vecZCF = coordFrame ^._3
-                         let (mm, ls) = rotMat4Tup vecXCF (rf $ (pi/180) * rotSpeed)
-                         -- multiModelviewMat ls
-                         let lsY = vecToList3 vecYCF ++ [0]
-                         let lsZ = vecToList3 vecZCF ++ [0]
-                         let vy3 = listToVec $ mm `multiVecL` lsY
-                         let vz3 = listToVec $ mm `multiVecL` lsZ
-
+                         let (frame, mat) = rotateCoorFrameX coordFrame rotSpeed coordFrameMat 
+                         modifyIORef refCamRot (\s -> 
+                                                    s{
+                                                      coordFrame_ = frame 
+                                                      ,coordFrameMat_ = mat
+                                                     }
+                                               )
+                         {-
+                         let vecX = coordFrame ^._1
+                         let vecY = coordFrame ^._2
+                         let vecZ = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecX (rf $ (pi/180) * rotSpeed)
+                         let lsY = vecToList3 vecY ++ [0]
+                         let lsZ = vecToList3 vecZ ++ [0]
+                         let vecY' = listToVec $ mm `multiVecL` lsY
+                         let vecZ' = listToVec $ mm `multiVecL` lsZ
                          modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
-                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecXCF, vy3, vz3)})
-                         mm' <- (cap . printMat) mm
-                         logFileG ["mm_matrix"]
-                         logFileG [mm']
-
-                         logFileG ["vecXCF"]
-                         logFileG [show vecXCF]  
-                         logFileG ["n=1 vecvy3"]
-                         logFileG [show vy3]
-                         logFileG ["n=1 vecvz3"]
-                         logFileG [show vz3]
-                         logFileG ["lenn lsY lsZ"]
-                         logFileG $ map show lsY
-                         logFileG $ map show lsZ
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecX, vecY', vecZ')})
+                         -}
   
+                        -- rotate around Y-Axis
+                        -- old vecX => new vecX' 
+                        -- old vecZ => new vecZ' 
+                        -- SEE: /Library/WebServer/Documents/xfido/image/rotateY.png
                      | v == 2 -> do
-                         let vecXCF = coordFrame ^._1
-                         let vecYCF = coordFrame ^._2
-                         let vecZCF = coordFrame ^._3
-                         let (mm, ls) = rotMat4Tup vecYCF (rf $ (pi/180) * rotSpeed)
-                         -- multiModelviewMat ls
-                         let lsX = vecToList3 vecXCF ++ [0]
-                         let lsZ = vecToList3 vecZCF ++ [0]
-                         let vx3 = listToVec $ mm `multiVecL` lsX
-                         let vz3 = listToVec $ mm `multiVecL` lsZ
+                         let (frame, mat) = rotateCoorFrameY coordFrame rotSpeed coordFrameMat 
+                         modifyIORef refCamRot (\s -> 
+                                                    s{
+                                                      coordFrame_ = frame 
+                                                      ,coordFrameMat_ = mat
+                                                     }
+                                               )
+                         {-
+                         let vecX = coordFrame ^._1
+                         let vecY = coordFrame ^._2
+                         let vecZ = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecY (rf $ (pi/180) * rotSpeed)
+                         let lsX = vecToList3 vecX ++ [0]
+                         let lsZ = vecToList3 vecZ ++ [0]
+                         let vecX' = listToVec $ mm `multiVecL` lsX
+                         let vecZ' = listToVec $ mm `multiVecL` lsZ
                          modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
-                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vecYCF, vz3)})
-                         mm' <- (cap . printMat) mm
-                         logFileG ["mm_matrix"]
-                         logFileG [mm']
-  
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecX', vecY, vecZ')})
+                         -}
+
+                        -- rotate around Z-Axis
+                        -- old vecX => new vecX' 
+                        -- old vecY => new vecY' 
+                        -- SEE: /Library/WebServer/Documents/xfido/image/rotateZ.png
                      | v == 3 -> do
-                         let vecXCF = coordFrame ^._1
-                         let vecYCF = coordFrame ^._2
-                         let vecZCF = coordFrame ^._3
-                         let (mm, ls) = rotMat4Tup vecZCF (rf $ (pi/180) * rotSpeed)
-                         let lsX = vecToList3 vecXCF ++ [0]
-                         let lsY = vecToList3 vecYCF ++ [0]
-                         let vx3 = listToVec $ mm `multiVecL` lsX
-                         let vy3 = listToVec $ mm `multiVecL` lsY
+                         let (frame, mat) = rotateCoorFrameZ coordFrame rotSpeed coordFrameMat 
+                         modifyIORef refCamRot (\s -> 
+                                                    s{
+                                                      coordFrame_ = frame 
+                                                      ,coordFrameMat_ = mat
+                                                     }
+                                               )
+                         {-
+                         let vecX = coordFrame ^._1
+                         let vecY = coordFrame ^._2
+                         let vecZ = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecZ (rf $ (pi/180) * rotSpeed)
+                         let lsX = vecToList3 vecX ++ [0]
+                         let lsY = vecToList3 vecY ++ [0]
+                         let vecX' = listToVec $ mm `multiVecL` lsX
+                         let vecY' = listToVec $ mm `multiVecL` lsY
                          modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
-                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vy3, vecZCF)})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecX', vecY', vecZ)})
+                         -}
                      | v == 4 -> do
                          persp <- readIORef refCamRot <&> persp_
                          modifyIORef refCamRot (\s -> s{persp_ = persp{zn_ = zn_ persp + 0.04}})
@@ -633,40 +733,69 @@ keyBoardCallBack3d refCamRot refGlobalRef ioArray window key scanCode keyState m
                 currXYZ <- readIORef refCamRot <&> currXYZ_
                 case currXYZ of
                    v | v == 1 -> do
-                         let vecXCF = coordFrame ^._1
-                         let vecYCF = coordFrame ^._2
-                         let vecZCF = coordFrame ^._3
-                         let (mm, ls) = rotMat4Tup vecXCF (rf $ (pi/180) * negate rotSpeed)
-                         let lsY = vecToList3 vecYCF ++ [0]
-                         let lsZ = vecToList3 vecZCF ++ [0]
-                         let vy3 = listToVec $ mm `multiVecL` lsY
-                         let vz3 = listToVec $ mm `multiVecL` lsZ
+                         let (frame, mat) = rotateCoorFrameX coordFrame (negate rotSpeed) coordFrameMat 
+                         modifyIORef refCamRot (\s -> 
+                                                    s{
+                                                      coordFrame_ = frame 
+                                                      ,coordFrameMat_ = mat
+                                                     }
+                                               )
+                         {-
+                         let vecX = coordFrame ^._1
+                         let vecY = coordFrame ^._2
+                         let vecZ = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecX (rf $ (pi/180) * negate rotSpeed)
+                         let lsY = vecToList3 vecY ++ [0]
+                         let lsZ = vecToList3 vecZ ++ [0]
+                         let vecY' = listToVec $ mm `multiVecL` lsY
+                         let vecZ' = listToVec $ mm `multiVecL` lsZ
                          modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
-                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecXCF, vy3, vz3)})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecX, vecY', vecZ')})
+                         -}
+
                      | v == 2 -> do
-                         let vecXCF = coordFrame ^._1
-                         let vecYCF = coordFrame ^._2
-                         let vecZCF = coordFrame ^._3
-                         let (mm, ls) = rotMat4Tup vecYCF (rf $ (pi/180) * negate rotSpeed)
-                         let lsX = vecToList3 vecXCF ++ [0]
-                         let lsZ = vecToList3 vecZCF ++ [0]
-                         let vx3 = listToVec $ mm `multiVecL` lsX
-                         let vz3 = listToVec $ mm `multiVecL` lsZ
+                         let (frame, mat) = rotateCoorFrameY coordFrame (negate rotSpeed) coordFrameMat 
+                         modifyIORef refCamRot (\s -> 
+                                                    s{
+                                                      coordFrame_ = frame 
+                                                      ,coordFrameMat_ = mat
+                                                     }
+                                               )
+
+                         {-
+                         let vecX = coordFrame ^._1
+                         let vecY = coordFrame ^._2
+                         let vecZ = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecY (rf $ (pi/180) * negate rotSpeed)
+                         let lsX = vecToList3 vecX ++ [0]
+                         let lsZ = vecToList3 vecZ ++ [0]
+                         let vecX' = listToVec $ mm `multiVecL` lsX
+                         let vecZ' = listToVec $ mm `multiVecL` lsZ
 
                          modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
-                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vecYCF, vz3)})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecX', vecY, vecZ')})
+                         -}
   
                      | v == 3 -> do
-                         let vecXCF = coordFrame ^._1
-                         let vecYCF = coordFrame ^._2
-                         let vecZCF = coordFrame ^._3
-                         let (mm, ls) = rotMat4Tup vecZCF (rf $ (pi/180) * negate rotSpeed)
-                         let lsX = vecToList3 vecXCF ++ [0]
-                         let lsY = vecToList3 vecYCF ++ [0]
-                         let vx3 = listToVec $ mm `multiVecL` lsX
-                         let vy3 = listToVec $ mm `multiVecL` lsY
+                         let (frame, mat) = rotateCoorFrameZ coordFrame (negate rotSpeed) coordFrameMat 
+                         modifyIORef refCamRot (\s -> 
+                                                    s{
+                                                      coordFrame_ = frame 
+                                                      ,coordFrameMat_ = mat
+                                                     }
+                                               )
+                         {-
+                         let vecX = coordFrame ^._1
+                         let vecY = coordFrame ^._2
+                         let vecZ = coordFrame ^._3
+                         let (mm, ls) = rotMat4Tup vecZ (rf $ (pi/180) * negate rotSpeed)
+                         let lsX = vecToList3 vecX ++ [0]
+                         let lsY = vecToList3 vecY ++ [0]
+                         let vecX' = listToVec $ mm `multiVecL` lsX
+                         let vecY' = listToVec $ mm `multiVecL` lsY
                          modifyIORef refCamRot (\s -> s{coordFrameMat_ = let m = coordFrameMat_ s in mm `multiMat` m})
-                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vx3, vy3, vecZCF)})
+                         modifyIORef refCamRot (\s -> s{coordFrame_ = (vecX', vecY', vecZ)})
+                         -}
                      | v == 4 -> do
                          persp <- readIORef refCamRot <&> persp_
                          modifyIORef refCamRot (\s -> s{persp_ = persp{zn_ = zn_ persp - 0.04}})                             
@@ -679,15 +808,6 @@ keyBoardCallBack3d refCamRot refGlobalRef ioArray window key scanCode keyState m
               rotN <- readIORef refGlobalRef <&> rotN_
               tetX <- readIORef refGlobalRef <&> currTetris_
               tet3 <- readIORef refGlobalRef <&> currTetris3_
-              {-
-              let bk1'X = (fst tetX, rotateN rotN (snd tetX))
-              lsArr <- getAssocs ioArray
-              let lsX = getShapeX bk1'X
-              logFileG ["lsX"]
-              logFileG $ map show lsX
-              logFileG ["lsArr"]
-              logFileG $ map show lsArr
-              -}
 
               ls <- getAssocs ioArray
               let ls' = map (\(t, bk) -> (t, isFilled_ bk ? 1 $ 0)) ls
@@ -715,9 +835,6 @@ keyBoardCallBack3d refCamRot refGlobalRef ioArray window key scanCode keyState m
               rotN <- readIORef refGlobalRef <&> rotN_
               tetX <- readIORef refGlobalRef <&> currTetris_
               tet3 <- readIORef refGlobalRef <&> currTetris3_
---               mx <- readIORef refGlobalRef <&> moveX_
---               my <- readIORef refGlobalRef <&> moveY_
---               mz <- readIORef refGlobalRef <&> moveZ_
               ls <- getAssocs ioArray
 
               let ls' = map (\(t, bk) -> (t, isFilled_ bk ? 1 $ 0)) ls
@@ -775,74 +892,69 @@ keyBoardCallBack3d refCamRot refGlobalRef ioArray window key scanCode keyState m
               pauseTetris3 isPaused refGlobalRef initRectGrid ioArray
               pp $ "P isPaused=" ++ show isPaused
 
-            | k == G.Key'C -> do
+            | k == G.Key'C || k == G.Key'H || k == G.Key'S -> do
               mx <- readIORef refGlobalRef <&> moveX_
               my <- readIORef refGlobalRef <&> moveY_
               mz <- readIORef refGlobalRef <&> moveZ_
               tet3 <- readIORef refGlobalRef <&> currTetris3_
-              ls <- getAssocs ioArray
+              let cubeWidth = len $ snd tet3
+              let cIndex = div cubeWidth 2
+              pp $ "cubeWidth=" ++ show cubeWidth 
+              pp $ "cubeWidth=" ++ show cubeWidth 
+              pp $ "cIndex=" ++ show cIndex
 
-              let ls' = map (\(t, bk) -> (t, isFilled_ bk ? 1 $ 0)) ls
-              ioCube <- tetrisCube ((-2, -2, -2), (2, 2, 2)) $ snd tet3
-              rotTet3 <- rotateTetrisX ioCube 1 
-              let tetris = (join . join) rotTet3
-              let t3 = map (partList 5) $ partList 5 $ map snd tetris
-              let currTetris3' = (fst tet3, t3)
+              -- tetris cube
+              ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) $ snd tet3
+
+              -- 0 => x, 1 => y, 2 => z
+              let rotAxis = if | k == G.Key'C -> 0  
+                               | k == G.Key'H -> 1
+                               | k == G.Key'S -> 2
+                               | otherwise    -> -1 
+              
+              {- 
+              when (rotAxis == 0) $ do
+                -- switch y-axis and z-axis
+                fu <- readIORef refGlobalRef <&> flipFrame_
+                let xa = fu ^._1
+                let ya = (fu ^._2 ^._1, negate $ fu ^._2 ^._2)  
+                let za = (fu ^._3 ^._1, fu ^._3 ^._2) 
+                let flipFrame = (xa, za, ya)
+                modifyIORef
+                  refGlobalRef
+                  ( \s ->
+                      s
+                        {   
+                         flipFrame_ = flipFrame 
+                        }
+                  )
+              
+              when (rotAxis == 1) $ do
+                -- switch y-axis and z-axis
+                fu <- readIORef refGlobalRef <&> flipFrame_
+                let xa = (fu ^._1 ^._1, negate $ fu ^._1 ^._2)
+                let ya = (fu ^._2 ^._1, fu ^._2 ^._2) 
+                let za = (fu ^._3 ^._1, fu ^._3 ^._2)
+                let flipFrame = (za, ya, xa)
+                modifyIORef
+                  refGlobalRef
+                  ( \s ->
+                      s
+                        {   
+                         flipFrame_ = flipFrame 
+                        }
+                  )
+              -}
 
               modifyIORef
                 refGlobalRef
                 ( \s ->
                     s
-                      {currTetris3_ = currTetris3' 
+                      {   -- currTetris3_ = currTetris3',
+                       rotAxis_ = rotAxis
                       }
                 )
-            | k == G.Key'H -> do
-              mx <- readIORef refGlobalRef <&> moveX_
-              my <- readIORef refGlobalRef <&> moveY_
-              mz <- readIORef refGlobalRef <&> moveZ_
-              tet3 <- readIORef refGlobalRef <&> currTetris3_
-              ls <- getAssocs ioArray
 
-              let ls' = map (\(t, bk) -> (t, isFilled_ bk ? 1 $ 0)) ls
-              ioCube <- tetrisCube ((-2, -2, -2), (2, 2, 2)) $ snd tet3
-
-              rotTet3 <- rotateTetrisY ioCube (-1) 
-
-              let tetris = (join . join) rotTet3
-              let t3 = map (partList 5) $ partList 5 $ map snd tetris
-              let currTetris3' = (fst tet3, t3)
-
-              modifyIORef
-                refGlobalRef
-                ( \s ->
-                    s
-                      {currTetris3_ = currTetris3' 
-                      }
-                )
-              pp "Key D"
-            | k == G.Key'S -> do
-              mx <- readIORef refGlobalRef <&> moveX_
-              my <- readIORef refGlobalRef <&> moveY_
-              mz <- readIORef refGlobalRef <&> moveZ_
-              tet3 <- readIORef refGlobalRef <&> currTetris3_
-              ls <- getAssocs ioArray
-
-              let ls' = map (\(t, bk) -> (t, isFilled_ bk ? 1 $ 0)) ls
-              ioCube <- tetrisCube ((-2, -2, -2), (2, 2, 2)) $ snd tet3
-
-              rotTet3 <- rotateTetrisZ ioCube (-1) 
-              let tetris = (join . join) rotTet3
-              let t3 = map (partList 5) $ partList 5 $ map snd tetris
-              let currTetris3' = (fst tet3, t3)
-
-              modifyIORef
-                refGlobalRef
-                ( \s ->
-                    s
-                      {currTetris3_ = currTetris3' 
-                      }
-                )
-              pp "Key S"
 
             | k == G.Key'A -> do
               moveX <- readIORef refGlobalRef <&> moveX_
@@ -1131,8 +1243,8 @@ initRectGrid =
       maxX_ = 1.0,
       minY_ = -1.0,
       maxY_ = 1.0,
-      minZ_ = -0.4,
-      maxZ_ = 0.4,
+      minZ_ = -1.0,
+      maxZ_ = 1.0,
       xCount_ = 20,
       yCount_ = 20,
       zCount_ = 20,
@@ -1228,40 +1340,66 @@ centerBlock00X (nx, ny, nz) r color = do
     let width =  (x1 - x0) / fi (xCount_ r)
     let height = (y0 - y1) / fi (yCount_ r)
     let depth =  (z1 - z0) / fi (zCount_ r)
+    let x = width / 2
+    let y = height / 2
+    let z = depth / 2
+
     let vo = Vertex3 0 0 0
     let vf = Vertex3 (fi nx * width) (fi ny * height) (fi nz * depth) 
     let vm = vo -: vf 
     translate vm
-    preservingMatrix $ do
-      let x = width / 2
-      let y = height / 2
-      let z = depth / 2
-      let vf' = Vertex3 x y z :: (Vertex3 GLfloat)
-      let ov' = Vertex3 0 0 0 :: (Vertex3 GLfloat)
-      let vv = ov' -: vf' 
-      translate vv
-      -- drawRectFill2dX color (width, height)
-      translate (Vector3 0 0 (negate z))
+    if nz == 0 then do
+      drawCubeQuadN (x, y, z) 1.0
+    else if nz < 0 then do 
+      drawCubeQuadN (x, y, z) (1/ fi (negate nz))
+    else do
+      drawCubeQuadN (x, y, z) (4/ fi nz)
+
+
+
+
+drawAxis :: Vector3 GLfloat -> [Color3 GLdouble] -> IO()
+drawAxis v cl = do
+  preservingMatrix $ do
+    let v0 = Vector3 1 0 0 :: (Vector3 GLfloat)
+    let v1 = v
+    let m = padMat3To4 $ rotToVecMat v0 v1
+    multiModelviewMat $ join m
+    -- cylinderArrow 1.0 cl
+    cylinderArrow 0.3 cl
+
+centerBlock00X3 :: (Int, Int, Int) -> Int -> RectGrid -> Color3 GLdouble -> IO ()
+centerBlock00X3 (nx, ny, nz) nc r color = do
+  preservingMatrix $ do
+    let wx = xEdge_ r; wy = yEdge_ r
+    let v (x, y, z) = Vertex3 x y z
+    -- top left corner
+    let x0 = minX_ r; y0 = maxY_ r; 
+    -- bottom right corner
+    -- let x1 = maxY_ r; y1 = minY_ r
+    let x1 = maxX_ r; y1 = minY_ r
+    let z0 = minZ_ r; z1 = maxZ_ r
+    let width =  (x1 - x0) / fi (xCount_ r)
+    let height = (y0 - y1) / fi (yCount_ r)
+    let depth =  (z1 - z0) / fi (zCount_ r)
+    let x = width / 2
+    let y = height / 2
+    let z = depth / 2
+
+    let vo = Vertex3 0 0 0
+    let vf = Vertex3 (fi nx * width) (fi ny * height) (fi nz * depth) 
+    let vm = vo -: vf 
+    translate vm
+
+    if nc == 0 then do
+      drawCubeQuadN (x, y, z) 1.0
+    else do
       if nz == 0 then do
         drawCubeQuadN (x, y, z) 1.0
-        -- drawRectFill2dX3 1.0 (width, height, depth)
       else if nz < 0 then do 
         drawCubeQuadN (x, y, z) (1/ fi (negate nz))
-        -- drawRectFill2dX3 (1/ fi (negate nz)) (width, height, depth)
       else do
         drawCubeQuadN (x, y, z) (4/ fi nz)
-        -- drawRectFill2dX3 (4/ fi nz) (width, height, depth)
-  where
-    vxz = Vertex3 0 0 0
-
-drawRectFill2dX2 :: Color3 GLdouble -> (GLfloat, GLfloat, GLfloat) -> IO ()
-drawRectFill2dX2 c (w, h, d) = do
-  preservingMatrix $ do
-    let x = w/2
-    let y = h/2
-    let z = d/2
-    translate (Vector3 0 0 0 :: Vector3 GLfloat)
-    drawCubeQuad (w/2)
 
 drawRectFill2dX3 :: GLdouble -> (GLfloat, GLfloat, GLfloat) -> IO ()
 drawRectFill2dX3 mc (w, h, d) = do
@@ -1373,16 +1511,14 @@ addBlockX dm (s : cx) = DM.insert (fst s) (snd s) $ addBlockX dm cx
 
 showCurrBoardArr :: IOArray (Int, Int, Int) BlockAttr -> IO ()
 showCurrBoardArr arr = do
+  let nc = 1 
   ls <- getAssocs arr
   preservingMatrix $ do
     mapM_
       ( \((x, y, z), b) ->
           preservingMatrix $ do
             when (isFilled_ b) $ do
-              -- centerBlock00 (x, y) initRectGrid (color_ b)
-              centerBlock00X (x, y, z) initRectGrid (color_ b)
-      
-              -- isFilled_ b ? centerBlock00 (x, y) initRectGrid (color_ b) $ pp "not filled"
+              centerBlock00X3 (x, y, z) nc initRectGrid (color_ b)
       )
       ls
 
@@ -1406,72 +1542,83 @@ renderTetris refGlobal rr = do
       )
       $ join ls
 
-rotateTetrisY :: IOArray (Int, Int, Int) Int -> Int -> IO [[[((Int, Int, Int), Int)]]]
-rotateTetrisY arr rotN = do
-      mapM (\k -> do
-              a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> y == k)
-              let b0 = partList 5 $ map snd a0
-              let x0 = partList 5 $ map fst a0
-              pp $ "k=" ++ show k
-              printMat b0
-              let c0 = rotateN rotN b0
-              pp ""
-              printMat c0
-              let a4 = zipWith zip x0 c0
-              pp ""
-              printMat a4
-              let a00 = partList 5 a0
-              printMat a00
-              pp $ "rotN=" ++ show rotN
-              return a4 
-           ) [-2..2]
+{-|
+  rotate x-axis, on y-z plane
+  rotate y-axis, on x-z plane
+  rotate z-axis, on x-y plane
+-}
+rotateTetris :: IOArray (Int, Int, Int) Int -> Int -> IO [[[((Int, Int, Int), Int)]]]
+rotateTetris arr rotAxis = do
+    mapM_ (\k -> do
+      a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> case rotAxis of
+                                                                          v | v == 0 -> x == k
+                                                                            | v == 1 -> y == k
+                                                                            | v == 2 -> z == k
+                                                                            | otherwise -> True  
+                                                  )
 
-rotateTetrisZ :: IOArray (Int, Int, Int) Int -> Int -> IO [[[((Int, Int, Int), Int)]]]
-rotateTetrisZ arr rotN = do
-      mapM (\k -> do
-              a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> z == k)
-              let b0 = partList 5 $ map snd a0
-              let x0 = partList 5 $ map fst a0
-              pp $ "k=" ++ show k
-              printMat b0
-              let c0 = rotateN rotN b0
-              pp ""
-              printMat c0
-              let a4 = zipWith zip x0 c0
-              pp ""
-              printMat a4
-              let a00 = partList 5 a0
-              printMat a00
-              pp $ "rotN=" ++ show rotN
-              return a4 
-           ) [-2..2]
+      let b0 = partList 5 $ map snd a0
+      let x0 = partList 5 $ map fst a0
+      pp $ "k=" ++ show k
+      pp "b0"
+      printMat b0
+      let c0 = rotateN 1 b0
+      let a00 = rotateN 1 $ partList 5 a0 
+      pp "c0"
+      printMat c0
+      let a4 = zipWith zip x0 c0
+      pp "--"
+      printMat a4
+      pp ""
+      pp "x0"
+      printMat x0
+      pp ""
+
+      mapM_ (uncurry $ DAO.writeArray arr) $ join a4 
+
+      let a00 = partList 5 a0
+      printMat a00
+      ) [-2..2]
+
+    retArr <- DAO.getAssocs arr
+    return $ map (partList 5) $ partList 25 retArr
 
 rotateTetrisX :: IOArray (Int, Int, Int) Int -> Int -> IO [[[((Int, Int, Int), Int)]]]
 rotateTetrisX arr rotN = do
-      mapM (\k -> do
-              a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> x == k)
-              let b0 = partList 5 $ map snd a0
-              let x0 = partList 5 $ map fst a0
-              pp $ "k=" ++ show k
-              printMat b0
-              let c0 = rotateN rotN b0
-              pp ""
-              printMat c0
-              let a4 = zipWith zip x0 c0
-              pp ""
-              printMat a4
-              let a00 = partList 5 a0
-              printMat a00
-              pp $ "rotN=" ++ show rotN
-              return a4 
-           ) [-2..2]
+    mapM_ (\k -> do
+      a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> x == k)
+
+      let b0 = partList 5 $ map snd a0
+      let x0 = partList 5 $ map fst a0
+      pp $ "k=" ++ show k
+      pp "b0"
+      printMat b0
+      let c0 = rotateN rotN b0
+      let a00 = rotateN rotN $ partList 5 a0 
+      pp "c0"
+      printMat c0
+      let a4 = zipWith zip x0 c0
+      pp "--"
+      printMat a4
+      pp ""
+      pp "x0"
+      printMat x0
+      pp ""
+
+      mapM_ (uncurry $ DAO.writeArray arr) $ join a4 
+
+      let a00 = partList 5 a0
+      printMat a00
+      ) [-2..2]
+
+    retArr <- DAO.getAssocs arr
+    return $ map (partList 5) $ partList 25 retArr
+
 
 tetrisCube :: ((Int, Int, Int), (Int, Int, Int)) -> [[[Int]]] -> IO (IOArray (Int, Int, Int) Int)
 tetrisCube ((x0, y0, z0), (x1, y1, z1)) tet3 = do 
-  let ltt = (join . join) tet3
-  DAO.newListArray ((x0, y0, z0), (x1, y1, z1)) ltt :: IO (IOArray  (Int, Int, Int) Int) 
-
-
+  let ls = (join . join) tet3
+  DAO.newListArray ((x0, y0, z0), (x1, y1, z1)) ls :: IO (IOArray  (Int, Int, Int) Int) 
 
 renderTetris3 :: IORef GlobalRef -> RectGrid -> IO ()
 renderTetris3 refGlobal rr = do
@@ -1479,24 +1626,61 @@ renderTetris3 refGlobal rr = do
     mx <- readIORef refGlobal <&> moveX_
     my <- readIORef refGlobal <&> moveY_
     mz <- readIORef refGlobal <&> moveZ_
-    rotN <- readIORef refGlobal <&> rotN_
-    -- tet <- readIORef refGlobal <&> currTetris_
+    rotAxis <- readIORef refGlobal <&> rotAxis_
+    rotDeg <- readIORef refGlobal <&> rotDeg_ 
+    tetFrame <- readIORef refGlobal <&> tetFrame_ 
+    tetFrameMat <- readIORef refGlobal <&> tetFrameMat_ 
     (ba, tet3) <- readIORef refGlobal <&> currTetris3_
     let ltt = (join . join) tet3
-    arr <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) ltt :: IO (IOArray  (Int, Int, Int) Int) 
-    ls <- rotateTetrisX arr rotN
 
-    -- let bks = (fst tet, rotateN rotN (snd tet))
-    -- let ls = getShapeX bks 
-    -- let (ls, ba) = getShapeX5 bks 
+    arr <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) ltt :: IO (IOArray  (Int, Int, Int) Int) 
+    ls <- DAO.getAssocs arr 
+
+    let x0 = minX_ rr; y0 = maxY_ rr 
+    let x1 = maxX_ rr; y1 = minY_ rr
+    let z0 = minZ_ rr; z1 = maxZ_ rr
+    let width =  (x1 - x0) / fi (xCount_ rr)
+    let height = (y0 - y1) / fi (yCount_ rr)
+    let depth =  (z1 - z0) / fi (zCount_ rr)
+
+    let vo = Vertex3 0 0 0
+    let vf = Vertex3 (fi mx * width) (fi my * height) (fi mz * depth) 
+    let vm = vo -: vf 
+    let nc = 0 -- before it hit the bottom
+    translate vm
+    logFileG ["rotDeg=" ++ show rotDeg]
+    
+    let vecX = tetFrame ^._1
+    let vecY = tetFrame ^._2
+    let vecZ = tetFrame ^._3
+    drawAxis vecX [red, fmap (*0.5) red]
+    drawAxis vecY [green, fmap (*05) green]
+    drawAxis vecZ [blue, fmap (*05) blue]
+    -- drawCubeQuad 0.02
+
+    let fx :: Vector3 GLfloat -> Vector3 GLdouble
+        fx (Vector3 x y z) = Vector3 (rf x) (rf y) (rf z)
+
+    if | rotAxis == 0 -> do
+         rotate rotDeg (Vector3 1 0 0 :: Vector3 GLdouble)
+         -- rotate rotDeg (fx vecX)
+       | rotAxis == 1 -> do
+         rotate (negate rotDeg) (Vector3 0 1 0 :: Vector3 GLdouble)
+         -- rotate (negate rotDeg) (fx vecY)
+       | rotAxis == 2 -> do
+         rotate rotDeg (Vector3 0 0 1 :: Vector3 GLdouble)
+         -- rotate rotDeg (fx vecZ)
+       | otherwise -> do 
+         rotate 0 (Vector3 0 0 1 :: Vector3 GLdouble)
     mapM_
       ( \((a, b, c), n) -> do
           preservingMatrix $ do
-            -- centerBlock00 (a + mx, b + my) rr (color_ ba)
             when (n == 1) $ do
-              centerBlock00X (a + mx, b + my, c + mz) rr (color_ ba)
-      )
-      $ (join . join) ls
+              -- bottom right corner
+              -- let x1 = maxY_ r; y1 = minY_ r
+              centerBlock00X3 (a, b, c) nc rr (color_ ba)
+      ) ls 
+       
 
 -- |
 --   @
@@ -1875,8 +2059,8 @@ cylinderArrow leng cl = do
   let cyRadius = cyLen * 0.01
   let coneRadius = cyRadius * 2.0
   let coneHeigh = rf $ leng * (1.0 - cyRatio)
-  rotate (-90) (Vector3 0 0 1 ::Vector3 GLdouble)
   preservingMatrix $ do
+    rotate (-90) (Vector3 0 0 1 ::Vector3 GLdouble)
     cylinder cyRadius cyLen (True, True)  cl
     translate (Vector3 0 (rf cyLen) 0 :: Vector3 GLdouble)
     cone coneRadius coneHeigh 8 cl
@@ -2113,6 +2297,15 @@ beginWindow3d w3d refCamRot refGlobal ioArray = do
   at <- readIORef refCamRot <&> modelview_ <&> at_
   up <- readIORef refCamRot <&> modelview_ <&> up_
 
+  {-
+  light (Light 0)    $= Enabled
+  lighting           $= Enabled 
+  lightModelAmbient  $= Color4 0.5 0.5 0.5 1 
+  diffuse (Light 0)  $= Color4 1 1 1 1
+  blend              $= Enabled
+  blendFunc          $= (SrcAlpha, OneMinusSrcAlpha) 
+  colorMaterial      $= Just (FrontAndBack, AmbientAndDiffuse)
+  -}
    
   matrixMode $= Projection
   loadIdentity
@@ -2131,7 +2324,7 @@ endWindow3d w = do
   
 saveImageFrame :: G.Window -> IOArray Int AnimaState -> IO()
 saveImageFrame w animaStateArr = do
-  let anima1 = 1
+  let anima1 = 9 
   let intervalx = 0 -- larger number is slower
   (isNext1, index1, animaState1) <- readAnimaState animaStateArr anima1 intervalx
   let fn = "/tmp/img_" ++ show (index1 + 1000) ++ ".png"
@@ -2222,82 +2415,59 @@ runGameX w2d refGlobal ioArray = do
         mz <- readIORef refGlobal <&> moveZ_
         tetX <- readIORef refGlobal <&> currTetris_
         tet3 <- readIORef refGlobal <&> currTetris3_
+        rotDeg <- readIORef refGlobal <&> rotDeg_ 
         rotN <- readIORef refGlobal <&> rotN_
         ls <- getAssocs ioArray
 
         let ls' = map (\(t, bk) -> (t, isFilled_ bk ? 1 $ 0)) ls
-        -- getShapeX5 :: (BlockAttr, [[[Int]]]) -> ([[[((Int, Int, Int), Int)]]], BlockAttr)
-        -- let tetris = getShapeX (fst tetX, rotateN rotN (snd tetX))
-        -- let tetris = getShapeX5 (fst tet3, snd tet3)
-        -- ioCube <- tetrisCube ((-2, -2, -2), (2, 2, 2)) $ snd tet3
-        -- rotTet3 <- rotateTetrisX ioCube rotN
-        -- tetris <- rotateTetrisX ioCube rotN <&> join . join
-
         let ltt = (join . join) $ snd tet3
         tt <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) ltt :: IO (IOArray  (Int, Int, Int) Int)
         tetris <- DAO.getAssocs tt 
-
-        -- let t3 = map (partList 5) $ partList 5 $ map snd tetris
-        -- let currTetris3' = (fst tet3, t3)
-
-        -- let currTet = map (\((a, b, c), ba) -> ((a + mx, b + my, c + mz), ba)) tetris 
-        -- let nextTet = map (\((a, b, c), ba) -> ((a + mx, b + my - 1, c + mz), ba)) tetris 
         let bk = fst tet3
         let currTet = map (\((a, b, c), n) -> ((a + mx, b + my, c + mz), n == 1 ? bk{isFilled_ = True} $ bk{isFilled_ = False})) tetris 
         let nextTet = map (\((a, b, c), n) -> ((a + mx, b + my - 1, c + mz), n)) tetris 
 
-        -- let isMovable = checkMoveArr nextTet ls rr
         let isMovable = checkMoveArrX nextTet ls' rr
         pp $ "isMovable=" ++ show isMovable
         if not isMovable
           then do
-            pp "currTet"
             let currTet' = map fst currTet
-            let xx = map (partList 5) $ partList 5 currTet'
-            mapM_ (\x -> do 
-                       printMat x 
-                  ) xx 
-
             mapM_ (uncurry $ DAO.writeArray ioArray) $ filter (\t -> isFilled_ $ snd t) currTet 
-
             mapM_ (\zAxis -> do
-              -- KEY: remove bottom row
-              nRow <- let f x = isFilled_ x in removeBottomX2 w2d zAxis f ioArray
-              modifyIORef refGlobal (\s -> s{nRow_ = nRow + nRow_ s}) 
+                    -- KEY: remove bottom row
+                    nRow <- let f x = isFilled_ x in removeBottomX2 w2d zAxis f ioArray
+                    modifyIORef refGlobal (\s -> s{nRow_ = nRow + nRow_ s}) 
+                    playWav "resource/hit.wav"
+                    mapM_ (\_ -> playWav "resource/pickupCoin.wav") [1..nRow]
+                  ) [0, 1] 
 
-              logFileG ["nRow=> " ++ show nRow]
-
-              logFileG ["writeArray"]
-              logFileG $ map show ls
-
-              -- newBlock <- randomBlockX refGlobal
-              newBlock <- randomBlockX3 refGlobal
-              modifyIORef
+            newBlock <- randomBlockX3 refGlobal
+            modifyIORef
                 refGlobal
                 ( \s ->
                     s
-                      { moveX_ = 0,
-                        moveY_ = initY,
-                        moveZ_ = 0,
-                        rotN_ = 0,
-                        -- currTetris_ = newBlock
-                        currTetris3_ = newBlock
+                      { 
+                        moveX_ = 0
+                        ,moveY_ = initY
+                        ,moveZ_ = 0
+                        ,rotN_ = 0
+                        ,currTetris3_ = newBlock
+                        ,tetFrame_ = (Vector3 1 0 0, Vector3 0 1 0, Vector3 0 0 1)
+                        ,tetFrameMat_ = matId 4 
                       }
                 )
-              playWav "resource/hit.wav"
-              mapM_ (\_ -> playWav "resource/pickupCoin.wav") [1..nRow]
-             ) [0, 1] 
           else do 
             modifyIORef
               refGlobal
               ( \s ->
                   s
-                    {moveY_ = my - 1
+                    {
+                      moveY_ = my - 1
                     }
 
               )
 
-mainLoop ::
+mainLoopX ::
   G.Window ->
   IORef CameraRot ->
   IORef GlobalRef ->
@@ -2306,7 +2476,7 @@ mainLoop ::
   [[Vertex3 GLfloat]] ->
   DAO.IOArray (Int, Int, Int) BlockAttr ->
   IO ()
-mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unlessXX (G.windowShouldClose w2d) $ do
+mainLoopX w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = unlessXX (G.windowShouldClose w2d) $ do
   beginWindow3d w2d refCamRot refGlobal ioArray
   -- /Users/cat/myfile/bitbucket/tmp/xx_9059.x
   rotateWorldX refCamRot
@@ -2315,20 +2485,103 @@ mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = u
   isPaused <- readIORef refGlobal <&> isPaused_
   font <- readIORef refGlobal <&> font_
   nRow <- readIORef refGlobal <&> nRow_
+  rotAxis <- readIORef refGlobal <&> rotAxis_
+  tet3 <- readIORef refGlobal <&> currTetris3_
+  rr <- readIORef refGlobal <&> rectGrid_
+  mx <- readIORef refGlobal <&> moveX_ 
+  my <- readIORef refGlobal <&> moveY_ 
+  mz <- readIORef refGlobal <&> moveZ_ 
   unless isPaused $ do
     let slotNum0 = 0
-    (isNext0, index, animaState) <- readAnimaState animaStateArr slotNum0 500000
+    let slotNum1 = 1 
+    (isNext0, index, animaState) <- readAnimaState animaStateArr slotNum0 5000000
+    -- (isNext0, index, animaState) <- readAnimaState animaStateArr slotNum0 50000
 
     -- logFileG ["index=" ++ show index]
     logFileG ["isNextX=" ++ show isNext0 ++ " animaIndex_=" ++ show (animaIndex_ animaState)]
+    logFileG ["xxindex=" ++ show index]
     -- my <- readIORef refGlobal >>= return . moveY_
     -- KEY: falling block, drop block
     when True $ do
-      when isNext0 $ do
+      if isNext0 then do
         -- runGame w2d refGlobal ioArray
         runGameX w2d refGlobal ioArray
         flipIsNext animaStateArr slotNum0
+      else do
+        when (rotAxis == 0 || rotAxis == 1 || rotAxis == 2) $ do
+          (isNext1, index1, animaState1) <- readAnimaState animaStateArr slotNum1 4000
+          when isNext1 $ do
+            tetFrame <- readIORef refGlobal <&> tetFrame_ 
+            tetFrameMat <- readIORef refGlobal <&> tetFrameMat_ 
+            fu <- readIORef refGlobal <&> flipFrame_ 
+            when (rotAxis == 0 || rotAxis == 1 || rotAxis == 2) $ do
+--               let rotAxis = if | k == G.Key'C -> 0  
+--                                | k == G.Key'H -> 1
+--                                | k == G.Key'S -> 2
+              let (frame, mat) = if | rotAxis == (fu ^._1 ^._1) -> rotateCoorFrameX tetFrame (fu ^._1 ^._2) tetFrameMat
+                                    | rotAxis == (fu ^._2 ^._1) -> rotateCoorFrameY tetFrame (fu ^._2 ^._2) tetFrameMat
+                                    | rotAxis == (fu ^._3 ^._1) -> rotateCoorFrameZ tetFrame (fu ^._3 ^._2) tetFrameMat
+                                    | otherwise                 -> rotateCoorFrameZ tetFrame 1.0 tetFrameMat
+                                    
+              ls <- getAssocs ioArray >>= \s -> return $ map (\(t, bk) -> (t, 1)) $ filter(\(_, bk) -> isFilled_ bk) s
 
+              let cubeWidth = len $ snd tet3
+              let cIndex = div cubeWidth 2
+              -- tetris cube
+              ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) $ snd tet3
+              rotTet3 <- rotateTetris ioCube rotAxis 
+              -- map snd []
+              -- (map . map) snd [[]]
+              -- (map . map . map) snd [[[]]]
+              let lt = map (\((x, y, z), n) -> ((x + mx, y + my, z + mz), n)) $ (join . join) rotTet3 
+              let isMovable = checkMoveArrX lt ls rr
+              when isMovable $ do
+                modifyIORef
+                  refGlobal
+                  ( \s ->
+                      s
+                        {   
+                         tetFrame_ = frame
+                         ,tetFrameMat_ = mat
+                         ,rotDeg_ =  (rotDeg_ s) + 1 
+                        }
+                  )
+
+                rotDeg <- readIORef refGlobal <&> rotDeg_
+                when (rotDeg >= 90.0) $ do
+                  -- filter out isFilled_
+                  -- map ((x, y, z), bk)  -> ((x, y, z), 1)
+                  ls <- getAssocs ioArray >>= \s -> return $ map (\(t, bk) -> (t, 1)) $ filter(\(_, bk) -> isFilled_ bk) s
+                  logFileG ["xxrotDeg=" ++ show rotDeg]
+                  flipIsNext animaStateArr slotNum1
+
+                  let cubeWidth = len $ snd tet3
+                  let cIndex = div cubeWidth 2
+                  -- tetris cube
+                  ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) $ snd tet3
+                  rotTet3 <- rotateTetris ioCube rotAxis 
+                  -- map snd []
+                  -- (map . map) snd [[]]
+                  -- (map . map . map) snd [[[]]]
+                  let t3 = (map . map . map) snd rotTet3
+                  let lt = map (\((x, y, z), n) -> ((x + mx, y + my, z + mz), n)) $ (join . join) rotTet3 
+                  let isMovable = checkMoveArrX lt ls rr
+
+                  pp $ "t3=" ++ (show $ len t3)
+                  pp $ "t3=" ++ (show $ dim t3)
+                  let currTetris3' = (fst tet3, t3)
+                  
+                  modifyIORef
+                    refGlobal
+                    ( \s ->
+                        s
+                          {   
+                           currTetris3_ = currTetris3'
+                           ,rotDeg_ = 0 
+                           ,rotAxis_ = -1
+                          }
+                    )
+            
     when True $ do
       -- KEY: rotate brick, rotate tetris
       -- rotateTetries refGlobal initRectGrid ioArray
@@ -2340,6 +2593,7 @@ mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = u
         in drawFontX font (show nRow) sz co vec
       -- renderTetris refGlobal initRectGrid
       renderTetris3 refGlobal initRectGrid
+    writeAnimaState animaStateArr animaState {animaIndex_ = index}
 
   -- KEY: show board, show grid, draw board
   -- saveImageFrame w2d animaStateArr
@@ -2347,7 +2601,7 @@ mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray = u
   drawFinal w2d ioArray initRectGrid
 
   endWindow3d w2d
-  mainLoop w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
+  mainLoopX w2d refCamRot refGlobal refGlobalFrame animaStateArr lssVex ioArray
 
 drawFinal :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> RectGrid -> IO ()
 drawFinal w arr rr = do
@@ -2903,6 +3157,7 @@ mainX = do
 -- NOTE: small main
 -- Main: /Users/cat/myfile/bitbucket/tmp/main-2024-11-08-13-04-18.hs
 
+
 main = do
   argList <- getArgs
   if len argList > 0
@@ -2913,6 +3168,7 @@ main = do
           print $ "Wrong option => " ++ head argList ++ ", -h => Help"
     else do
       mymain
+
 
 {-
 main = do
@@ -2977,9 +3233,41 @@ main = do
           ) xx
 -}
 
+{-
+main = do
+    let ln = 5^3 
 
+    mapM (\k -> do
+      arr <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) [1..ln] :: IO(DAO.IOArray (Int,Int, Int) Int)
+      printMat3 arr
+      pp ""
+      a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> y == k)
 
+      let b0 = partList 5 $ map snd a0
+      let x0 = partList 5 $ map fst a0
+      pp $ "k=" ++ show k
+      printMat b0
+      let c0 = rotateN 1 b0
+      let x00 = rotateN 1 x0 
+      pp ""
+      printMat c0
+      let a4 = zipWith zip x0 c0
+      pp ""
+      printMat a4
+      pp ""
+      pp "x0"
+      printMat x0
+      pp "x00"
+      printMat x00
+      
+      mapM_ (\(ix0, ix1) -> do
+              m <- DAO.readArray arr ix0 
+              n <- DAO.readArray arr ix1 
+              DAO.writeArray arr ix0 n 
+              DAO.writeArray arr ix1 m 
+              ) $ zip (join x0) (join x00)
 
-
-
-
+      let a00 = partList 5 a0
+      printMat a00
+      ) [0, 1]
+-}
