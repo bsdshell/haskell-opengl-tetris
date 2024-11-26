@@ -105,6 +105,8 @@ color3 = Color3 0.2 0.3 0.2 :: Color3 GLdouble
 color4 = Color3 0.2 0.0 0.2 :: Color3 GLdouble
 color5 = Color3 0.1 0.4 0.8 :: Color3 GLdouble
 
+color44 = Color4 0.1 0.4 0.8 0.4 :: Color4 GLdouble
+
 data SegEndPt = No      -- no pt, just a segment
                 | End   -- end pt
                 | Beg   -- begin pt
@@ -5058,12 +5060,16 @@ drawCubeQuadN (x, y, z) mc =
               renderPrimitive Quads $ do
                 normal n
                 color  $ c1 `mulc` mc 
+                -- color color44 
                 vertex v0
                 color  $ c2 `mulc` mc 
+                -- color color44 
                 vertex v1
                 color  $ c3 `mulc` mc 
+                -- color color44
                 vertex v2
                 color  $ c4 `mulc` mc 
+                -- color color44
                 vertex v3
           )
           nfaces
@@ -5094,16 +5100,7 @@ drawCubeQuadN (x, y, z) mc =
     v5 = Vertex3 x     (- y) (- z)
     v6 = Vertex3 x     y     (- z)
     v7 = Vertex3 x     y     z 
-    {-
-    v0 = Vertex3 (- r) (- r) r
-    v1 = Vertex3 (- r) (- r) (- r)
-    v2 = Vertex3 (- r) r (- r)
-    v3 = Vertex3 (- r) r r
-    v4 = Vertex3 r (- r) r
-    v5 = Vertex3 r (- r) (- r)
-    v6 = Vertex3 r r (- r)
-    v7 = Vertex3 r r r
-    -}
+
 {-|
   KEY: draw cube with quad
 

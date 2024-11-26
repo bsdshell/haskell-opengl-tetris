@@ -111,7 +111,8 @@ data BlockAttr = BlockAttr
   { isFilled_ :: Bool,
     typeId_ :: Int,
     tetrisCount_ :: Int,
-    color_ :: Color3 GLdouble
+    color_ :: Color3 GLdouble,
+    vMat_ :: [[GLfloat]]
   }
   deriving (Show, Eq)
 
@@ -143,9 +144,16 @@ data GlobalRef = GlobalRef
     nRow_ :: Int,
     rotAxis_ :: Int,
     rotDeg_ :: GLdouble,
+    rotDegkk_ :: GLdouble,
     tetFrame_ :: (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat),
     tetFrameMat_ :: [[GLfloat]],
-    flipFrame_ :: ((Int, GLfloat), (Int, GLfloat), (Int, GLfloat))
+    flipFrame_ :: ((Int, GLfloat), (Int, GLfloat), (Int, GLfloat)),
+    resetGame_ :: Bool,
+    interval0_ :: Int,
+    interval1_ :: Int,
+    interval2_ :: Int,
+    xxMat_ :: [[GLfloat]],
+    dropY_ :: Int
   }
   deriving (Show)
 
