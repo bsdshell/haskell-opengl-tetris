@@ -153,7 +153,8 @@ data GlobalRef = GlobalRef
     interval1_ :: Int,
     interval2_ :: Int,
     xxMat_ :: [[GLfloat]],
-    dropY_ :: Int
+    dropY_ :: Int,
+    dropHeight_ :: Int
   }
   deriving (Show)
 
