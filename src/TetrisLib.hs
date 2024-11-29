@@ -112,7 +112,8 @@ data BlockAttr = BlockAttr
     typeId_ :: Int,
     tetrisCount_ :: Int,
     color_ :: Color3 GLdouble,
-    vMat_ :: [[GLfloat]]
+    vMat_ :: [[GLfloat]],
+    tetColor_ :: [[Color4 GLdouble]]
   }
   deriving (Show, Eq)
 

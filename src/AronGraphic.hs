@@ -5061,18 +5061,79 @@ drawCubeQuadM r mc =
     v6 = Vertex3 r r (- r)
     v7 = Vertex3 r r r
 
+drawCubeQuadN4X :: (GLfloat, GLfloat, GLfloat) -> [[Color4 GLdouble]] -> GLdouble -> GLdouble -> IO ()
+drawCubeQuadN4X (x, y, z) colorls mc alpha = do
+  {-
+  let nfaces = zip3 n [[color24, gray4, gray14, blue4], 
+                       [color14, blue4, gray4, brown4], 
+                       [color44, green4, cyan4, color14], 
+                       [gray4, blue4, gray14, color24], 
+                       [color24, gray4, blue4, color34], 
+                       [blue4, color14, gray4, color44]
+                       ] facesx
+  -}
+  let nfaces = zip3 n colorls facesx
+  mapM_
+    ( \(n, [c1, c2, c3, c4], [v0, v1, v2, v3]) -> do
+        renderPrimitive Quads $ do
+          normal n
+          color  $ mc `muc` (fx alpha c1)
+          -- color color44 
+          vertex v0
+          color  $ mc `muc` (fx alpha c2)
+          -- color color44 
+          vertex v1
+          color  $ mc `muc` (fx alpha c3)
+          -- color color44
+          vertex v2
+          color  $ mc `muc` (fx alpha c4)
+          -- color color44
+          vertex v3
+    )
+    nfaces
+  where
+    -- fmap (*x) (Color4 r g b a) = Color4 (r*x) (g*x) (b*x) (a*x)
+    muc x (Color4 r g b a) = Color4 (x * r) (x * g) (x * b) a
+    fx x (Color4 r g b a) = Color4 r g b (x*a)
+    n :: [Normal3 GLfloat]
+    n =
+      [ Normal3 (-1.0) 0.0 0.0,
+        Normal3 0.0 1.0 0.0,
+        Normal3 1.0 0.0 0.0,
+        Normal3 0.0 (-1.0) 0.0,
+        Normal3 0.0 0.0 1.0,
+        Normal3 0.0 0.0 (-1.0)
+      ]
+    facesx :: [[Vertex3 GLfloat]]
+    facesx =
+      [ [v0, v1, v2, v3],
+        [v3, v2, v6, v7],
+        [v7, v6, v5, v4],
+        [v4, v5, v1, v0],
+        [v5, v6, v2, v1],
+        [v7, v4, v0, v3]
+      ]
+    v0 = Vertex3 (- x) (- y) z 
+    v1 = Vertex3 (- x) (- y) (- z)
+    v2 = Vertex3 (- x) y     (- z)
+    v3 = Vertex3 (- x) y     z 
+    v4 = Vertex3 x     (- y) z 
+    v5 = Vertex3 x     (- y) (- z)
+    v6 = Vertex3 x     y     (- z)
+    v7 = Vertex3 x     y     z 
+
 drawCubeQuadN4 :: (GLfloat, GLfloat, GLfloat) -> GLdouble -> GLdouble -> IO ()
 drawCubeQuadN4 (x, y, z) mc alpha =
-  let nfaces = zip3 n [(color24, gray4, gray14, blue4), 
-                       (color14, blue4, gray4, brown4), 
-                       (color44, green4, cyan4, color14), 
-                       (gray4, blue4, gray14, color24), 
-                       (color24, gray4, blue4, color34), 
-                       (blue4, color14, gray4, color44)
+  let nfaces = zip3 n [[color24, gray4, gray14, blue4], 
+                       [color14, blue4, gray4, brown4], 
+                       [color44, green4, cyan4, color14], 
+                       [gray4, blue4, gray14, color24], 
+                       [color24, gray4, blue4, color34], 
+                       [blue4, color14, gray4, color44]
                        ] facesx
    in do
         mapM_
-          ( \(n, (c1, c2, c3, c4), [v0, v1, v2, v3]) -> do
+          ( \(n, [c1, c2, c3, c4], [v0, v1, v2, v3]) -> do
               renderPrimitive Quads $ do
                 normal n
                 color  $ mc `muc` (fx alpha c1)
@@ -5090,6 +5151,7 @@ drawCubeQuadN4 (x, y, z) mc alpha =
           )
           nfaces
   where
+    -- fmap (*x) (Color4 r g b a) = Color4 (r*x) (g*x) (b*x) (a*x)
     muc x (Color4 r g b a) = Color4 (x * r) (x * g) (x * b) a
     fx x (Color4 r g b a) = Color4 r g b (x*a)
     n :: [Normal3 GLfloat]
