@@ -48,7 +48,7 @@ import Control.Exception
 import Control.Lens
     ( Field1(_1), Field2(_2), Field3(_3), Field4(_4), (<&>), (^.) )
 -- import Control.Monad
-import Control.Monad (unless, when, join)
+import Control.Monad (unless, when, join, forever)
 import qualified Control.Monad.State as CMS
 -- import AronDevLib
 
@@ -275,13 +275,8 @@ mymain = do
 
       let fontPath = "/Users/cat/Library/Fonts/FreeSans.ttf"
       font <- FTGL.createTextureFont fontPath 
-      refGlobal <- newIORef (initGlobal font)
-      globalRef <- readIORef refGlobal
-      writeIORef refGlobal globalRef
-      globalRef2 <- readIORef refGlobal
-      -- refFrame <- timeNowMilli >>= \x -> newIORef FrameCount {frameTime = x, frameCount = 1, frameNewCount = 0, frameIndex = 0}
-
-      ls <- randomIntList 10 (1, 4) >>= \cx -> return $ randomVexList (Vertex3 0.0 0.0 0.0) cx
+      timePerFrame <- timeNowMilli
+      refGlobal <- newIORef (initGlobal font timePerFrame)
 
       let rr = initRectGrid
       let nx = div (xCount_ rr) 2
@@ -521,8 +516,8 @@ tetColor = [ [color24, gray4, gray14, blue4],
              [blue4, color14, gray4, color44]
             ] 
 
-initGlobal :: FTGL.Font -> GlobalRef
-initGlobal font = 
+initGlobal :: FTGL.Font -> Integer -> GlobalRef
+initGlobal font timePerFrame = 
   GlobalRef
     { 
       moveX_ = 0,
@@ -543,7 +538,10 @@ initGlobal font =
       flipFrame_ = ((0, 2.0), (1, -2.0), (2, 2.0)),
       resetGame_ = False,
       dropHeight_ = 0,
-      xxMat_ = matId 4
+      xxMat_ = matId 4,
+      timePerFrame_ = timePerFrame,
+      framePerSec_ = 1.0/(fi timePerFrame),
+      enableLight_ = True
     }
 
 rotateCoorFrameX :: (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat) -> GLfloat -> [[GLfloat]] -> ((Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat), [[GLfloat]])
@@ -790,6 +788,17 @@ keyBoardCallBack3d refCamRot refGlobal ioArray window key scanCode keyState modK
                     s
                       {
                        rotAxis_ = rotAxis
+                      }
+                )
+
+            | k == G.Key'V -> do
+              enableLight <- readIORef refGlobal <&> enableLight_ 
+              modifyIORef
+                refGlobal
+                ( \s ->
+                    s
+                      {
+                       enableLight_ = not $ enableLight_ s 
                       }
                 )
 
@@ -1662,20 +1671,29 @@ initAnimaState = do
   DAO.newListArray (0, len ls - 1) ls
 
 readAnimaState :: IOArray Int AnimaState -> Int -> Int -> IO (Bool, Int, AnimaState)
-readAnimaState arr ix interval = do
+readAnimaState arr ix initInterval = do
   currTime <- timeNowMilli <&> fi
   an <- DAO.readArray arr ix
-  DAO.writeArray arr ix an {animaInterval_ = interval}
+  DAO.writeArray arr ix an {animaInterval_ = initInterval}
   oldTime <- DAO.readArray arr ix <&> animaTime_
   interval <- DAO.readArray arr ix <&> animaInterval_
   oldIndex <- DAO.readArray arr ix <&> animaIndex_
   let newIndex = oldIndex + 1
   let isNext = currTime - oldTime >= interval
+  logFileG ["oldTime=" ++ show oldTime]
+  logFileG ["currTime=" ++ show currTime]
+  logFileG ["isNext=" ++ show isNext]
   if isNext
     then do
-      return (isNext, newIndex, an {animaTime_ = currTime, animaIndex_ = newIndex, animaSlot_ = ix})
+      let newState = an {animaTime_ = currTime, animaIndex_ = newIndex, animaSlot_ = ix}
+      let ret = (isNext, newIndex, newState)
+      DAO.writeArray arr ix newState
+      return ret 
     else do
-      return (isNext, oldIndex, an {animaSlot_ = ix})
+      let newState = an {animaSlot_ = ix}
+      let ret = (isNext, oldIndex, newState)
+      DAO.writeArray arr ix newState
+      return ret 
 
 writeAnimaState :: IOArray Int AnimaState -> AnimaState -> IO ()
 writeAnimaState arr state = do
@@ -2183,14 +2201,16 @@ beginWindow3d w3d refCamRot refGlobal ioArray = do
   up <- readIORef refCamRot <&> modelview_ <&> up_
 
   
-  light (Light 0)    $= Enabled
-  lighting           $= Enabled 
-  lightModelAmbient  $= Color4 0.5 0.5 0.5 1 
-  diffuse (Light 0)  $= Color4 1 1 1 1
+  enableLight <- readIORef refGlobal <&> enableLight_ 
+  when enableLight $ do
+    light (Light 0)    $= Enabled
+    lighting           $= Enabled 
+    lightModelAmbient  $= Color4 0.5 0.5 0.5 1 
+    diffuse (Light 0)  $= Color4 1 1 1 1
+
   blend              $= Enabled
   blendFunc          $= (SrcAlpha, OneMinusSrcAlpha) 
   colorMaterial      $= Just (FrontAndBack, AmbientAndDiffuse)
-  
    
   matrixMode $= Projection
   loadIdentity
@@ -2298,6 +2318,36 @@ runGameX w2d refGlobal ioArray = do
 
               )
 
+{-|
+
+  KEY: numbers of frame per second
+  @
+  let sz = 10 
+      co = yellow 
+      vec = Vector3 (negate 0.2) 0.9 0
+    in do 
+       framePerSec <- framePerSecond refGlobal <&> round
+       drawFontX font (show framePerSec) sz co vec
+  @
+-}
+framePerSecond :: IORef GlobalRef -> IO GLfloat
+framePerSecond refGlobal = do
+  oldTime <- readIORef refGlobal <&> timePerFrame_
+  currTime <- timeNowMilli
+  let diff = currTime - oldTime
+  let diffSec = fi diff / 1000000.0
+  let framePerSec = 1000000.0 / fi diff 
+  {-
+  print $ "oldTime = " ++ show oldTime 
+  print $ "currTime = " ++ show currTime 
+  print $ "diff = " ++ show diff 
+  print $ "second per frame = " ++ show diffSec 
+  print $ "frame per second = " ++ show framePerSec 
+  -}
+  modifyIORef refGlobal (\s -> s{timePerFrame_ = currTime})
+  modifyIORef refGlobal (\s -> s{framePerSec_ = framePerSec})
+  return framePerSec 
+
 mainLoopX ::
   G.Window ->
   IORef CameraRot ->
@@ -2356,7 +2406,7 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
     resetAnimaState animaStateArr slotNum1
 
   unless isPaused $ do
-    (isNext0, index0, animaState0) <- readAnimaState animaStateArr slotNum0 5000000
+    (isNext0, index0, animaState0) <- readAnimaState animaStateArr slotNum0 500000
     -- (isNext0, index, animaState) <- readAnimaState animaStateArr slotNum0 50000
     -- logFileG ["index=" ++ show index]
     logFileG ["isNext0=" ++ show isNext0 ++ " animaIndex_=" ++ show (animaIndex_ animaState0)]
@@ -2384,48 +2434,6 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
         )
       if isNext0 then do
         runGameX w2d refGlobal ioArray
-        {-
-        let isMovable = checkMoveArrX nextTet gridArr' rr
-        if not isMovable
-          
-          then do
-            let currTet = map (\((a, b, c), n) -> ((a + mx, b + my, c + mz), n == 1 ? bk{isFilled_ = True} $ bk{isFilled_ = False})) tetris 
-            mapM_ (uncurry $ DAO.writeArray ioArray) $ filter (isFilled_ . snd) currTet 
-            mapM_ (\zAxis -> do
-                    -- KEY: remove bottom row
-                    nRow <- let f x = isFilled_ x in removeBottomX2 w2d zAxis f ioArray
-                    modifyIORef refGlobal (\s -> s{nRow_ = nRow + nRow_ s}) 
-                    playWav "resource/hit.wav"
-                    mapM_ (\_ -> playWav "resource/pickupCoin.wav") [1..nRow]
-                  ) [0, 1] 
-
-            newBlock <- randomBlockX3 refGlobal
-            modifyIORef
-                refGlobal
-                ( \s ->
-                    s
-                      { 
-                        moveX_ = 0
-                        ,moveY_ = initY
-                        ,moveZ_ = 0
-                        ,rotN_ = 0
-                        ,currTetris3_ = newBlock
-                        ,tetFrame_ = (vecx, vecy, vecz)
-                        ,tetFrameMat_ = matId 4
-                        ,xxMat_ = matId 4
-                      }
-                )
-          else do 
-            modifyIORef
-              refGlobal
-              ( \s ->
-                  s
-                    {
-                      moveY_ = my - 1
-                    }
-
-              )
-        -}
         resetAnimaState animaStateArr slotNum0
       else do
         -- rotAxis = 0 => rotate around x-axis
@@ -2435,7 +2443,7 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
         -- rotAxis = 4 => rotate around negate y-axis
         -- rotAxis = 5 => rotate around negate z-axis
         when (rotAxis `elem` [0, 1, 2, 3, 4, 5]) $ do
-          (isNext1, index1, animaState1) <- readAnimaState animaStateArr slotNum1 400
+          (isNext1, index1, animaState1) <- readAnimaState animaStateArr slotNum1 4000
           when isNext1 $ do
             tetFrame <- readIORef refGlobal <&> tetFrame_ 
             tetFrameMat <- readIORef refGlobal <&> tetFrameMat_ 
@@ -2454,7 +2462,7 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
               let lt = map (\((x, y, z), n) -> ((x + mx, y + my, z + mz), n)) $ (join . join) $ fst rotTet3 
               let isMovable = checkMoveArrX lt ls rr
               if isMovable then do
-                  let nStep = 3 
+                  let nStep = 9 
                   let delta = nStep*pi/180
                   let tvec = if | rotAxis == 0 -> (delta, vfd vecx)
                                 | rotAxis == 1 -> (negate delta, vfd vecy)
@@ -2515,19 +2523,28 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
     -- rotateTetries refGlobal initRectGrid ioArray
     -- show current tetris
     -- KEY: show nRow, show score, display font, show text
-    let sz = 16 
-        co = yellow 
-        vec = Vector3 0.8 0.9 0
-      in drawFontX font (show nRow) sz co vec
+
+    let sz = 8 
+        co = cyan 
+        vec = Vector3 0.6 0.9 0
+      in drawFontX font (show nRow ++ " Rows") sz co vec
     renderTetris3 refGlobal initRectGrid
     writeAnimaState animaStateArr animaState0 {animaIndex_ = index0}
-
     -- KEY: show board, show grid, draw board
     -- saveImageFrame w2d animaStateArr
-
     drawFinal w2d ioArray initRectGrid
 
+  let sz = 8 
+      co = white 
+      vec = Vector3 (negate 0.2) 0.9 0
+    in do 
+       framePerSec <- framePerSecond refGlobal <&> round
+       let str = show framePerSec ++ " FPS"
+       drawFontX font str sz co vec
+
   endWindow3d w2d
+
+
   mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray
 
 drawFinal :: G.Window -> IOArray (Int, Int, Int) BlockAttr -> RectGrid -> IO ()
@@ -3096,6 +3113,18 @@ main = do
     else do
       mymain
 
+{-
+main = do
+  animaStateArr <- initAnimaState
+
+  forever $ do
+    let slotNum2 = 2 
+    (isNext2, index2, animaState2) <- readAnimaState animaStateArr slotNum2 3000000
+    when isNext2 $ do
+      print $ "isNext2=" ++ show isNext2
+      logFileG ["isNext2=" ++ show isNext2]
+      resetAnimaState animaStateArr slotNum2
+-}
 
 {-
 main = do

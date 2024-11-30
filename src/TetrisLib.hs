@@ -155,7 +155,10 @@ data GlobalRef = GlobalRef
     interval2_ :: Int,
     dropY_ :: Int,
     dropHeight_ :: Int,
-    xxMat_ :: [[GLdouble]]
+    xxMat_ :: [[GLdouble]],
+    timePerFrame_ :: Integer,
+    framePerSec_ :: GLfloat,
+    enableLight_ :: Bool
   }
   deriving (Show)
 

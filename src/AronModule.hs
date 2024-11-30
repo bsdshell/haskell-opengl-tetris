@@ -8631,16 +8631,52 @@ timeNowNano::IO Integer
 timeNowNano = (round . (* 10^9)) <$> getPOSIXTime
 
 {-|
+    @
+    Sat 30 Nov 00:15:21 2024 
+    deprecated
+    USE 'timeNowMicroX'
+    BUG:
     >(round . (* 10^3)) <$> getPOSIXTime
+    BUG: rename to timeNowMilli 
+    Change to
+    timeNowMicro = (round . (* 3^6)) <$> getPOSIXTime
+    @
 -}
 timeNowMicro::IO Integer
 timeNowMicro = (round . (* 10^3)) <$> getPOSIXTime
 
 {-|
+    @
+    Sat 30 Nov 00:15:26 2024 
+    DO NOT USE 'timeNowMicro'
+    @
+-}
+timeNowMicroX::IO Integer
+timeNowMicroX = (round . (* 10^6)) <$> getPOSIXTime
+
+{-|
+    @
+    Sat 30 Nov 00:15:16 2024 
+    deprecated
+    USE 'timeNowMilliX'
+    BUG:
     >(round . (* 10^6)) <$> getPOSIXTime
+    BUG: rename to timeNowMicro 
+    Change to 
+    timeNowMilli = (round . (* 10^3)) <$> getPOSIXTime
+    @
 -}
 timeNowMilli::IO Integer
 timeNowMilli = (round . (* 10^6)) <$> getPOSIXTime
+
+{-|
+    @
+    Sat 30 Nov 00:15:36 2024 
+    DO NOT USE 'timeNowMilli'
+    @
+-}
+timeNowMilliX::IO Integer
+timeNowMilliX = (round . (* 10^3)) <$> getPOSIXTime
 
 {-|
     Same as 'timeNowSec'
