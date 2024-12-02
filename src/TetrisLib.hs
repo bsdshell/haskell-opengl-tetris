@@ -113,6 +113,8 @@ data BlockAttr = BlockAttr
     tetrisCount_ :: Int,
     color_ :: Color3 GLdouble,
     vMat_ :: [[GLfloat]],
+
+    -- NOTE: tetColor must be 4 x 6 array
     tetColor_ :: [[Color4 GLdouble]]
   }
   deriving (Show, Eq)
@@ -140,6 +142,7 @@ data GlobalRef = GlobalRef
     --             |    |       |             |
     currTetris_:: (BlockAttr, [[Int]]),
     currTetris3_:: (BlockAttr, [[[Int]]]),
+    nextTetris3_:: (BlockAttr, [[[Int]]]),
     isPaused_ :: Bool,
     font_ :: FTGL.Font,
     nRow_ :: Int,
