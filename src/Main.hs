@@ -60,6 +60,7 @@ import Data.IORef
 import Data.Int
 import qualified Data.List as DL
 import qualified Data.Map as DM
+import qualified Data.HashMap.Strict as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -535,8 +536,8 @@ initGlobal font timePerFrame =
       count1_ = 10000000,
       rotN_ = 0,
       currTetris_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue, vMat_ = matId 4,  tetColor_ = tetColor}, tetris0),
-      currTetris3_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor}, tet3d0),
-      nextTetris3_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 2, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor1}, tet3d1),
+      currTetris3_ = oneRotationTet 1 (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor}, tet3d0),
+      nextTetris3_ = oneRotationTet 1 (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 2, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor1}, tet3d1),
       isPaused_ = False,
       font_ = font,
       nRow_ = 0,
@@ -1423,35 +1424,38 @@ tetrisCubeX (blockAttr, tet3) = do
   arr <- DAO.newListArray ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) ls :: IO (IOArray  (Int, Int, Int) Int) 
   DAO.getAssocs arr 
 
-oneRotationTet ::(BlockAttr, [[[Int]]]) -> Int -> IO (BlockAttr, [[[Int]]])
-oneRotationTet tb@(bk, tet3) rotAxis = do 
-    rotTet3 <- rotateTetrisX tb rotAxis
-    let t3 = (map . map . map) snd $ fst rotTet3
-    let currTetris3  = (let m = vMat_ bk
-                            mm = snd rotTet3
-                        in bk{vMat_ = mm `multiMat` m}, 
-                        t3
-                        )
-    return currTetris3
+oneRotationTet ::Int -> (BlockAttr, [[[Int]]]) -> (BlockAttr, [[[Int]]])
+oneRotationTet rotAxis tb@(bk, tet3) = currTetris3 
+  where
+    rotTet3 = rotateTetrisX tb rotAxis
+    t3 = (map . map . map) snd $ fst rotTet3
+    currTetris3  = (let m = vMat_ bk
+                        mm = snd rotTet3
+                    in bk{vMat_ = mm `multiMat` m}, 
+                    t3
+                   )
 
 {-|
   rotate x-axis, on y-z plane
   rotate y-axis, on x-z plane
   rotate z-axis, on x-y plane
 -}
-rotateTetrisX :: (BlockAttr, [[[Int]]]) -> Int -> IO ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
-rotateTetrisX (blockAttr, cube) rotAxis = do
-  let cubeWidth = len cube 
-  let cIndex = div cubeWidth 2
+rotateTetrisX :: (BlockAttr, [[[Int]]]) -> Int -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
+rotateTetrisX (blockAttr, cube) rotAxis = rotateTetris3 arr3 rotAxis 
+  where
+    cubeWidth = len cube 
+    cIndex = div cubeWidth 2
   -- tetris cube
 
-  let s3 = let ln = [-cIndex..cIndex] in (join . join) $ out3 (\a b c -> (a, b, c)) ln ln ln 
-  ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) cube 
-  rotateTetris ioCube rotAxis 
-  where
+  -- [[[(a, b, c)]]]
+    s3 = let ln = [-cIndex..cIndex] in out3 (\a b c -> (a, b, c)) ln ln ln 
+    arr3 = (join . join) $ (zipWith . zipWith) zip s3 cube
+  -- ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) cube 
+  -- rotateTetris ioCube rotAxis 
+  -- let xn = rotateTetris3 arr3 rotAxis 
     toCube :: [((Int, Int, Int), Int)] -> [[[((Int, Int, Int), Int)]]]
     toCube arr = map (partList 5) $ partList 25 arr
-
+    {-
     rotateTetris :: IOArray (Int, Int, Int) Int -> Int -> IO ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
     rotateTetris arr rotAxis = do
         mapM_ (\k -> do
@@ -1482,10 +1486,15 @@ rotateTetrisX (blockAttr, cube) rotAxis = do
                       | otherwise    -> matId 4 
         retArr <- DAO.getAssocs arr
         return (toCube retArr, vMat)
-  
+    -} 
     rotateTetris3 :: [((Int, Int, Int), Int)] -> Int -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
-    rotateTetris3 arr rotAxis = (s3, vMat)
+    rotateTetris3 arr rotAxis = (lt, vMat)
       where
+        lo = let ln = [-2..2]  
+                 ss = (join . join) $ out3 (\a b c -> (a, b, c)) ln ln ln 
+             in zip ss [0..]
+
+        hashMapInx = DM.fromList lo   --    (1, 2, 3) -> index 
         s3 = map (\k -> let a0 = filter (\((x, y, z), _) -> case rotAxis of
                                                     v | v == 0 || v == 3 -> x == k
                                                       | v == 1 || v == 4 -> y == k
@@ -1500,6 +1509,10 @@ rotateTetrisX (blockAttr, cube) rotAxis = do
                         in zipWith zip x0 c0 
                        
                  ) [-2..2]
+
+        hashMapTet = DM.fromList (join $ join s3) 
+        ls = map snd $ qqsort (\(a, _) (b, _) -> a < b) $ map (\(t, n) -> (fromJust $ DM.lookup t hashMapInx, (t, n))) $ (join . join) s3
+        lt = map (partList 5) $ partList 25 ls
 
         -- SEE: rotAxis123
         vMat = if | rotAxis == 0 -> fst $ rotMat4Tup vecx (pi/2)
@@ -1531,10 +1544,10 @@ renderTetris3 refGlobal rr = do
     t3@(ba, tet3) <- readIORef refGlobal <&> currTetris3_
     nt3@(nba, nextTet) <- readIORef refGlobal <&> nextTetris3_
 
-    t3' <- let rotAxis = 1 in oneRotationTet t3 rotAxis
-    ls <- tetrisCubeX t3' 
-    nt3' <- let rotAxis = 1 in oneRotationTet nt3 rotAxis
-    ln <- tetrisCubeX nt3' 
+    ls <- tetrisCubeX t3 
+
+    -- nt3' <- let rotAxis = 1 in oneRotationTet nt3 rotAxis
+    ln <- tetrisCubeX nt3 
 
     let x0 = minX_ rr; y0 = maxY_ rr 
     let x1 = maxX_ rr; y1 = minY_ rr
@@ -2363,7 +2376,7 @@ runGameX w2d refGlobal ioArray = do
             playWav "resource/hit.wav"
 
             -- replicateM :: (Applicative m) => Int -> m a -> m [a]
-            randTet <- randomBlockX3 refGlobal
+            randTet <- randomBlockX3 refGlobal <&> oneRotationTet 1
             modifyIORef
                 refGlobal
                 ( \s ->
@@ -2452,7 +2465,8 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
 
   when resetGame $ do
     ls <- getAssocs ioArray
-    newBlock <- randomBlockX3 refGlobal
+    currTetris3 <- randomBlockX3 refGlobal <&> oneRotationTet 1
+    nextTetris3 <- randomBlockX3 refGlobal <&> oneRotationTet 1
     modifyIORef
         refGlobal
         ( \s ->
@@ -2462,7 +2476,8 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
                 ,moveY_ = initY
                 ,moveZ_ = 0
                 ,rotN_ = 0
-                ,currTetris3_ = newBlock
+                ,currTetris3_ = currTetris3 
+                ,nextTetris3_ = nextTetris3 
                 ,tetFrame_ = (vecx, vecy, vecz)
                 ,tetFrameMat_ = matId 4 
               }
@@ -2524,7 +2539,19 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
             when (rotAxis `elem` [0, 1, 2, 3, 4, 5]) $ do
 
               ls <- getAssocs ioArray >>= \s -> return $ map (\(t, bk) -> (t, 1)) $ filter(\(_, bk) -> isFilled_ bk) s
-              rotTet3 <- rotateTetrisX tet3 rotAxis
+              -- rotTet3 <- rotateTetrisX tet3 rotAxis
+              let rotTet3 = rotateTetrisX tet3 rotAxis
+              {-
+              let rotTet3_x = rotateTetrisX tet3 rotAxis
+              let xx = (join . join) $ fst rotTet3_x
+              axx <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) 0 :: IO (IOArray  (Int, Int, Int) Int) 
+              mapM_ (uncurry $ DAO.writeArray axx) xx 
+              myarr <- DAO.getAssocs axx
+              let lvv = map (partList 5) $ partList 25 myarr 
+              let rotTet3 = (lvv, snd rotTet3_x) 
+              -}
+
+
               -- map snd []
               -- (map . map) snd [[]]
               -- (map . map . map) snd [[[]]]
@@ -3181,6 +3208,7 @@ main = do
     else do
       mymain
 
+
 {-
 main = do
   animaStateArr <- initAnimaState
@@ -3260,7 +3288,6 @@ main = do
 {-
 main = do
     let ln = 5^3 
-
     mapM (\k -> do
       arr <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) [1..ln] :: IO(DAO.IOArray (Int,Int, Int) Int)
       printMat3 arr
@@ -3294,4 +3321,18 @@ main = do
       let a00 = partList 5 a0
       printMat a00
       ) [0, 1]
+    let m = DM.fromList [(1, 2), (3, 4)]
+    let s = DM.lookup 1 m
+    print s
+    let lo = let ln = [-2..2]  
+                 ss = (join . join) $ out3 (\a b c -> (a, b, c)) ln ln ln 
+             in zip ss [0..]
+    let mp1 = DM.fromList lo
+    print mp1
+-}
+
+{-
+main = do
+      arr <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) [0..10000] :: IO(DAO.IOArray (Int,Int, Int) Int)
+      printMat3 arr
 -}
