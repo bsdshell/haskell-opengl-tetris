@@ -781,10 +781,7 @@ keyBoardCallBack3d refCamRot refGlobal ioArray window key scanCode keyState modK
               pp $ "cubeWidth=" ++ show cubeWidth 
               pp $ "cIndex=" ++ show cIndex
 
-              -- tetris cube
-              ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) $ snd tet3
               let ctrlKey = G.modifierKeysControl modKeys
-
               -- 0 => x,  1 => y,  2 => z
               -- 3 => -x, 4 => -y, 5 => -z
               let rotAxis = if | k == G.Key'C -> not ctrlKey ? 0 $ 3  
@@ -1418,84 +1415,101 @@ showBottomTetris arr rr = do
               centerBlock00X3Rot (x, y, z) (vMat_ ba) (tetColor_ ba) nc rr 1.0
       ) ls 
 
-
-rotateTetrisX :: (BlockAttr, [[[Int]]]) -> Int -> IO ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
-rotateTetrisX (blockAttr, cube) rotAxis = do
-  let cubeWidth = len cube 
+tetrisCubeX :: (BlockAttr, [[[Int]]]) -> IO [((Int, Int, Int), Int)]
+tetrisCubeX (blockAttr, tet3) = do 
+  let cubeWidth = len tet3 
   let cIndex = div cubeWidth 2
-  -- tetris cube
-  ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) cube 
-  rotateTetris ioCube rotAxis 
-  
+  let ls = (join . join) tet3
+  arr <- DAO.newListArray ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) ls :: IO (IOArray  (Int, Int, Int) Int) 
+  DAO.getAssocs arr 
+
+oneRotationTet ::(BlockAttr, [[[Int]]]) -> Int -> IO (BlockAttr, [[[Int]]])
+oneRotationTet tb@(bk, tet3) rotAxis = do 
+    rotTet3 <- rotateTetrisX tb rotAxis
+    let t3 = (map . map . map) snd $ fst rotTet3
+    let currTetris3  = (let m = vMat_ bk
+                            mm = snd rotTet3
+                        in bk{vMat_ = mm `multiMat` m}, 
+                        t3
+                        )
+    return currTetris3
 
 {-|
   rotate x-axis, on y-z plane
   rotate y-axis, on x-z plane
   rotate z-axis, on x-y plane
 -}
-rotateTetris :: IOArray (Int, Int, Int) Int -> Int -> IO ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
-rotateTetris arr rotAxis = do
-    mapM_ (\k -> do
-      a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> case rotAxis of
-                                                                          v | v == 0 || v == 3 -> x == k
-                                                                            | v == 1 || v == 4 -> y == k
-                                                                            | v == 2 || v == 5 -> z == k
-                                                                            | otherwise -> True  
-                                                  )
+rotateTetrisX :: (BlockAttr, [[[Int]]]) -> Int -> IO ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
+rotateTetrisX (blockAttr, cube) rotAxis = do
+  let cubeWidth = len cube 
+  let cIndex = div cubeWidth 2
+  -- tetris cube
 
-      let b0 = partList 5 $ map snd a0
-      let x0 = partList 5 $ map fst a0
-      let c0 = if | rotAxis `elem` [0, 1, 2] -> rotateN 1 b0 
-                  | rotAxis `elem` [3, 4, 5] -> rotateN (negate 1) b0
-                  | otherwise                -> rotateN 0 b0
-                  
-      let a4 = zipWith zip x0 c0
-      mapM_ (uncurry $ DAO.writeArray arr) $ join a4 
-      ) [-2..2]
+  let s3 = let ln = [-cIndex..cIndex] in (join . join) $ out3 (\a b c -> (a, b, c)) ln ln ln 
+  ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) cube 
+  rotateTetris ioCube rotAxis 
+  where
+    toCube :: [((Int, Int, Int), Int)] -> [[[((Int, Int, Int), Int)]]]
+    toCube arr = map (partList 5) $ partList 25 arr
 
-    let vMat = if | rotAxis == 0 -> fst $ rotMat4Tup vecx (pi/2)
+    rotateTetris :: IOArray (Int, Int, Int) Int -> Int -> IO ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
+    rotateTetris arr rotAxis = do
+        mapM_ (\k -> do
+          a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> case rotAxis of
+                                                                              v | v == 0 || v == 3 -> x == k
+                                                                                | v == 1 || v == 4 -> y == k
+                                                                                | v == 2 || v == 5 -> z == k
+                                                                                | otherwise -> True  
+                                                      )
+
+          let b0 = partList 5 $ map snd a0
+          let x0 = partList 5 $ map fst a0
+          let c0 = if | rotAxis `elem` [0, 1, 2] -> rotateN 1 b0 
+                      | rotAxis `elem` [3, 4, 5] -> rotateN (negate 1) b0
+                      | otherwise                -> rotateN 0 b0
+                      
+          let a4 = zipWith zip x0 c0
+          mapM_ (uncurry $ DAO.writeArray arr) $ join a4 
+          ) [-2..2]
+
+        -- SEE: rotAxis123
+        let vMat = if | rotAxis == 0 -> fst $ rotMat4Tup vecx (pi/2)
+                      | rotAxis == 1 -> fst $ rotMat4Tup vecy (negate $ pi/2)
+                      | rotAxis == 2 -> fst $ rotMat4Tup vecz (pi/2)
+                      | rotAxis == 3 -> fst $ rotMat4Tup vecx (negate pi/2)
+                      | rotAxis == 4 -> fst $ rotMat4Tup vecy (pi/2)
+                      | rotAxis == 5 -> fst $ rotMat4Tup vecz (negate pi/2)
+                      | otherwise    -> matId 4 
+        retArr <- DAO.getAssocs arr
+        return (toCube retArr, vMat)
+  
+    rotateTetris3 :: [((Int, Int, Int), Int)] -> Int -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
+    rotateTetris3 arr rotAxis = (s3, vMat)
+      where
+        s3 = map (\k -> let a0 = filter (\((x, y, z), _) -> case rotAxis of
+                                                    v | v == 0 || v == 3 -> x == k
+                                                      | v == 1 || v == 4 -> y == k
+                                                      | v == 2 || v == 5 -> z == k
+                                                      | otherwise -> True  
+                                   ) arr
+                            b0 = partList 5 $ map snd a0
+                            x0 = partList 5 $ map fst a0
+                            c0 = if | rotAxis `elem` [0, 1, 2] -> rotateN 1 b0 
+                                    | rotAxis `elem` [3, 4, 5] -> rotateN (negate 1) b0
+                                    | otherwise                -> rotateN 0 b0
+                        in zipWith zip x0 c0 
+                       
+                 ) [-2..2]
+
+        -- SEE: rotAxis123
+        vMat = if | rotAxis == 0 -> fst $ rotMat4Tup vecx (pi/2)
                   | rotAxis == 1 -> fst $ rotMat4Tup vecy (negate $ pi/2)
                   | rotAxis == 2 -> fst $ rotMat4Tup vecz (pi/2)
                   | rotAxis == 3 -> fst $ rotMat4Tup vecx (negate pi/2)
                   | rotAxis == 4 -> fst $ rotMat4Tup vecy (pi/2)
                   | rotAxis == 5 -> fst $ rotMat4Tup vecz (negate pi/2)
                   | otherwise    -> matId 4 
-    retArr <- DAO.getAssocs arr
-    return (map (partList 5) $ partList 25 retArr, vMat)
-    
-{-
- delete it
-rotateTetrisX :: IOArray (Int, Int, Int) Int -> Int -> IO [[[((Int, Int, Int), Int)]]]
-rotateTetrisX arr rotN = do
-    mapM_ (\k -> do
-      a0 <- DAO.getAssocs arr <&> filter (\((x, y, z), _) -> x == k)
-
-      let b0 = partList 5 $ map snd a0
-      let x0 = partList 5 $ map fst a0
-      pp $ "k=" ++ show k
-      pp "b0"
-      printMat b0
-      let c0 = rotateN rotN b0
-      let a00 = rotateN rotN $ partList 5 a0 
-      pp "c0"
-      printMat c0
-      let a4 = zipWith zip x0 c0
-      pp "--"
-      printMat a4
-      pp ""
-      pp "x0"
-      printMat x0
-      pp ""
-
-      mapM_ (uncurry $ DAO.writeArray arr) $ join a4 
-
-      let a00 = partList 5 a0
-      printMat a00
-      ) [-2..2]
-
-    retArr <- DAO.getAssocs arr
-    return $ map (partList 5) $ partList 25 retArr
--}
+  
 
 tetrisCube :: ((Int, Int, Int), (Int, Int, Int)) -> [[[Int]]] -> IO (IOArray (Int, Int, Int) Int)
 tetrisCube ((x0, y0, z0), (x1, y1, z1)) tet3 = do 
@@ -1514,16 +1528,13 @@ renderTetris3 refGlobal rr = do
     tetFrameMat <- readIORef refGlobal <&> tetFrameMat_ 
     dropHeight <- readIORef refGlobal <&> dropHeight_ 
     xxMat <- readIORef refGlobal <&> xxMat_ 
-    (ba, tet3) <- readIORef refGlobal <&> currTetris3_
-    (nba, nextTet) <- readIORef refGlobal <&> nextTetris3_
-    let ltt = (join . join) tet3
-    let lnn = (join . join) nextTet 
+    t3@(ba, tet3) <- readIORef refGlobal <&> currTetris3_
+    nt3@(nba, nextTet) <- readIORef refGlobal <&> nextTetris3_
 
-    arr <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) ltt :: IO (IOArray  (Int, Int, Int) Int) 
-    ls <- DAO.getAssocs arr 
-
-    arrn <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) lnn :: IO (IOArray  (Int, Int, Int) Int) 
-    ln <- DAO.getAssocs arrn 
+    t3' <- let rotAxis = 1 in oneRotationTet t3 rotAxis
+    ls <- tetrisCubeX t3' 
+    nt3' <- let rotAxis = 1 in oneRotationTet nt3 rotAxis
+    ln <- tetrisCubeX nt3' 
 
     let x0 = minX_ rr; y0 = maxY_ rr 
     let x1 = maxX_ rr; y1 = minY_ rr
@@ -2469,7 +2480,7 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
     resetAnimaState animaStateArr slotNum0
     resetAnimaState animaStateArr slotNum1
   unless isPaused $ do
-    (isNext0, index0, animaState0) <- readAnimaState animaStateArr slotNum0 500000
+    (isNext0, index0, animaState0) <- readAnimaState animaStateArr slotNum0 5000000
     -- (isNext0, index, animaState) <- readAnimaState animaStateArr slotNum0 50000
     -- logFileG ["index=" ++ show index]
     logFileG ["isNext0=" ++ show isNext0 ++ " animaIndex_=" ++ show (animaIndex_ animaState0)]
@@ -2497,6 +2508,7 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
         runGameX w2d refGlobal ioArray
         resetAnimaState animaStateArr slotNum0
       else do
+        -- MARK: rotAxis123
         -- rotAxis = 0 => rotate around x-axis
         -- rotAxis = 1 => rotate around y-axis
         -- rotAxis = 2 => rotate around z-axis
@@ -2512,14 +2524,6 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
             when (rotAxis `elem` [0, 1, 2, 3, 4, 5]) $ do
 
               ls <- getAssocs ioArray >>= \s -> return $ map (\(t, bk) -> (t, 1)) $ filter(\(_, bk) -> isFilled_ bk) s
-
-              {-
-              let cubeWidth = len $ snd tet3
-              let cIndex = div cubeWidth 2
-              -- tetris cube
-              ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) $ snd tet3
-              rotTet3 <- rotateTetris ioCube rotAxis 
-              -}
               rotTet3 <- rotateTetrisX tet3 rotAxis
               -- map snd []
               -- (map . map) snd [[]]
