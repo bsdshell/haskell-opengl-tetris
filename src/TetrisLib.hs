@@ -19,6 +19,7 @@ import qualified Data.Vector.Mutable as DVM
 import qualified Data.Vector.Storable as STO
 import qualified Data.Vector.Storable.Mutable as STOM
 import Data.Word
+import Data.Maybe
 import Foreign.ForeignPtr
 import Foreign.Ptr
 import Graphics.Rendering.OpenGL as GL
@@ -146,7 +147,8 @@ data GlobalRef = GlobalRef
     isPaused_ :: Bool,
     font_ :: FTGL.Font,
     nRow_ :: Int,
-    rotAxis_ :: Int,
+    -- rotAxis_ :: Int,
+    rotAxis_ :: RotAxis,
     rotDeg_ :: GLdouble,
     rotDegkk_ :: GLdouble,
     tetFrame_ :: (Vector3 GLfloat, Vector3 GLfloat, Vector3 GLfloat),
@@ -207,6 +209,11 @@ initCameraRot =
       isShownAxis_ = True
     }
 
+data RotAxis = RotX | RotY | RotZ | RotXN | RotYN | RotZN | RotID deriving (Show, Eq)
+rotAxisTable = [(RotX, 0), (RotY, 1), (RotZ, 2), (RotXN, 3), (RotYN, 4), (RotZN, 5), (RotID, 6)]
+instance Enum RotAxis where
+  fromEnum = fromJust . flip lookup rotAxisTable 
+  toEnum   = let swap (a, b) = (b, a) in fromJust . flip lookup (map swap rotAxisTable)
 
 initStep = Step {xx = 0.0, yy = 0.0, zz = 0.0, ww = 0.01}
 

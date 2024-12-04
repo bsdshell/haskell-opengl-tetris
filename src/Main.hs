@@ -536,14 +536,14 @@ initGlobal font timePerFrame =
       count1_ = 10000000,
       rotN_ = 0,
       currTetris_ = (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue, vMat_ = matId 4,  tetColor_ = tetColor}, tetris0),
-      currTetris3_ = oneRotationTet 1 (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor}, tet3d0),
-      nextTetris3_ = oneRotationTet 1 (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 2, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor1}, tet3d1),
+      currTetris3_ = oneRotationTet RotY (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 1, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor}, tet3d0),
+      nextTetris3_ = oneRotationTet RotY (BlockAttr {isFilled_ = True, typeId_ = 1, tetrisCount_ = 2, color_ = blue, vMat_ = matId 4, tetColor_ = tetColor1}, tet3d1),
       isPaused_ = False,
       font_ = font,
       nRow_ = 0,
-      rotAxis_ = -1,
+      rotAxis_ = RotID,
       rotDeg_ = 0,
-      tetFrame_ = (Vector3 1 0 0, Vector3 0 1 0, Vector3 0 0 1),
+      tetFrame_ = (vecx, vecy, vecz),
       tetFrameMat_ = matId 4,
       flipFrame_ = ((0, 2.0), (1, -2.0), (2, 2.0)),
       resetGame_ = False,
@@ -785,10 +785,10 @@ keyBoardCallBack3d refCamRot refGlobal ioArray window key scanCode keyState modK
               let ctrlKey = G.modifierKeysControl modKeys
               -- 0 => x,  1 => y,  2 => z
               -- 3 => -x, 4 => -y, 5 => -z
-              let rotAxis = if | k == G.Key'C -> not ctrlKey ? 0 $ 3  
-                               | k == G.Key'H -> not ctrlKey ? 1 $ 4
-                               | k == G.Key'S -> not ctrlKey ? 2 $ 5
-                               | otherwise    -> -1 
+              let rotAxis = if | k == G.Key'C -> not ctrlKey ? RotX $ RotXN  
+                               | k == G.Key'H -> not ctrlKey ? RotY $ RotYN 
+                               | k == G.Key'S -> not ctrlKey ? RotZ $ RotZN 
+                               | otherwise    -> RotID 
               modifyIORef
                 refGlobal
                 ( \s ->
@@ -1424,7 +1424,7 @@ tetrisCubeX (blockAttr, tet3) = do
   arr <- DAO.newListArray ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) ls :: IO (IOArray  (Int, Int, Int) Int) 
   DAO.getAssocs arr 
 
-oneRotationTet ::Int -> (BlockAttr, [[[Int]]]) -> (BlockAttr, [[[Int]]])
+oneRotationTet ::RotAxis -> (BlockAttr, [[[Int]]]) -> (BlockAttr, [[[Int]]])
 oneRotationTet rotAxis tb@(bk, tet3) = currTetris3 
   where
     rotTet3 = rotateTetrisX tb rotAxis
@@ -1435,59 +1435,26 @@ oneRotationTet rotAxis tb@(bk, tet3) = currTetris3
                     t3
                    )
 
+
+toCube :: Int -> [((Int, Int, Int), a)] -> [[[((Int, Int, Int), a)]]]
+toCube n arr = map (partList n) $ partList (n*n) arr
+
 {-|
   rotate x-axis, on y-z plane
   rotate y-axis, on x-z plane
   rotate z-axis, on x-y plane
 -}
-rotateTetrisX :: (BlockAttr, [[[Int]]]) -> Int -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
+-- rotateTetrisX :: (BlockAttr, [[[Int]]]) -> Int -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
+rotateTetrisX :: (BlockAttr, [[[Int]]]) -> RotAxis -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
 rotateTetrisX (blockAttr, cube) rotAxis = rotateTetris3 arr3 rotAxis 
   where
     cubeWidth = len cube 
     cIndex = div cubeWidth 2
-  -- tetris cube
 
-  -- [[[(a, b, c)]]]
+    -- [[[(a, b, c)]]]
     s3 = let ln = [-cIndex..cIndex] in out3 (\a b c -> (a, b, c)) ln ln ln 
     arr3 = (join . join) $ (zipWith . zipWith) zip s3 cube
-  -- ioCube <- tetrisCube ((-cIndex, -cIndex, -cIndex), (cIndex, cIndex, cIndex)) cube 
-  -- rotateTetris ioCube rotAxis 
-  -- let xn = rotateTetris3 arr3 rotAxis 
-    toCube :: [((Int, Int, Int), Int)] -> [[[((Int, Int, Int), Int)]]]
-    toCube arr = map (partList 5) $ partList 25 arr
-    {-
-    rotateTetris :: IOArray (Int, Int, Int) Int -> Int -> IO ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
-    rotateTetris arr rotAxis = do
-        mapM_ (\k -> do
-          a0 <- DAO.getAssocs arr >>= return . filter (\((x, y, z), _) -> case rotAxis of
-                                                                              v | v == 0 || v == 3 -> x == k
-                                                                                | v == 1 || v == 4 -> y == k
-                                                                                | v == 2 || v == 5 -> z == k
-                                                                                | otherwise -> True  
-                                                      )
-
-          let b0 = partList 5 $ map snd a0
-          let x0 = partList 5 $ map fst a0
-          let c0 = if | rotAxis `elem` [0, 1, 2] -> rotateN 1 b0 
-                      | rotAxis `elem` [3, 4, 5] -> rotateN (negate 1) b0
-                      | otherwise                -> rotateN 0 b0
-                      
-          let a4 = zipWith zip x0 c0
-          mapM_ (uncurry $ DAO.writeArray arr) $ join a4 
-          ) [-2..2]
-
-        -- SEE: rotAxis123
-        let vMat = if | rotAxis == 0 -> fst $ rotMat4Tup vecx (pi/2)
-                      | rotAxis == 1 -> fst $ rotMat4Tup vecy (negate $ pi/2)
-                      | rotAxis == 2 -> fst $ rotMat4Tup vecz (pi/2)
-                      | rotAxis == 3 -> fst $ rotMat4Tup vecx (negate pi/2)
-                      | rotAxis == 4 -> fst $ rotMat4Tup vecy (pi/2)
-                      | rotAxis == 5 -> fst $ rotMat4Tup vecz (negate pi/2)
-                      | otherwise    -> matId 4 
-        retArr <- DAO.getAssocs arr
-        return (toCube retArr, vMat)
-    -} 
-    rotateTetris3 :: [((Int, Int, Int), Int)] -> Int -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
+    rotateTetris3 :: [((Int, Int, Int), Int)] -> RotAxis -> ([[[((Int, Int, Int), Int)]]], [[GLfloat]])
     rotateTetris3 arr rotAxis = (lt, vMat)
       where
         lo = let ln = [-2..2]  
@@ -1496,15 +1463,15 @@ rotateTetrisX (blockAttr, cube) rotAxis = rotateTetris3 arr3 rotAxis
 
         hashMapInx = DM.fromList lo   --    (1, 2, 3) -> index 
         s3 = map (\k -> let a0 = filter (\((x, y, z), _) -> case rotAxis of
-                                                    v | v == 0 || v == 3 -> x == k
-                                                      | v == 1 || v == 4 -> y == k
-                                                      | v == 2 || v == 5 -> z == k
+                                                    v | v == RotX || v == RotXN -> x == k
+                                                      | v == RotY || v == RotYN -> y == k
+                                                      | v == RotZ || v == RotZN -> z == k
                                                       | otherwise -> True  
                                    ) arr
                             b0 = partList 5 $ map snd a0
                             x0 = partList 5 $ map fst a0
-                            c0 = if | rotAxis `elem` [0, 1, 2] -> rotateN 1 b0 
-                                    | rotAxis `elem` [3, 4, 5] -> rotateN (negate 1) b0
+                            c0 = if | rotAxis `elem` [RotX, RotY, RotZ] -> rotateN 1 b0 
+                                    | rotAxis `elem` [RotXN, RotYN, RotZN] -> rotateN (negate 1) b0
                                     | otherwise                -> rotateN 0 b0
                         in zipWith zip x0 c0 
                        
@@ -1512,15 +1479,15 @@ rotateTetrisX (blockAttr, cube) rotAxis = rotateTetris3 arr3 rotAxis
 
         hashMapTet = DM.fromList (join $ join s3) 
         ls = map snd $ qqsort (\(a, _) (b, _) -> a < b) $ map (\(t, n) -> (fromJust $ DM.lookup t hashMapInx, (t, n))) $ (join . join) s3
-        lt = map (partList 5) $ partList 25 ls
+        lt = toCube 5 ls
 
         -- SEE: rotAxis123
-        vMat = if | rotAxis == 0 -> fst $ rotMat4Tup vecx (pi/2)
-                  | rotAxis == 1 -> fst $ rotMat4Tup vecy (negate $ pi/2)
-                  | rotAxis == 2 -> fst $ rotMat4Tup vecz (pi/2)
-                  | rotAxis == 3 -> fst $ rotMat4Tup vecx (negate pi/2)
-                  | rotAxis == 4 -> fst $ rotMat4Tup vecy (pi/2)
-                  | rotAxis == 5 -> fst $ rotMat4Tup vecz (negate pi/2)
+        vMat = if | rotAxis == RotX -> fst $ rotMat4Tup vecx (pi/2)
+                  | rotAxis == RotY -> fst $ rotMat4Tup vecy (negate $ pi/2)
+                  | rotAxis == RotZ -> fst $ rotMat4Tup vecz (pi/2)
+                  | rotAxis == RotXN -> fst $ rotMat4Tup vecx (negate pi/2)
+                  | rotAxis == RotYN -> fst $ rotMat4Tup vecy (pi/2)
+                  | rotAxis == RotZN -> fst $ rotMat4Tup vecz (negate pi/2)
                   | otherwise    -> matId 4 
   
 
@@ -1582,12 +1549,12 @@ renderTetris3 refGlobal rr = do
     preservingMatrix $ do
       translate vm
 
-      let tvec = if | rotAxis == 0 -> (rotDeg, vfd vecx)
-                    | rotAxis == 1 -> (negate rotDeg, vfd vecy)
-                    | rotAxis == 2 -> (rotDeg, vfd vecz)
-                    | rotAxis == 3 -> (negate rotDeg, vfd vecx)
-                    | rotAxis == 4 -> (rotDeg, vfd vecy)
-                    | rotAxis == 5 -> (negate rotDeg, vfd vecz)
+      let tvec = if | rotAxis == RotX -> (rotDeg, vfd vecx)
+                    | rotAxis == RotY -> (negate rotDeg, vfd vecy)
+                    | rotAxis == RotZ -> (rotDeg, vfd vecz)
+                    | rotAxis == RotXN -> (negate rotDeg, vfd vecx)
+                    | rotAxis == RotYN -> (rotDeg, vfd vecy)
+                    | rotAxis == RotZN -> (negate rotDeg, vfd vecz)
                     | otherwise    -> (0,      vfd vecx)
       rotate (fst tvec) (snd tvec) 
       
@@ -1603,12 +1570,12 @@ renderTetris3 refGlobal rr = do
     -- KEY: shadow of tetris, bottom of tetris
     preservingMatrix $ do
       when (dropHeight > 0) $ do 
-        let tvec = if | rotAxis == 0 -> (rotDeg, vfd vecx)
-                      | rotAxis == 1 -> (negate rotDeg, vfd vecy)
-                      | rotAxis == 2 -> (rotDeg, vfd vecz)
-                      | rotAxis == 3 -> (negate rotDeg, vfd vecx)
-                      | rotAxis == 4 -> (rotDeg, vfd vecy)
-                      | rotAxis == 5 -> (negate rotDeg, vfd vecz)
+        let tvec = if | rotAxis == RotX -> (rotDeg, vfd vecx)
+                      | rotAxis == RotY -> (negate rotDeg, vfd vecy)
+                      | rotAxis == RotZ -> (rotDeg, vfd vecz)
+                      | rotAxis == RotXN -> (negate rotDeg, vfd vecx)
+                      | rotAxis == RotYN -> (rotDeg, vfd vecy)
+                      | rotAxis == RotZN -> (negate rotDeg, vfd vecz)
                       | otherwise    -> (0,      vfd vecx)
         translate vm'
         rotate (fst tvec) (snd tvec) 
@@ -1622,12 +1589,12 @@ renderTetris3 refGlobal rr = do
           ) ls 
 
     preservingMatrix $ do
-        let tvec = if | rotAxis == 0 -> (rotDeg, vfd vecx)
-                      | rotAxis == 1 -> (negate rotDeg, vfd vecy)
-                      | rotAxis == 2 -> (rotDeg, vfd vecz)
-                      | rotAxis == 3 -> (negate rotDeg, vfd vecx)
-                      | rotAxis == 4 -> (rotDeg, vfd vecy)
-                      | rotAxis == 5 -> (negate rotDeg, vfd vecz)
+        let tvec = if | rotAxis == RotX -> (rotDeg, vfd vecx)
+                      | rotAxis == RotY -> (negate rotDeg, vfd vecy)
+                      | rotAxis == RotZ -> (rotDeg, vfd vecz)
+                      | rotAxis == RotXN -> (negate rotDeg, vfd vecx)
+                      | rotAxis == RotYN -> (rotDeg, vfd vecy)
+                      | rotAxis == RotZN -> (negate rotDeg, vfd vecz)
                       | otherwise    -> (0,      vfd vecx)
         translate vmn
         scale (0.5 :: GL.GLdouble) 0.5 0.5 
@@ -2376,7 +2343,7 @@ runGameX w2d refGlobal ioArray = do
             playWav "resource/hit.wav"
 
             -- replicateM :: (Applicative m) => Int -> m a -> m [a]
-            randTet <- randomBlockX3 refGlobal <&> oneRotationTet 1
+            randTet <- randomBlockX3 refGlobal <&> oneRotationTet RotY 
             modifyIORef
                 refGlobal
                 ( \s ->
@@ -2391,7 +2358,7 @@ runGameX w2d refGlobal ioArray = do
                         ,tetFrame_ = (vecx, vecy, vecz)
                         ,tetFrameMat_ = matId 4 
                         ,xxMat_ = matId 4
-                        ,rotAxis_ = -1
+                        ,rotAxis_ = RotID 
                       }
                 )
           else do 
@@ -2465,8 +2432,8 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
 
   when resetGame $ do
     ls <- getAssocs ioArray
-    currTetris3 <- randomBlockX3 refGlobal <&> oneRotationTet 1
-    nextTetris3 <- randomBlockX3 refGlobal <&> oneRotationTet 1
+    currTetris3 <- randomBlockX3 refGlobal <&> oneRotationTet RotY 
+    nextTetris3 <- randomBlockX3 refGlobal <&> oneRotationTet RotY 
     modifyIORef
         refGlobal
         ( \s ->
@@ -2530,28 +2497,16 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
         -- rotAxis = 3 => rotate around negate x-axis
         -- rotAxis = 4 => rotate around negate y-axis
         -- rotAxis = 5 => rotate around negate z-axis
-        when (rotAxis `elem` [0, 1, 2, 3, 4, 5]) $ do
+        when (rotAxis `elem` [RotX, RotY, RotZ, RotXN, RotYN, RotZN]) $ do
           (isNext1, index1, animaState1) <- readAnimaState animaStateArr slotNum1 4000
           when isNext1 $ do
             tetFrame <- readIORef refGlobal <&> tetFrame_ 
             tetFrameMat <- readIORef refGlobal <&> tetFrameMat_ 
             fu <- readIORef refGlobal <&> flipFrame_ 
-            when (rotAxis `elem` [0, 1, 2, 3, 4, 5]) $ do
+            when (rotAxis `elem` [RotX, RotY, RotZ, RotXN, RotYN, RotZN]) $ do
 
               ls <- getAssocs ioArray >>= \s -> return $ map (\(t, bk) -> (t, 1)) $ filter(\(_, bk) -> isFilled_ bk) s
-              -- rotTet3 <- rotateTetrisX tet3 rotAxis
               let rotTet3 = rotateTetrisX tet3 rotAxis
-              {-
-              let rotTet3_x = rotateTetrisX tet3 rotAxis
-              let xx = (join . join) $ fst rotTet3_x
-              axx <- DAO.newListArray ((-2, -2, -2), (2, 2, 2)) 0 :: IO (IOArray  (Int, Int, Int) Int) 
-              mapM_ (uncurry $ DAO.writeArray axx) xx 
-              myarr <- DAO.getAssocs axx
-              let lvv = map (partList 5) $ partList 25 myarr 
-              let rotTet3 = (lvv, snd rotTet3_x) 
-              -}
-
-
               -- map snd []
               -- (map . map) snd [[]]
               -- (map . map . map) snd [[[]]]
@@ -2560,13 +2515,13 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
               if isMovable then do
                   let nStep = 9 
                   let delta = nStep*pi/180
-                  let tvec = if | rotAxis == 0 -> (delta, vfd vecx)
-                                | rotAxis == 1 -> (negate delta, vfd vecy)
-                                | rotAxis == 2 -> (delta, vfd vecz)
-                                | rotAxis == 3 -> (negate delta, vfd vecx)
-                                | rotAxis == 4 -> (delta, vfd vecy)
-                                | rotAxis == 5 -> (negate delta, vfd vecz)
-                                | otherwise    -> (0,      vfd vecx)
+                  let tvec = if | rotAxis == RotX -> (delta, vfd vecx)
+                                | rotAxis == RotY -> (negate delta, vfd vecy)
+                                | rotAxis == RotZ -> (delta, vfd vecz)
+                                | rotAxis == RotXN -> (negate delta, vfd vecx)
+                                | rotAxis == RotYN -> (delta, vfd vecy)
+                                | rotAxis == RotZN -> (negate delta, vfd vecz)
+                                | otherwise     -> (0,      vfd vecx)
                   let m@(mmat, ls) = rotMat4Tup (snd tvec) (fst tvec) 
 
                   modifyIORef
@@ -2602,7 +2557,7 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
                             {   
                              currTetris3_ = currTetris3'
                              ,rotDeg_ = 0 
-                             ,rotAxis_ = -1
+                             ,rotAxis_ = RotID 
                             }
                       )
                 else do 
@@ -2611,7 +2566,7 @@ mainLoopX w2d refCamRot refGlobal animaStateArr lssVex ioArray = unlessXX (G.win
                       ( \s ->
                           s
                             {   
-                             rotAxis_ = -1
+                             rotAxis_ = RotID 
                             }
                       )
                     playWav "resource/notMovable.wav"
